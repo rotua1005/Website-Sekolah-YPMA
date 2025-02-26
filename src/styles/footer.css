@@ -1,0 +1,47 @@
+.footer {
+  background-color: #333;
+  color: #fff;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.social-icons a {
+  color: #fff;
+  font-size: 1.5rem;
+  margin-left: 0.5rem;
+  display: inline-flex; 
+  align-items: center; /* Menyamakan ikon di tengah vertikal */
+  justify-content: center; /* Menyamakan ikon di tengah horizontal */
+  min-width: 44px; /* Menentukan lebar minimum */
+  min-height: 44px; /* Menentukan tinggi minimum */
+  padding: 10px; /* Padding untuk memperluas area klik */
+}
+
+
+.social-icons a:first-child {
+  margin-left: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .social-icons {
+    margin-top: 1rem;
+  }
+}
