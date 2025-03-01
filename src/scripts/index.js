@@ -1,7 +1,23 @@
-import 'regenerator-runtime'; // untuk async await transpile
+import 'regenerator-runtime';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import '../styles/main.css';
-import '../styles/appBar.css';
-import '../styles/listData.css';
+import '../styles/responsive.css';
 import '../styles/footer.css';
-import data from '../public/data/DATA.json'; 
+import App from './view/app';
 
+const app = new App({
+  button: document.querySelector('#menu-toggle'),
+  drawer: document.querySelector('.navbar'),
+  content: document.querySelector('#mainContent'),
+  appBar: document.querySelector('.header'),
+  footer: document.querySelector('footer'),
+});
+
+window.addEventListener('hashchange', () => {
+  app.renderPage();
+});
+
+window.addEventListener('load', () => {
+  app.renderPage();
+});

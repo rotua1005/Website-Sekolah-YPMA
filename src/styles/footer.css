@@ -18,6 +18,11 @@
   margin: 0;
 }
 
+footer a {
+  text-decoration: none;
+}
+
+
 .social-icons a {
   color: #fff;
   font-size: 1.5rem;

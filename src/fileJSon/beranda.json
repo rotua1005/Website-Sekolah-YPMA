@@ -1,0 +1,57 @@
+{ 
+    "beranda": {
+      "header": {
+        "gambar": "./walpaper.png",
+        "judul": "Wayang-Tales",
+        "subjudul": "Dari Indonesia Untuk Dunia",
+        "deskripsi": "Wayang kulit semula berkembang di lingkungan istana, jadi kesenian rakyat dan menyebar ke tempat-tempat jauh."
+      },
+      "tagar": ["Jawa", "Kesenian", "Bali", "Indonesia"],
+      "video": [
+        {
+          "judul": "Video Pengenalan Wayang 1",
+          "url": "https://www.youtube.com/embed/vbQV7E3yR_I"
+        },
+        {
+          "judul": "Video Pengenalan Wayang 2",
+          "url": "https://www.youtube.com/embed/kbjKJHSa3nU"
+        }
+      ],
+      "museum": {
+        "judul": "Museum Wayang Tales",
+        "deskripsi": "Museum Wayang Tales merupakan Unit Pelaksana Teknis Daerah pada Dinas Kebudayaan yang ada di Indonesia, dengan fungsi utama pengelolaan benda museum yang memiliki nilai budaya ilmiah. Museum ini bertujuan untuk melestarikan berbagai jenis wayang dan artefak terkait dari seluruh Nusantara.",
+        "jadwal": "Senin - Minggu: 09.00 - 17.00 WIB",
+        "harga_tiket": {
+          "dewasa": "Rp5.000",
+          "mahasiswa": "Rp3.000",
+          "pelajar_anak": "Rp2.000",
+          "rombongan": {
+            "dewasa": "Rp3.750",
+            "mahasiswa": "Rp2.250",
+            "pelajar_anak": "Rp1.500"
+          }
+        }
+      },
+      "galeri": [
+        { "gambar": "./museum.png", "keterangan": "Galeri Wayang 1" },
+        { "gambar": "./museum2.png", "keterangan": "Galeri Wayang 2" },
+        { "gambar": "./museum3.png", "keterangan": "Galeri Wayang 3" }
+      ],
+      "artikel": {
+        "judul": "Tentang Wayang",
+        "konten": [
+          {
+            "teks": "Wayang adalah seni pertunjukan boneka tradisional dari Indonesia yang telah ada selama berabad-abad dan mencakup berbagai bentuk, seperti wayang kulit, wayang golek, wayang klitik, dan lain-lain."
+          },
+          {
+            "teks": "Istilah “wayang” berasal dari kata “ma Hyang”, yang berarti menuju spiritualitas Sang Kuasa. Tapi ada juga yang mengatakan “wayang” berasal dari teknik pertunjukan yang mengandalkan bayangan di layar."
+          },
+          {
+            "teks": "Wayang kulit berasal dari daerah Jawa, dengan sejarah yang sangat panjang. Catatan tertua tentang wayang kulit atau wayang purwa tersua dalam Prasasti Kuti bertarikh 840 M dari Joho, Sidoarjo, Jawa Timur."
+          }
+        ],
+        "gambar": "./image3.png"
+      }
+    }
+  }
+  

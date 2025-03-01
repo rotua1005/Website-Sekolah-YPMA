@@ -1,0 +1,61 @@
+{
+  "artikel": [
+    {
+      "judul": "Perkembangan Wayang dari Masa ke Masa",
+      "gambar": "path/to/image.jpg",
+      "paragraf": [
+        {
+          "teks": "Wayang kulit semula berkembang di lingkungan istana. Jadi kesenian rakyat dan menyebar ke tempat-tempat jauh."
+        },
+        {
+          "teks": "Wayang telah lama menjadi identitas budaya yang melekat. Wayang pada saat ini tidak hanya menjadi milik masyarakat Jawa, tapi juga menjadi identitas kebudayaan nasional. Wayang juga dianggap kesenian tradisional yang tidak mati di tengah gempuran kesenian hiburan modern. Wayang yang saat ini dipentaskan tidak lepas dari perubahan sejak awal mula wayang diciptakan. Perubahan tersebut terjadi dalam waktu yang lama, bahkan beriringan dengan jatuh bangunnya kerajaan-kerajaan di Jawa."
+        },
+        {
+          "teks": "Wayang yang saat ini dipentaskan tidak lepas dari perubahan sejak awal mula wayang diciptakan. Perubahan tersebut terjadi dalam waktu yang lama, bahkan beriringan dengan jatuh bangunnya kerajaan-kerajaan di Jawa."
+        }
+      ],
+      "judul1": "Wayang Masa Prasejarah hingga Masa Hindu-Budha",
+      "paragraf1": [
+        {
+          "teks": "Wayang pada awalnya adalah kesenian yang hanya berkembang di Jawa. Awal dalam jurnal berjudul Sejarah Perkembangan dan Fungsi Wayang dalam Masyarakat menjelaskan asal mula kata wayang tak bisa dilepaskan dari kata Hyang atau sosok roh spiritual yang dipercaya oleh orang Jawa sebelum datangnya Hindu-Budha."
+        }
+      ],
+      "sejarah": {
+        "judul": "Sejarah Wayang",
+        "konten": "Sejarah tentang wayang budaya Indonesia."
+      },
+      "cards": [
+        {
+          "gambar": "./wayang1.png",
+          "judul": "Perkembangan Wayang",
+          "subtitle": "Wayang kulit mulai populer di Jawa, terbuat dari kulit kerbau atau kambing yang diukir halus dan pertunjukan menggunakan layar dan lampu minyak untuk menciptakan bayangan."
+        },
+        {
+          "gambar": "./wayang2.png",
+          "judul": "Upacara Wayang",
+          "subtitle": "Upacara wayang kulit juga sering kali terkait dengan berbagai upacara adat dan ritual, seperti upacara kelahiran, pernikahan, dan kematian."
+        },
+        {
+          "gambar": "./wayang3.png",
+          "judul": "Asal Usul Wayang",
+          "subtitle": "Wayang memiliki sejarah yang panjang dan kaya, yang diyakini telah ada sejak lebih dari seribu tahun yang lalu."
+        },
+        {
+          "gambar": "./wayang4.png",
+          "judul": "Jenis - Jenis Wayang",
+          "subtitle": "Banyak berbagai jenis wayang antara lain: Wayang Kulit, Wayang Golek, Wayang Orang, Wayang Klitik, dan sebagainya."
+        }
+      ],
+      "museum": {
+        "judul": "Sejarah Museum Wayang",
+        "konten": "Melansir dari situs resmi Dinas Kebudayaan DKI Jakarta, Museum Wayang mulanya merupakan gereja yang didirikan oleh kelompok kolonial Belanda VOC pada tahun 1640. Gedung ini kemudian diberi nama “de oude Hollandsche Kerk. Pada tahun 1733 gereja tersebut mengalami perbaikan, dan namanya dirubah menjadi “de nieuwe Hollandsche Kerk. Gedung ini kemudian beralih fungsi menjadi gudang milik perusahaan Geo Wehry & Co tahun 1912, sebelum kemudian pada 14 Agustus 1936 ditetapkan menjadi monumen. Kemudian gedung ini dibeli oleh Bataviaasch Genootschap van Kunsten en Wetenschappen yaitu lembaga yang menangani penelitian dalam bidang seni dan ilmu pengetahuan. Sebelum menjadi museum wayang, gedung ini juga pernah dijadikan museum dengan nama de oude Bataviasche Museum atau museum Batavia Lama pada tahun 1937. Selanjutnya pada tahun 1957 diserahkan kepada Lembaga Kebudayaan Indonesia (LKI) dan sejak itu nama museum diganti menjadi Museum Jakarta Lama. LKI kemudian menyerahkan gedung ini kepada Departemen Pendidikan dan Kebudayaan dan pada akhirnya pada tanggal 23 Juni 1968 oleh Dirjen Kebudayaan Departemen Pendidikan dan Kebudayaan, gedung museum diserahkan kepada Pemerintah DKI Jakarta."
+      },
+      "alatMusik": {
+        "judul": "Alat Musik Pada Wayang",
+        "konten": "Kesenian Wayang Kulit saat ini semakin rendah peminatnya oleh karena di masa sekarang anak muda lebih memilih hiburan yang ada di gawai atau hiburan lain berbasis teknologi. Pada era ini, sebagai para generasi penerus bangsa, kita harus tetap melestarikan wayang kulit.",
+        "gambar": "./musik.png",
+        "subtitle": "Wayang selalu diiringi dengan alunan musik tradisional Jawa. alat musik biasanya digunakan untuk mengiringi pagelaran wayang kulit adalah alat musik gamelan, yang terdiri dari Kendang, Gender, Bonang, Slentem, Rebab, Demung, Kenong, Kempul, Suling, dan gong. Dalang yang bertugas sebagai pemimpin gamelan juga membawa pemukul kayu yang disebut Cempala untuk memberi aba-aba kapan musik dimainkan dan musik seperti apa yang harus dimainkan."
+      }
+    }
+  ]
+}
