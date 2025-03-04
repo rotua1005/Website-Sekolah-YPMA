@@ -1,68 +1,69 @@
 const Login = {
-    async render() {
-        return `
-        <main class="w-full mt-8">
-            <section class="vh-100 d-flex align-items-center justify-content-center bg-light">
-                <div class="container">
-                    <div class="row d-flex justify-content-center align-items-center">
-                        <div class="col-md-10 col-lg-8 col-xl-6 text-center mb-4">
-                            <h1 class="fw-bold text-primary">Selamat Datang</h1>
-                            <h3 class="text-success">Sekolah Yayasan Pesantren YPMA</h3>
-                            <p class="text-muted">Silakan login untuk mengakses akun Anda</p>
-                        </div>
-                    </div>
-                    <div class="row d-flex justify-content-center align-items-center">
-                        <div class="col-md-9 col-lg-6 col-xl-5">
-                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
-                                class="img-fluid" alt="Sample image">
-                        </div>
-                        <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
-                            <form id="loginForm">
-                                <!-- Email input -->
-                                <div class="form-outline mb-4">
-                                    <input type="email" id="email" class="form-control form-control-lg" placeholder="Masukkan email" required />
-                                    <label class="form-label" for="email">Email</label>
-                                </div>
-                                
-                                <!-- Password input -->
-                                <div class="form-outline mb-3">
-                                    <input type="password" id="password" class="form-control form-control-lg" placeholder="Masukkan password" required />
-                                    <label class="form-label" for="password">Password</label>
-                                </div>
-                                
-                                <div class="text-center text-lg-start mt-4 pt-2">
-                                    <button type="submit" class="btn btn-primary btn-lg" style="padding-left: 2.5rem; padding-right: 2.5rem;">Login</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-        `;
-    },
+  async render() {
+    return `
+      <div class="login-wrapper">
+        <img src="./Mask-group.png" alt="Logo" class="login-logo"></img>
+        <div class="login-container">
+          <div class="login-form">
+            <h2 class="log">Masuk</h2>
+            <form id="login-form">
+              <div class="form-group">
+                <input type="text" id="username" name="username" required placeholder="Username" />
+              </div>
+              <div class="form-group">
+                <input type="password" id="password" name="password" required placeholder="Password" />
+              </div>
+              <button type="submit" class="log">Masuk</button>
+            </form>
+            <div class="register-link">
+              <p>Belum punya akun? <a href="#/register">DAFTAR DISINI</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
 
-    async afterRender() {
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Mencegah reload halaman
+  async afterRender() {
+    const loginForm = document.getElementById('login-form');
 
-            // Contoh validasi login (bisa diganti dengan API authentication)
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-            if (email === "admin@example.com" && password === "123456") {
-                alert("Login Berhasil!");
+      // Ambil data dari form
+      let username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
 
-                // Simpan status login di localStorage
-                localStorage.setItem("isLoggedIn", "true");
+      // Hapus simbol "@" jika ada dalam username
+      username = username.replace('@', '');
 
-                // Arahkan ke Dashboard
-                window.location.href = "/#/dashboard";
-            } else {
-                alert("Email atau Password salah!");
-            }
+      // Kirim request POST ke backend API untuk login
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/signin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
         });
-    }
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Jika login berhasil, simpan token dan arahkan ke halaman beranda
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem('accessToken', data.accessToken); // Menyimpan token akses
+          window.location.href = '#/beranda';
+        } else {
+          // Jika login gagal, tampilkan pesan error
+          alert(data.message || 'Login failed');
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+        alert('Something went wrong. Please try again later.');
+      }
+    });
+  },
 };
 
 export default Login;

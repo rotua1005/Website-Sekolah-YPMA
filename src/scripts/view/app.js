@@ -1,14 +1,12 @@
 import DrawerInitiator from '../utils/drawer-initiator';
-import UrlParser from '../routes/url-parser';
+import UrlParser from '../routes/url-parsaer';
 import routes from '../routes/routes';
 
 class App {
-  constructor({ button, drawer, content, appBar, footer }) {
+  constructor({ button, drawer, content }) {
     this._button = button;
     this._drawer = drawer;
     this._content = content;
-    this._appBar = appBar;
-    this._footer = footer;
 
     this._initialAppShell();
   }
@@ -17,35 +15,59 @@ class App {
     DrawerInitiator.init({
       button: this._button,
       drawer: this._drawer,
+      content: this._content,
     });
+
+    this._renderNavbar();
+  }
+
+  _renderNavbar() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const nav = document.getElementById('navigationDrawer');
+    if (isLoggedIn) {
+      nav.innerHTML = `
+        <ul>
+          <li><a href="#/beranda">Beranda</a></li>
+          <li><a href="#/artikel">Sejarah</a></li>
+          <li><a href="#/pesan_tiket">Pesan Tiket</a></li>
+          <li><a href="#/tentang">Tentang Kita</a></li>
+          <li><a href="#/profile">Profile</a></li>
+        </ul>
+      `;
+    } else {
+      nav.innerHTML = `
+        <ul>
+          <li><a href="#/beranda">Beranda</a></li>
+          <li><a href="#/artikel">Sejarah</a></li>
+          <li><a href="#/pesan_tiket">Pesan Tiket</a></li>
+          <li><a href="#/tentang">Tentang Kita</a></li>
+          <li><a href="#/login">Login</a></li>
+        </ul>
+      `;
+    }
   }
 
   async renderPage() {
     const url = UrlParser.parseActiveUrlWithCombiner();
     const page = routes[url];
+    this._content.innerHTML = await page.render();
+    await page.afterRender();
 
-    // Halaman yang menampilkan App Bar dan Footer
-    const allowedPages = ['/', '/beranda', '/tentang', '/berita'];
-    if (allowedPages.includes(url)) {
-      this._appBar.style.visibility = 'visible';
-      this._appBar.style.opacity = '1';
-      this._appBar.style.height = 'auto';
-      this._footer.style.visibility = 'visible';
-      this._footer.style.opacity = '1';
-      this._footer.style.height = 'auto';
-    } else {
-      this._appBar.style.visibility = 'hidden';
-      this._appBar.style.opacity = '0';
-      this._appBar.style.height = '0';
-      this._footer.style.visibility = 'hidden';
-      this._footer.style.opacity = '0';
-      this._footer.style.height = '0';
+    const header = document.getElementById('appBar');
+    const footer = document.getElementById('appFooter');
+
+    // Ensure header and footer elements are present before accessing classList
+    if (header && footer) {
+      if (url === '/login' || url === '/register') {
+        header.classList.add('hidden');
+        footer.classList.add('hidden');
+      } else {
+        header.classList.remove('hidden');
+        footer.classList.remove('hidden');
+      }
     }
 
-    if (page) {
-      this._content.innerHTML = await page.render();
-      await page.afterRender();
-    }
+    this._renderNavbar();
   }
 }
 
