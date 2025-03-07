@@ -3,86 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Web Wayang Tales for you">
-  <link rel="icon" href="./favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sedan+SC&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <title>Wayang Tales</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <title>Sekolah Yayasan Pesantren Modern Adnan</title>
 </head>
 <body>
-  <header id="appBar" class="app-bar">
-    <div class="app-bar__menu">
-      <button id="hamburgerButton">☰</button>
-    </div>
-    <div class="app-bar__brand">
-      <h1><img src="./logo.png" alt=""></h1>
-    </div>
-    <nav id="navigationDrawer" class="app-bar__navigation"></nav>
-  </header>
-  
-  <main id="mainContent"></main>
-  <!-- footer -->
-  <section>
-    <footer id="appFooter" class="text-white text-center text-md-start">
-      <div class="container p-4">
-        <div class="row">
-          <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-            <h1><img src="./logo.png" alt="" srcset=""></h1>
-            <p class="text-white small">Wayang Tales</p>
+
+  <header class="header">
+    <a href="#" class="logo">Sekolah Yayasan Pesantren Modern Adnan</a>
+    <input type="checkbox" id="menu-toggle">
+    <label for="menu-toggle" class="icons">
+        <i class="fas fa-bars" id="menu-icon"></i>
+        <i class="fas fa-times" id="close-icon"></i>
+    </label>
+
+    <nav class="navbar">
+        <a href="#/beranda">Beranda</a>
+        <a href="#/berita">Berita</a>
+        <a href="#/ekstrakurikuler">Ekstrakurikuler</a>
+        <a href="#/tentang">Tentang Kami</a>
+        <a href="#/login" class="login-btn">Login</a>
+    </nav>
+</header>
+
+<main id="mainContent" class="mt-16"></main>
+
+
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-white mt-10 py-8">
+  <div class="container mx-auto px-6 md:px-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+          <!-- Alamat -->
+          <div>
+              <h3 class="text-lg font-bold text-green-400 uppercase">Alamat</h3>
+              <p class="mt-3 text-gray-300 leading-relaxed">
+                  Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123
+              </p>
           </div>
-          <!--Grid column-->
-          <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-            <h5 class="text-uppercase">Project</h5>
-            <ul class="list-unstyled mb-0">
-              <li>
-                <a href="#!" class="text-white small">Beranda</a>
-              </li>
-              <li>
-                <a href="#!" class="text-white small">Sejarah</a>
-              </li>
-              <li>
-                <a href="#!" class="text-white small">Pesan Tiket</a>
-              </li>
-              <li>
-                <a href="#!" class="text-white small">Tentang Kita</a>
-              </li>
-              <li>
-                <a href="#!" class="text-white small">Login</a>
-              </li>
-            </ul>
+
+          <!-- Profil -->
+          <div>
+              <h3 class="text-lg font-bold text-green-400 uppercase">Profil</h3>
+              <ul class="mt-3 space-y-2">
+                  <li><a href="#" class="hover:text-green-400 transition-all">Home</a></li>
+                  <li><a href="#" class="hover:text-green-400 transition-all">Tentang Kami</a></li>
+                  <li><a href="#" class="hover:text-green-400 transition-all">Prestasi</a></li>
+                  <li><a href="#" class="hover:text-green-400 transition-all">Berita</a></li>
+              </ul>
           </div>
-          <!--Grid column-->
-          <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-            <h5 class="text-uppercase">Alamat</h5>
-            <p class="text-white small">Jln. Thamrin Simpang Plaza, Sumatera Utara, Indonesia</p>
+
+          <!-- Ekstrakurikuler -->
+          <div>
+              <h3 class="text-lg font-bold text-green-400 uppercase">Ekstrakurikuler</h3>
+              <ul class="mt-3 space-y-2">
+                  <li><a href="#" class="hover:text-green-400 transition-all">Prestasi</a></li>
+                  <li><a href="#" class="hover:text-green-400 transition-all">Berita</a></li>
+              </ul>
           </div>
-          <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-            <h5 class="text-uppercase mb-0">Media Sosial</h5>
-            <ul class="list-unstyled d-flex justify-content-center">
-              <li class="me-3">
-                <a href="https://www.google.com" class="text-white small"><i class="fab fa-google"></i></a>
-              </li>
-              <li class="me-3">
-                <a href="https://www.facebook.com" class="text-white small"><i class="fab fa-facebook"></i></a>
-              </li>
-              <li class="me-3">
-                <a href="https://www.instagram.com" class="text-white small"><i class="fab fa-instagram"></i></a>
-              </li>
-              <li class="me-3">
-                <a href="https://www.youtube.com" class="text-white small"><i class="fab fa-youtube"></i></a>
-              </li>
-              <li class="me-3">
-                <a href="https://www.linkedin.com" class="text-white small"><i class="fab fa-linkedin"></i></a>
-              </li>
-            </ul>
-          </div>
-        </div>
       </div>
-    </footer>
-  </section>
+
+      <!-- Sosial Media & Copyright -->
+      <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between text-gray-400 text-sm">
+          <p>© 2024 SD Pesantren YPMA. All Rights Reserved.</p>
+
+          <!-- Ikon Sosial Media -->
+          <div class="flex space-x-4 mt-4 md:mt-0">
+              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                  <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                  <i class="fab fa-twitter"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                  <i class="fab fa-instagram"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                  <i class="fab fa-youtube"></i>
+              </a>
+          </div>
+      </div>
+  </div>
+</footer>
+
 </body>
 </html>

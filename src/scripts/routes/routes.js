@@ -1,26 +1,28 @@
 //routes.js
+import Dashboard from '../view/dashboard/dashboard';
+import Dashboard_Berita from '../view/dashboard/upload data/dashboard_berita';
+import Dashboard_Prestasi from '../view/dashboard/upload data/dashboard_prestasi';
+import Dashboard_EkstraKurikuler from '../view/dashboard/upload data/dashboard_kurikuler';
+import Dashboard_Profile from '../view/dashboard/upload data/dashboard_profile';
 import Beranda from '../view/pages/beranda';
+import Berita from '../view/pages/berita';
+import Ekstrakulikuler from '../view/pages/ekstrakurikuler';
 import Login from '../view/pages/login';
-import Register from '../view/pages/register';
 import Tentang from '../view/pages/tentang';
-import Pesan_tiket from '../view/pages/pesan_tiket';
-import Artikel from '../view/pages/artikel';
-import Profile from '../view/pages/profile';
-import BerandaKedua from '../view/pages/beranda2';
-import Pembayaran from '../view/pages/pembayaran';
-
 
 const routes = {
-  '/': Beranda, // default page
+  '/': Beranda, // Halaman default
   '/beranda': Beranda,
-  '/berandakedua': BerandaKedua,
-  '/login': Login,
   '/tentang': Tentang,
-  '/register' : Register,
-  '/pesan_tiket' : Pesan_tiket,
-  '/artikel' : Artikel,
-  '/profile' : Profile,
-  '/pembayaran' : Pembayaran
+  '/berita': Berita,
+  '/ekstrakurikuler': Ekstrakulikuler,
+  '/login': Login,
+  '/dashboard': Dashboard,
+  '/dashboard_berita': Dashboard_Berita,
+  '/dashboard_prestasi': Dashboard_Prestasi,
+  '/dashboard_kurikuler': Dashboard_EkstraKurikuler,
+  '/dashboard_profile': Dashboard_Profile,
 };
- 
+
+
 export default routes;

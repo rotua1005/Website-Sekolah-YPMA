@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f4f6;
+}
+
+/* Layout */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden; 
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed; /* Sidebar tetap di tempat */
+    top: 0;
+    left: 0;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.dashboard-title {
+    font-size: 26px;
+    font-weight: bold;
+    border-bottom: 2px solid white;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.dashboard-link {
+    display: block;
+    padding: 12px 15px;
+    font-size: 20px;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+/* Menandai link sidebar aktif */
+.dashboard-link.active,
+.dashboard-submenu-link.active {
+    background-color: #584FD8;
+    color: white;
+}
+
+/* Hover tetap terlihat setelah diklik */
+.dashboard-link:hover,
+.dashboard-submenu-link:hover {
+    background-color: #7367F0;
+}
+
+/* Submenu */
+.dashboard-menu {
+    margin-top: 10px;
+}
+
+.dashboard-menu-btn {
+    width: 100%;
+    text-align: left;
+    font-size: 20px;
+    padding: 12px 15px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-menu-btn:hover {
+    background-color: #584FD8;
+}
+
+.arrow {
+    transition: transform 0.2s;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+.dashboard-submenu {
+    margin-left: 20px;
+}
+
+.dashboard-submenu-link {
+    display: block;
+    padding: 10px;
+    font-size: 18px;
+    color: white;
+    text-decoration: none;
+}
+
+.dashboard-submenu-link:hover {
+    background-color: #584FD8;
+}
+
+/* Main Content */
+.dashboard-main {
+    flex: 1;
+    margin-left: 250px; /* Agar tidak ketutup sidebar */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Konten bisa di-scroll */
+    height: 100vh;
+    padding: 20px;
+}
+
+/* Header */
+.dashboard-header {
+    background-color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.dashboard-logout {
+    background-color: #333030;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dashboard-logout:hover {
+    background-color: #584FD8;
+}
+
+/* Content */
+.dashboard-content {
+    padding: 20px;
+}
+
+.dashboard-section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 5px;
+}
+
+.dashboard-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+}
+
+.dashboard-card:hover {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media screen and (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
