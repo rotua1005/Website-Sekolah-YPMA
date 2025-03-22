@@ -48,22 +48,7 @@ const DataSiswa = {
                                 </tr>
                             </thead>
                             <tbody id="dataTable" class="text-gray-700">
-                                <tr class="border-t">
-                                    <td class="py-4 px-6">1</td>
-                                    <td class="py-4 px-6">John Doe</td>
-                                    <td class="py-4 px-6">10A</td>
-                                    <td class="py-4 px-6">12345</td>
-                                    <td class="py-4 px-6">67890</td>
-                                    <td class="py-4 px-6">Laki-laki</td>
-                                    <td class="py-4 px-6">08123456789</td>
-                                    <td class="py-4 px-6">
-                                        <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
-                                    </td>
-                                    <td class="py-4 px-6 flex space-x-4">
-                                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn">Edit</button>
-                                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn">Hapus</button>
-                                    </td>
-                                </tr>
+                                ${this.loadData()}
                             </tbody>
                         </table>
                     </div>
@@ -106,14 +91,157 @@ const DataSiswa = {
         });
 
         function showModal(title, data = {}) {
-            // Modal implementation remains unchanged
+            const modalHtml = `
+                <div id="modalSiswa" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
+                        <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">Nama</label>
+                                <input type="text" id="namaSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Nama" value="${data.nama || ''}">
+                            </div>
+
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">Kelas</label>
+                                <input type="text" id="kelasSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Kelas" value="${data.kelas || ''}">
+                            </div>
+
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">NIS</label>
+                                <input type="text" id="nisSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan NIS" value="${data.nis || ''}">
+                            </div>
+
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">NISN</label>
+                                <input type="text" id="nisnSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan NISN" value="${data.nisn || ''}">
+                            </div>
+
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">Jenis Kelamin</label>
+                                <select id="jenisKelaminSiswa" class="w-full border p-3 rounded-lg text-lg">
+                                    <option value="Laki-laki" ${data.jenisKelamin === 'Laki-laki' ? 'selected' : ''}>Laki-laki</option>
+                                    <option value="Perempuan" ${data.jenisKelamin === 'Perempuan' ? 'selected' : ''}>Perempuan</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">Telepon</label>
+                                <input type="text" id="teleponSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Telepon" value="${data.telepon || ''}">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <button id="batalSiswa" class="bg-gray-500 text-white px-6 py-3 rounded-lg text-lg">Batal</button>
+                            <button id="simpanSiswa" class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            document.getElementById('batalSiswa').addEventListener('click', function () {
+                document.getElementById('modalSiswa').remove();
+            });
+
+            document.getElementById('simpanSiswa').addEventListener('click', function () {
+                const nama = document.getElementById('namaSiswa').value;
+                const kelas = document.getElementById('kelasSiswa').value;
+                const nis = document.getElementById('nisSiswa').value;
+                const nisn = document.getElementById('nisnSiswa').value;
+                const jenisKelamin = document.getElementById('jenisKelaminSiswa').value;
+                const telepon = document.getElementById('teleponSiswa').value;
+
+                if (!nama || !kelas || !nis || !nisn || !jenisKelamin || !telepon) {
+                    alert('Harap isi semua data!');
+                    return;
+                }
+
+                const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+                if (data.index !== undefined) {
+                    siswaData[data.index] = { nama, kelas, nis, nisn, jenisKelamin, telepon };
+                } else {
+                    siswaData.push({ nama, kelas, nis, nisn, jenisKelamin, telepon });
+                }
+                localStorage.setItem('dataSiswa', JSON.stringify(siswaData));
+
+                document.getElementById('modalSiswa').remove();
+                renderTable();
+            });
+        }
+
+        function renderTable() {
+            const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+            const tableBody = document.getElementById('dataTable');
+            tableBody.innerHTML = siswaData.map((siswa, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${siswa.nama}</td>
+                    <td class="py-4 px-6">${siswa.kelas}</td>
+                    <td class="py-4 px-6">${siswa.nis}</td>
+                    <td class="py-4 px-6">${siswa.nisn}</td>
+                    <td class="py-4 px-6">${siswa.jenisKelamin}</td>
+                    <td class="py-4 px-6">${siswa.telepon}</td>
+                    <td class="py-4 px-6">
+                        <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
+                    </td>
+                    <td class="py-4 px-6 flex space-x-4">
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            attachRowEventListeners();
         }
 
         function attachRowEventListeners() {
-            // Attach event listeners for edit and delete buttons
+            document.querySelectorAll('.edit-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    const index = btn.getAttribute('data-index');
+                    const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+                    const data = { ...siswaData[index], index };
+                    showModal('Edit Data Siswa', data);
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+                        const index = btn.getAttribute('data-index');
+                        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+                        siswaData.splice(index, 1);
+                        localStorage.setItem('dataSiswa', JSON.stringify(siswaData));
+                        renderTable();
+                    }
+                });
+            });
         }
 
-        attachRowEventListeners();
+        renderTable();
+    },
+
+    loadData() {
+        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+        return siswaData.map((siswa, index) => `
+            <tr class="border-t">
+                <td class="py-4 px-6">${index + 1}</td>
+                <td class="py-4 px-6">${siswa.nama}</td>
+                <td class="py-4 px-6">${siswa.kelas}</td>
+                <td class="py-4 px-6">${siswa.nis}</td>
+                <td class="py-4 px-6">${siswa.nisn}</td>
+                <td class="py-4 px-6">${siswa.jenisKelamin}</td>
+                <td class="py-4 px-6">${siswa.telepon}</td>
+                <td class="py-4 px-6">
+                    <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
+                </td>
+                <td class="py-4 px-6 flex space-x-4">
+                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
     }
 };
 

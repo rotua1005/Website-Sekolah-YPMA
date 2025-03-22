@@ -7,7 +7,7 @@ const MenuDashboard = {
                 <a href="#/dashboard" class="dashboard-link">Dashboard</a>
 
                 <div class="dashboard-menu">
-                    <button id="toggleDataSekolah" class="dashboard-menu-btn" aria-expanded="false">
+                    <button class="dashboard-menu-btn" data-menu="dataSekolahMenu">
                         Upload Data <span class="arrow">▼</span>
                     </button>
                     <div id="dataSekolahMenu" class="dashboard-submenu hidden">
@@ -19,7 +19,7 @@ const MenuDashboard = {
                 </div>
 
                 <div class="dashboard-menu">
-                    <button id="toggleDataBiodata" class="dashboard-menu-btn" aria-expanded="false">
+                    <button class="dashboard-menu-btn" data-menu="dataBiodataMenu">
                         Biodata <span class="arrow">▼</span>
                     </button>
                     <div id="dataBiodataMenu" class="dashboard-submenu hidden">
@@ -32,107 +32,114 @@ const MenuDashboard = {
                 </div>
 
                 <div class="dashboard-menu">
-                    <button id="toggleDataAkademik" class="dashboard-menu-btn" aria-expanded="false">
+                    <button class="dashboard-menu-btn" data-menu="dataAkademikMenu">
                         Data Akademik <span class="arrow">▼</span>
                     </button>
                     <div id="dataAkademikMenu" class="dashboard-submenu hidden">
-                        <a href="#/dashboard_kelas" class="dashboard-submenu-link">Data Kelas</a>
-                        <a href="#/dashboard_mapel" class="dashboard-submenu-link">Data Mapel</a>
-                        <a href="#/dashboard_mapel" class="dashboard-submenu-link">Data Sekolah</a>
-                        <a href="#/dashboard_mapel" class="dashboard-submenu-link">Tahun Akademik</a>
+                        <a href="#/data_kelas" class="dashboard-submenu-link">Data Kelas</a>
+                        <a href="#/data_mapel" class="dashboard-submenu-link">Data Mapel</a>
+                        <a href="#/data_sekolah" class="dashboard-submenu-link">Data Sekolah</a>
+                        <a href="#/tahun_akademik" class="dashboard-submenu-link">Tahun Akademik</a>
+                    </div>
+                </div>
+
+                <div class="dashboard-menu">
+                    <button class="dashboard-menu-btn" data-menu="dataAbsensiMenu">
+                        Data Absensi <span class="arrow">▼</span>
+                    </button>
+                    <div id="dataAbsensiMenu" class="dashboard-submenu hidden">
+                        <a href="#/absensi1" class="dashboard-submenu-link">Absensi</a>
+                        <a href="#/absensi" class="dashboard-submenu-link">Rekap Absensi</a>
                     </div>
                 </div>
 
                 <a href="#/dashboard_settings" class="dashboard-link">Settings</a>
             </nav>
-        </div>
-        `;
+        </div>`;
     },
 
     afterRender() {
         console.log("MenuDashboard afterRender is running");
+        const menuButtons = document.querySelectorAll(".dashboard-menu-btn");
+        const menus = document.querySelectorAll(".dashboard-submenu");
 
-        const menus = [
-            { button: 'toggleDataSekolah', menu: 'dataSekolahMenu', storageKey: 'dataSekolahMenuStatus' },
-            { button: 'toggleDataBiodata', menu: 'dataBiodataMenu', storageKey: 'dataBiodataMenuStatus' },
-            { button: 'toggleDataAkademik', menu: 'dataAkademikMenu', storageKey: 'dataAkademikMenuStatus' }
-        ];
+        menuButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation(); // Prevent closing on click
+                const menuId = button.getAttribute("data-menu");
+                const menu = document.getElementById(menuId);
+                const isOpen = !menu.classList.contains("hidden");
 
-        function toggleMenu(button, menu, storageKey) {
-            if (!menu || !button) return;
-            const isCurrentlyOpen = !menu.classList.contains('hidden');
-            if (!isCurrentlyOpen) {
-                menu.classList.remove('hidden');
-                button.querySelector('span').classList.add('rotate-180');
-                button.setAttribute('aria-expanded', 'true');
-                localStorage.setItem(storageKey, 'open');
-            } else {
-                menu.classList.add('hidden');
-                button.querySelector('span').classList.remove('rotate-180');
-                button.setAttribute('aria-expanded', 'false');
-                localStorage.setItem(storageKey, 'closed');
-            }
-        }
-
-        menus.forEach(({ button, menu, storageKey }) => {
-            const buttonElement = document.getElementById(button);
-            const menuElement = document.getElementById(menu);
-
-            if (buttonElement && menuElement) {
-                buttonElement.addEventListener('click', function (event) {
-                    if (!event.target.classList.contains('dashboard-submenu-link')) {
-                        event.stopPropagation();
-                        toggleMenu(buttonElement, menuElement, storageKey);
-                    }
+                // Close all other menus except the current one
+                menus.forEach(m => {
+                    if (m.id !== menuId) m.classList.add("hidden");
                 });
 
-                if (localStorage.getItem(storageKey) === 'open') {
-                    menuElement.classList.remove('hidden');
-                    buttonElement.querySelector('span').classList.add('rotate-180');
-                    buttonElement.setAttribute('aria-expanded', 'true');
+                menuButtons.forEach(b => {
+                    if (b !== button) b.querySelector(".arrow").classList.remove("rotate-180");
+                });
+
+                // Toggle the clicked menu
+                if (!isOpen) {
+                    menu.classList.remove("hidden");
+                    button.querySelector(".arrow").classList.add("rotate-180");
                 }
-            }
+            });
         });
 
-        document.addEventListener('click', (event) => {
-            if (!event.target.closest('.dashboard-menu') && !event.target.classList.contains('dashboard-submenu-link')) {
-                menus.forEach(({ menu, button }) => {
-                    const menuElement = document.getElementById(menu);
-                    const buttonElement = document.getElementById(button);
-                    if (menuElement && buttonElement && !menuElement.classList.contains('hidden')) {
-                        menuElement.classList.add('hidden');
-                        buttonElement.querySelector('span').classList.remove('rotate-180');
-                        buttonElement.setAttribute('aria-expanded', 'false');
-                        localStorage.setItem(menu, 'closed');
+        // Pastikan menu tetap terbuka saat submenu diklik
+        document.querySelectorAll(".dashboard-submenu-link").forEach(link => {
+            link.addEventListener("click", (event) => {
+                event.stopPropagation();
+                localStorage.setItem("activeSubmenu", event.target.getAttribute("href"));
+
+                // Simpan menu yang tetap terbuka
+                const parentMenu = event.target.closest(".dashboard-submenu");
+                localStorage.setItem("openMenu", parentMenu.id);
+
+                // Pastikan menu yang sedang aktif tetap terbuka
+                menus.forEach(m => {
+                    if (m.id === parentMenu.id) {
+                        m.classList.remove("hidden");
+                        const button = document.querySelector(`[data-menu="${m.id}"]`);
+                        if (button) button.querySelector(".arrow").classList.add("rotate-180");
                     }
                 });
-            }
-        });
 
-        document.querySelectorAll('.dashboard-submenu-link').forEach(link => {
-            link.addEventListener('click', (event) => {
-                document.querySelectorAll('.dashboard-submenu-link').forEach(el => el.classList.remove('active'));
-                event.target.classList.add('active');
-                localStorage.setItem('activeSubmenuLink', event.target.getAttribute('href')); // Save the active link
-                event.stopPropagation();
+                // Hapus aktif dari semua dan tambahkan ke yang diklik
+                document.querySelectorAll(".dashboard-submenu-link").forEach(el => el.classList.remove("active"));
+                event.target.classList.add("active");
             });
         });
 
-        // Ensure submenu does not open when clicking a submenu link
-        document.querySelectorAll('.dashboard-submenu-link').forEach(link => {
-            link.addEventListener('click', (event) => {
-                event.stopPropagation(); // Prevent triggering parent menu toggle
-            });
-        });
-
-        // Restore the last active submenu link on page load
-        const activeLink = localStorage.getItem('activeSubmenuLink');
-        if (activeLink) {
-            const activeElement = document.querySelector(`.dashboard-submenu-link[href="${activeLink}"]`);
-            if (activeElement) {
-                activeElement.classList.add('active');
+        // Restore menu yang sebelumnya terbuka
+        const openMenuId = localStorage.getItem("openMenu");
+        if (openMenuId) {
+            const openMenu = document.getElementById(openMenuId);
+            if (openMenu) {
+                openMenu.classList.remove("hidden");
+                const button = document.querySelector(`[data-menu="${openMenuId}"]`);
+                if (button) button.querySelector(".arrow").classList.add("rotate-180");
             }
         }
+
+        // Restore submenu yang aktif
+        const activeSubmenuLink = localStorage.getItem("activeSubmenu");
+        if (activeSubmenuLink) {
+            const activeElement = document.querySelector(`.dashboard-submenu-link[href="${activeSubmenuLink}"]`);
+            if (activeElement) {
+                activeElement.classList.add("active");
+            }
+        }
+
+        // Klik di luar untuk menutup semua menu, kecuali yang sedang terbuka
+        document.addEventListener("click", (event) => {
+            if (!event.target.closest(".dashboard-menu")) {
+                menus.forEach(menu => menu.classList.add("hidden"));
+                menuButtons.forEach(button => button.querySelector(".arrow").classList.remove("rotate-180"));
+                localStorage.removeItem("openMenu");
+            }
+        });
     }
 };
 

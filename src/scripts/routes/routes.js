@@ -17,6 +17,11 @@ import MenuDashboard from '../view/menu/menu_dashboard';
 import DataWaliKelas from '../view/dashboard/biodata/data_walikelas';
 import DataGuru from '../view/dashboard/biodata/data_guru';
 import DataAdmin from '../view/dashboard/biodata/data_admin';
+import DataKelas from '../view/dashboard/akademik/data_kelas';
+import DataMataPelajaran from '../view/dashboard/akademik/data_mapel';
+import TahunAkademik from '../view/dashboard/akademik/tahun_akademik';
+import DataSekolah from '../view/dashboard/akademik/data_sekolah';
+import Absensi1 from '../view/dashboard/absensi/absensi1';
 
 const routes = {
   '/': Beranda, // Halaman default
@@ -38,6 +43,11 @@ const routes = {
   '/menu_dashboard':MenuDashboard,
   '/data_guru':DataGuru,
   '/data_admin':DataAdmin,
+  '/data_kelas':DataKelas,
+  '/data_mapel':DataMataPelajaran,
+  '/data_sekolah':DataSekolah,
+  '/tahun_akademik':TahunAkademik,
+  '/absensi1':Absensi1
 };
 
 
