@@ -182,7 +182,7 @@ const Beranda = {
 </section>
 
 <section class="mt-10">
-  <h2 class="text-2xl font-bold mb-6 text-center text-green-700">News &amp; Update</h2>
+  <h2 class="text-2xl font-bold mb-6 text-center text-green-700">Berita Terbaru</h2>
   
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Card 1 -->

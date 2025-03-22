@@ -1,3 +1,4 @@
+//app.js
 import DrawerInitiator from '../utils/drawer-initiator';
 import UrlParser from '../routes/url-parser';
 import routes from '../routes/routes';
@@ -38,7 +39,9 @@ class App {
     const dashboardPages = [
       '/dashboard', '/dashboard_berita', '/dashboard_kurikuler',
       '/dashboard_prestasi', '/dashboard_profile', '/dashboard_kelas',
-      '/dashboard_mapel', '/dashboard_settings'
+      '/dashboard_mapel', '/dashboard_settings', '/data_siswa', '/data_akun','/data_walikelas','/menu_dashboard','/data_guru',
+      '/data_admin','/data_kelas','/data_sekolah'
+
     ];
 
     // Tampilkan App Bar & Footer hanya di halaman umum

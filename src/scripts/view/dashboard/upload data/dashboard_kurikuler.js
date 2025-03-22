@@ -1,35 +1,10 @@
+import MenuDashboard from '../../menu/menu_dashboard';
+
 const Dashboard_EkstraKurikuler = {
     async render() {
         return `
         <div class="dashboard-container bg-gray-100 min-h-screen flex">
-            <div class="dashboard-sidebar bg-green-700 text-white p-6 shadow-lg w-64">
-                <h1 class="text-2xl font-bold mb-4">Admin Sekolah</h1>
-                  <nav>
-                    <a href="#/dashboard" class="dashboard-link">Dashboard</a>
-                    <div class="dashboard-menu">
-                        <button id="toggleDataSekolah" class="dashboard-menu-btn">
-                            Upload Data <span class="arrow">▼</span>
-                        </button>
-                        <div id="dataSekolahMenu" class="dashboard-submenu hidden">
-                            <a href="#/dashboard_berita" class="dashboard-submenu-link">Berita</a>
-                            <a href="#/dashboard_ekstrakurikuler" class="dashboard-submenu-link">Ekstrakurikuler</a>
-                            <a href="#/dashboard_prestasi" class="dashboard-submenu-link">Prestasi</a>
-                            <a href="#/dashboard_profile" class="dashboard-submenu-link">Profile Sekolah</a>
-                        </div>
-                    </div>
-                    <div class="dashboard-menu">
-                        <button id="toggleDataAkademik" class="dashboard-menu-btn">
-                            Data Akademik <span class="arrow">▼</span>
-                        </button>
-                        <div id="dataAkademikMenu" class="dashboard-submenu hidden">
-                            <a href="#/dashboard_kelas" class="dashboard-submenu-link">Data Kelas</a>
-                            <a href="#/dashboard_mapel" class="dashboard-submenu-link">Data Mapel</a>
-                        </div>
-                    </div>
-                    <a href="#/dashboard_settings" class="dashboard-link">Settings</a>
-                </nav>
-            </div>
-
+            ${MenuDashboard.render()}
             <div class="dashboard-main flex-1 p-8">
                 <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
@@ -66,6 +41,7 @@ const Dashboard_EkstraKurikuler = {
     },
 
     async afterRender() {
+        MenuDashboard.afterRender();
         const form = document.getElementById("upload-form");
         const preview = document.getElementById("preview");
         const submitButton = document.getElementById("submit-button");
@@ -73,59 +49,6 @@ const Dashboard_EkstraKurikuler = {
         const searchInput = document.getElementById("search");
         let ekstrakurikulerList = JSON.parse(localStorage.getItem("ekstrakurikuler")) || [];
         let editIndex = null;
-
-        const dataSekolahBtn = document.getElementById('toggleDataSekolah');
-        const dataSekolahMenu = document.getElementById('dataSekolahMenu');
-        const dataAkademikBtn = document.getElementById('toggleDataAkademik');
-        const dataAkademikMenu = document.getElementById('dataAkademikMenu');
-
-        function toggleMenu(button, menu, storageKey) {
-            menu.classList.toggle('hidden');
-            button.querySelector('span').classList.toggle('rotate-180');
-            localStorage.setItem(storageKey, menu.classList.contains('hidden') ? 'closed' : 'open');
-        }
-
-        dataSekolahBtn.addEventListener('click', function () {
-            toggleMenu(this, dataSekolahMenu, 'dataSekolahMenuStatus');
-        });
-
-        dataAkademikBtn.addEventListener('click', function () {
-            toggleMenu(this, dataAkademikMenu, 'dataAkademikMenuStatus');
-        });
-
-        if (localStorage.getItem('dataSekolahMenuStatus') === 'open') {
-            dataSekolahMenu.classList.remove('hidden');
-            dataSekolahBtn.querySelector('span').classList.add('rotate-180');
-        }
-
-        if (localStorage.getItem('dataAkademikMenuStatus') === 'open') {
-            dataAkademikMenu.classList.remove('hidden');
-            dataAkademikBtn.querySelector('span').classList.add('rotate-180');
-        }
-
-        const links = document.querySelectorAll('.dashboard-link, .dashboard-submenu-link');
-        links.forEach(link => {
-            link.addEventListener('click', function () {
-                links.forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-                localStorage.setItem('activeDashboardLink', this.getAttribute('href'));
-            });
-        });
-
-        const lastActive = localStorage.getItem('activeDashboardLink');
-        if (lastActive) {
-            const activeLink = document.querySelector(`a[href="${lastActive}"]`);
-            if (activeLink) {
-                activeLink.classList.add('active');
-            }
-        }
-
-        document.getElementById("deskripsi").addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                this.value += "\n";
-            }
-        });
 
         form.addEventListener("submit", function (event) {
             event.preventDefault();
@@ -281,4 +204,5 @@ const Dashboard_EkstraKurikuler = {
         tampilkanEkstrakurikuler();
     }
 };
+
 export default Dashboard_EkstraKurikuler;
