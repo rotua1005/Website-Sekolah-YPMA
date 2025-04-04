@@ -22,6 +22,7 @@ import DataMataPelajaran from '../view/dashboard/akademik/data_mapel';
 import TahunAkademik from '../view/dashboard/akademik/tahun_akademik';
 import DataSekolah from '../view/dashboard/akademik/data_sekolah';
 import Absensi1 from '../view/dashboard/absensi/absensi1';
+import Absensi2 from '../view/dashboard/absensi/absensi2';
 
 const routes = {
   '/': Beranda, // Halaman default
@@ -47,7 +48,8 @@ const routes = {
   '/data_mapel':DataMataPelajaran,
   '/data_sekolah':DataSekolah,
   '/tahun_akademik':TahunAkademik,
-  '/absensi1':Absensi1
+  '/absensi1':Absensi1,
+  '/absensi2':Absensi2
 };
 
 

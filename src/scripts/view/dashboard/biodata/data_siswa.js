@@ -21,12 +21,12 @@ const DataSiswa = {
                         <div class="flex space-x-4">
                             <select id="filterKelas" class="border p-3 rounded-lg text-lg">
                                 <option value="">Semua Kelas</option>
-                                <option value="10A">10A</option>
-                                <option value="10B">10B</option>
-                                <option value="11A">11A</option>
-                                <option value="11B">11B</option>
-                                <option value="12A">12A</option>
-                                <option value="12B">12B</option>
+                                <option value="1">Kelas 1</option>
+                                <option value="2">Kelas 2</option>
+                                <option value="3">Kelas 3</option>
+                                <option value="4">Kelas 4</option>
+                                <option value="5">Kelas 5</option>
+                                <option value="6">Kelas 6</option>
                             </select>
                             <input type="text" id="searchNama" class="border p-3 rounded-lg text-lg" placeholder="Cari Nama Siswa">
                         </div>

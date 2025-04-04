@@ -36,7 +36,7 @@
     "whatwg-fetch": "^3.6.2"
   },
   "dependencies": {
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.4",
     "lucide-react": "^0.477.0",
     "regenerator-runtime": "^0.14.0",
     "sweetalert2": "^11.17.2"

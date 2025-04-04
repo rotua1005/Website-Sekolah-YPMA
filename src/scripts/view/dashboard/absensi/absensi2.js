@@ -1,6 +1,6 @@
 import MenuDashboard from '../../menu/menu_dashboard';
 
-const Absensi1 = {
+const Absensi2 = {
     async render() {
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
@@ -193,4 +193,4 @@ const Absensi1 = {
     }
 };
 
-export default Absensi1;
+export default Absensi2;

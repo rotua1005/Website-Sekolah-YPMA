@@ -14,9 +14,23 @@ const DataWaliKelas = {
                 <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
                     <h1 class="text-center text-4xl font-bold mb-6">DATA WALI KELAS</h1>
                     
-                    <button id="tambahWaliKelasBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg mb-4">
-                        Tambah Wali Kelas
-                    </button>
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="tambahWaliKelasBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg">
+                            Tambah Wali Kelas
+                        </button>
+                        <div class="flex space-x-4">
+                            <select id="filterKelas" class="border p-3 rounded-lg text-lg">
+                                <option value="">Semua Kelas</option>
+                                <option value="1">Kelas 1</option>
+                                <option value="2">Kelas 2</option>
+                                <option value="3">Kelas 3</option>
+                                <option value="4">Kelas 4</option>
+                                <option value="5">Kelas 5</option>
+                                <option value="6">Kelas 6</option>
+                            </select>
+                            <input type="text" id="searchNamaWali" class="border p-3 rounded-lg text-lg" placeholder="Cari Nama Wali Kelas">
+                        </div>
+                    </div>
 
                     <div class="shadow-xl rounded-lg p-6 overflow-x-auto">
                         <table class="w-full border shadow-lg rounded-lg text-lg">
@@ -27,25 +41,13 @@ const DataWaliKelas = {
                                     <th class="py-4 px-6">Kelas</th>
                                     <th class="py-4 px-6">NIP</th>
                                     <th class="py-4 px-6">Telepon</th>
+                                    <th class="py-4 px-6">Jumlah Siswa</th>
                                     <th class="py-4 px-6">Status</th>
                                     <th class="py-4 px-6">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataTable" class="text-gray-700">
-                                <tr class="border-t">
-                                    <td class="py-4 px-6">1</td>
-                                    <td class="py-4 px-6">Jane Doe</td>
-                                    <td class="py-4 px-6">10A</td>
-                                    <td class="py-4 px-6">1987654321</td>
-                                    <td class="py-4 px-6">08123456789</td>
-                                    <td class="py-4 px-6">
-                                        <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
-                                    </td>
-                                    <td class="py-4 px-6 flex space-x-4">
-                                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn">Edit</button>
-                                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn">Hapus</button>
-                                    </td>
-                                </tr>
+                            <tbody id="dataTableWaliKelas" class="text-gray-700">
+                                ${this.loadData()}
                             </tbody>
                         </table>
                     </div>
@@ -60,6 +62,31 @@ const DataWaliKelas = {
         document.getElementById('tambahWaliKelasBtn').addEventListener('click', function () {
             showModal('Tambah Data Wali Kelas');
         });
+
+        document.getElementById('searchNamaWali').addEventListener('input', function () {
+            filterTable();
+        });
+
+        document.getElementById('filterKelas').addEventListener('change', function () {
+            filterTable();
+        });
+
+        function filterTable() {
+            const searchValue = document.getElementById('searchNamaWali').value.toLowerCase();
+            const filterKelas = document.getElementById('filterKelas').value;
+            const rows = document.querySelectorAll('#dataTableWaliKelas tr');
+            rows.forEach(row => {
+                const namaCell = row.querySelector('td:nth-child(2)');
+                const kelasCell = row.querySelector('td:nth-child(3)');
+                const matchesNama = namaCell.textContent.toLowerCase().includes(searchValue);
+                const matchesKelas = !filterKelas || kelasCell.textContent === filterKelas;
+                if (matchesNama && matchesKelas) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
 
         function showModal(title, data = {}) {
             const modalHtml = `
@@ -89,11 +116,8 @@ const DataWaliKelas = {
                             </div>
 
                             <div>
-                                <label class="block text-lg font-semibold mb-2">Status</label>
-                                <select id="statusWaliKelas" class="w-full border p-3 rounded-lg text-lg">
-                                    <option value="Aktif" ${data.status === 'Aktif' ? 'selected' : ''}>Aktif</option>
-                                    <option value="Tidak Aktif" ${data.status === 'Tidak Aktif' ? 'selected' : ''}>Tidak Aktif</option>
-                                </select>
+                                <label class="block text-lg font-semibold mb-2">Jumlah Siswa</label>
+                                <input type="number" id="jumlahSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Jumlah Siswa" value="${data.jumlahSiswa || ''}">
                             </div>
                         </div>
 
@@ -116,70 +140,82 @@ const DataWaliKelas = {
                 const kelas = document.getElementById('kelasWaliKelas').value;
                 const nip = document.getElementById('nipWaliKelas').value;
                 const telepon = document.getElementById('teleponWaliKelas').value;
-                const status = document.getElementById('statusWaliKelas').value;
+                const jumlahSiswa = document.getElementById('jumlahSiswa').value;
 
-                if (nama === '' || kelas === '' || nip === '' || telepon === '') {
+                if (!nama || !kelas || !nip || !telepon || !jumlahSiswa) {
                     alert('Harap isi semua data!');
                     return;
                 }
 
-                if (data.row) {
-                    data.row.innerHTML = `
-                        <td class="py-4 px-6">${data.row.rowIndex}</td>
-                        <td class="py-4 px-6">${nama}</td>
-                        <td class="py-4 px-6">${kelas}</td>
-                        <td class="py-4 px-6">${nip}</td>
-                        <td class="py-4 px-6">${telepon}</td>
-                        <td class="py-4 px-6">
-                            <span class="bg-${status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${status}</span>
-                        </td>
-                        <td class="py-4 px-6 flex space-x-4">
-                            <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn">Edit</button>
-                            <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn">Hapus</button>
-                        </td>
-                    `;
+                const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+                if (data.index !== undefined) {
+                    updateDataKelasEdit(waliKelasData[data.index].nama, kelas, nama, jumlahSiswa);
+                    waliKelasData[data.index] = { nama, kelas, nip, telepon, jumlahSiswa };
                 } else {
-                    const table = document.getElementById('dataTable');
-                    const rowCount = table.rows.length + 1;
-
-                    const newRow = `
-                        <tr class="border-t">
-                            <td class="py-4 px-6">${rowCount}</td>
-                            <td class="py-4 px-6">${nama}</td>
-                            <td class="py-4 px-6">${kelas}</td>
-                            <td class="py-4 px-6">${nip}</td>
-                            <td class="py-4 px-6">${telepon}</td>
-                            <td class="py-4 px-6">
-                                <span class="bg-${status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${status}</span>
-                            </td>
-                            <td class="py-4 px-6 flex space-x-4">
-                                <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn">Edit</button>
-                                <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn">Hapus</button>
-                            </td>
-                        </tr>
-                    `;
-
-                    table.insertAdjacentHTML('beforeend', newRow);
+                    waliKelasData.push({ nama, kelas, nip, telepon, jumlahSiswa });
+                    updateDataKelasAdd(nama, kelas, jumlahSiswa);
                 }
+                localStorage.setItem('dataWaliKelas', JSON.stringify(waliKelasData));
 
                 document.getElementById('modalWaliKelas').remove();
-                attachRowEventListeners();
+                renderTable();
             });
+        }
+        function updateDataKelasAdd(nama, kelas, jumlahSiswa){
+            const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
+            const newKelas = {
+                nama: kelas,
+                wali: nama,
+                jumlah: jumlahSiswa
+            };
+
+            kelasData.push(newKelas);
+            localStorage.setItem('dataKelas', JSON.stringify(kelasData));
+
+        }
+        function updateDataKelasEdit(oldNama, oldKelas, newNama, newJumlah){
+            const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
+
+            kelasData.forEach(kelas => {
+                if(kelas.wali === oldNama && kelas.nama === oldKelas){
+                    kelas.wali = newNama;
+                    kelas.jumlah = newJumlah;
+                }
+            });
+
+            localStorage.setItem('dataKelas', JSON.stringify(kelasData));
+        }
+
+        function renderTable() {
+            const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+            const tableBody = document.getElementById('dataTableWaliKelas');
+            tableBody.innerHTML = waliKelasData.map((wali, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${wali.nama}</td>
+                    <td class="py-4 px-6">${wali.kelas}</td>
+                    <td class="py-4 px-6">${wali.nip}</td>
+                    <td class="py-4 px-6">${wali.telepon}</td>
+                    <td class="py-4 px-6">${wali.jumlahSiswa}</td>
+                    <td class="py-4 px-6">
+                        <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
+                    </td>
+                    <td class="py-4 px-6 flex space-x-4">
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            attachRowEventListeners();
         }
 
         function attachRowEventListeners() {
             document.querySelectorAll('.edit-btn').forEach((btn) => {
                 btn.addEventListener('click', function () {
-                    const row = btn.closest('tr');
-                    const cells = row.querySelectorAll('td');
-                    const data = {
-                        row,
-                        nama: cells[1].textContent,
-                        kelas: cells[2].textContent,
-                        nip: cells[3].textContent,
-                        telepon: cells[4].textContent,
-                        status: cells[5].textContent.trim(),
-                    };
+                    const index = btn.getAttribute('data-index');
+                    const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+                    const data = { ...waliKelasData[index], index };
                     showModal('Edit Data Wali Kelas', data);
                 });
             });
@@ -187,13 +223,47 @@ const DataWaliKelas = {
             document.querySelectorAll('.delete-btn').forEach((btn) => {
                 btn.addEventListener('click', function () {
                     if (confirm('Apakah Anda yakin ingin menghapus data wali kelas ini?')) {
-                        btn.closest('tr').remove();
+                        const index = btn.getAttribute('data-index');
+                        const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+                        const deleteWali = waliKelasData[index].nama;
+                        const deleteKelas = waliKelasData[index].kelas;
+
+                        waliKelasData.splice(index, 1);
+                        localStorage.setItem('dataWaliKelas', JSON.stringify(waliKelasData));
+                        updateDataKelasDelete(deleteWali, deleteKelas);
+                        renderTable();
                     }
                 });
             });
         }
+        function updateDataKelasDelete(deleteWali, deleteKelas){
+            const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
+            const filteredKelas = kelasData.filter(kelas => !(kelas.wali === deleteWali && kelas.nama === deleteKelas));
+            localStorage.setItem('dataKelas', JSON.stringify(filteredKelas));
+        }
 
-        attachRowEventListeners();
+        renderTable();
+    },
+
+    loadData() {
+        const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+        return waliKelasData.map((wali, index) => `
+            <tr class="border-t">
+                <td class="py-4 px-6">${index + 1}</td>
+                <td class="py-4 px-6">${wali.nama}</td>
+                <td class="py-4 px-6">${wali.kelas}</td>
+                <td class="py-4 px-6">${wali.nip}</td>
+                <td class="py-4 px-6">${wali.telepon}</td>
+                <td class="py-4 px-6">${wali.jumlahSiswa}</td>
+                <td class="py-4 px-6">
+                    <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
+                </td>
+                <td class="py-4 px-6 flex space-x-4">
+                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
     }
 };
 

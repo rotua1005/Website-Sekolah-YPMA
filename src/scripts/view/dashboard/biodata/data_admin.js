@@ -14,9 +14,12 @@ const DataAdmin = {
                 <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
                     <h1 class="text-center text-4xl font-bold mb-6">DATA ADMIN</h1>
                     
-                    <button id="tambahAdminBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg mb-4">
-                        Tambah Admin
-                    </button>
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="tambahAdminBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg">
+                            Tambah Admin
+                        </button>
+                        <input type="text" id="searchAdmin" class="border p-3 rounded-lg text-lg" placeholder="Cari Admin...">
+                    </div>
 
                     <div class="shadow-xl rounded-lg p-6 overflow-x-auto">
                         <table class="w-full border shadow-lg rounded-lg text-lg">
@@ -45,6 +48,11 @@ const DataAdmin = {
 
         document.getElementById('tambahAdminBtn').addEventListener('click', function () {
             showModal('Tambah Data Admin');
+        });
+
+        document.getElementById('searchAdmin').addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            filterTable(query);
         });
 
         function showModal(title, data = {}) {
@@ -136,6 +144,31 @@ const DataAdmin = {
             `).join('');
 
             attachRowEventListeners();
+        }
+
+        function filterTable(query) {
+            const adminData = JSON.parse(localStorage.getItem('dataAdmin')) || [];
+            const filteredData = adminData.filter(admin => 
+                admin.nama.toLowerCase().includes(query) || 
+                admin.email.toLowerCase().includes(query) || 
+                admin.telepon.toLowerCase().includes(query)
+            );
+            const tableBody = document.getElementById('dataAdminTable');
+            tableBody.innerHTML = filteredData.map((admin, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${admin.nama}</td>
+                    <td class="py-4 px-6">${admin.email}</td>
+                    <td class="py-4 px-6">${admin.telepon}</td>
+                    <td class="py-4 px-6">
+                        <span class="bg-${admin.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${admin.status}</span>
+                    </td>
+                    <td class="py-4 px-6 flex space-x-4">
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         function attachRowEventListeners() {
