@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.4",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.477.0",
     "regenerator-runtime": "^0.14.0",
     "sweetalert2": "^11.17.2"

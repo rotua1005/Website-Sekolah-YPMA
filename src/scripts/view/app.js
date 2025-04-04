@@ -40,8 +40,8 @@ class App {
       '/dashboard', '/dashboard_berita', '/dashboard_kurikuler',
       '/dashboard_prestasi', '/dashboard_profile', '/dashboard_kelas',
       '/dashboard_mapel', '/dashboard_settings', '/data_siswa', '/data_akun','/data_walikelas','/menu_dashboard','/data_guru',
-      '/data_admin','/data_kelas','/data_sekolah','/data_mapel','/tahun_akademik','/absensi1','/absensi2'
-
+      '/data_admin','/data_kelas','/data_sekolah','/data_mapel','/tahun_akademik','/absensi1','/kelola_absensi','/input_nilai','/kelola_nilai','/input_absensi','/kehadiran',
+      '/rekap_absensi',
     ];
 
     // Tampilkan App Bar & Footer hanya di halaman umum

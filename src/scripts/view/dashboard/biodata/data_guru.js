@@ -141,8 +141,11 @@ const DataGuru = {
 
                 const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
                 if (data.index !== undefined) {
-                    updateDataMapelEdit(guruData[data.index].nama, guruData[data.index].mapel, guruData[data.index].kelas, nama, mapel, kelas);
+                    const oldNama = guruData[data.index].nama;
+                    const oldMapel = guruData[data.index].mapel;
+                    const oldKelas = guruData[data.index].kelas;
                     guruData[data.index] = { nama, mapel, nip, telepon, kelas, status };
+                    updateDataMapelEdit(oldNama, oldMapel, oldKelas, nama, mapel, kelas);
                 } else {
                     guruData.push({ nama, mapel, nip, telepon, kelas, status });
                     updateDataMapelAdd(nama, mapel, kelas);
@@ -157,8 +160,8 @@ const DataGuru = {
         function updateDataMapelAdd(nama, mapel, kelas) {
             const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
             const newMapel = {
-                nama: mapel,
                 guru: nama,
+                mapel: mapel,
                 kelas: kelas
             };
 
@@ -169,11 +172,11 @@ const DataGuru = {
         function updateDataMapelEdit(oldNama, oldMapel, oldKelas, newNama, newMapel, newKelas) {
             const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
 
-            mapelData.forEach(mapel => {
-                if (mapel.guru === oldNama && mapel.nama === oldMapel && mapel.kelas === oldKelas) {
-                    mapel.guru = newNama;
-                    mapel.nama = newMapel;
-                    mapel.kelas = newKelas;
+            mapelData.forEach(item => {
+                if (item.guru === oldNama && item.mapel === oldMapel && item.kelas === oldKelas) {
+                    item.guru = newNama;
+                    item.mapel = newMapel;
+                    item.kelas = newKelas;
                 }
             });
 
@@ -231,19 +234,20 @@ const DataGuru = {
                         const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
                         const deleteNama = guruData[index].nama;
                         const deleteMapel = guruData[index].mapel;
+                        const deleteKelas = guruData[index].kelas;
 
                         guruData.splice(index, 1);
                         localStorage.setItem('dataGuru', JSON.stringify(guruData));
-                        updateDataMapelDelete(deleteNama, deleteMapel);
+                        updateDataMapelDelete(deleteNama, deleteMapel, deleteKelas);
                         renderTable();
                     }
                 });
             });
         }
 
-        function updateDataMapelDelete(deleteNama, deleteMapel) {
+        function updateDataMapelDelete(deleteNama, deleteMapel, deleteKelas) {
             const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-            const filteredMapel = mapelData.filter(mapel => !(mapel.guru === deleteNama && mapel.nama === deleteMapel));
+            const filteredMapel = mapelData.filter(mapel => !(mapel.guru === deleteNama && mapel.mapel === deleteMapel && mapel.kelas === deleteKelas));
             localStorage.setItem('dataMapel', JSON.stringify(filteredMapel));
         }
 

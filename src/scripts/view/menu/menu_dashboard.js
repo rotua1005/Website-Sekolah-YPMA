@@ -49,7 +49,19 @@ const MenuDashboard = {
                     </button>
                     <div id="dataAbsensiMenu" class="dashboard-submenu hidden">
                         <a href="#/absensi1" class="dashboard-submenu-link">Absensi</a>
-                        <a href="#/absensi" class="dashboard-submenu-link">Rekap Absensi</a>
+                        <a href="#/rekap_absensi" class="dashboard-submenu-link">Rekap Absensi</a>
+                    </div>
+                </div>
+
+                <div class="dashboard-menu">
+                    <button class="dashboard-menu-btn" data-menu="dataNilaiMenu">
+                        Data Nilai <span class="arrow">▼</span>
+                    </button>
+                    <div id="dataNilaiMenu" class="dashboard-submenu hidden">
+                        <a href="#/input_nilai" class="dashboard-submenu-link">Input Nilai</a>
+                        <a href="#/nilai_akhir" class="dashboard-submenu-link">Nilai Akhir</a>
+                        <a href="#/rekap_nilai" class="dashboard-submenu-link">Rekap Nilai</a>
+                        <a href="#/perbaikan_nilai" class="dashboard-submenu-link">Perbaikan Nilai</a>
                     </div>
                 </div>
 

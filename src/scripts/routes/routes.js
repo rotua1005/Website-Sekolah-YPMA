@@ -22,7 +22,13 @@ import DataMataPelajaran from '../view/dashboard/akademik/data_mapel';
 import TahunAkademik from '../view/dashboard/akademik/tahun_akademik';
 import DataSekolah from '../view/dashboard/akademik/data_sekolah';
 import Absensi1 from '../view/dashboard/absensi/absensi1';
-import Absensi2 from '../view/dashboard/absensi/absensi2';
+import InputNilai from '../view/dashboard/nilai/input_nilai';
+import KelolaNilai from '../view/dashboard/nilai/kelola_nilai';
+import KelolaAbsensi from '../view/dashboard/absensi/kelola_absensi';
+import InputAbsensi from '../view/dashboard/absensi/input_absensi';
+import Kehadiran from '../view/dashboard/absensi/kehadiran';
+import RekapAbsensi from '../view/dashboard/absensi/rekap_absensi';
+
 
 const routes = {
   '/': Beranda, // Halaman default
@@ -49,7 +55,13 @@ const routes = {
   '/data_sekolah':DataSekolah,
   '/tahun_akademik':TahunAkademik,
   '/absensi1':Absensi1,
-  '/absensi2':Absensi2
+  '/input_nilai': InputNilai,
+  '/kelola_nilai': KelolaNilai,
+  '/kelola_absensi': KelolaAbsensi,
+  '/input_absensi': InputAbsensi,
+  '/kehadiran': Kehadiran,
+  '/rekap_absensi': RekapAbsensi,
+
 };
 
 
