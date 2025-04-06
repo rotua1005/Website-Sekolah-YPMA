@@ -28,6 +28,7 @@ import KelolaAbsensi from '../view/dashboard/absensi/kelola_absensi';
 import InputAbsensi from '../view/dashboard/absensi/input_absensi';
 import Kehadiran from '../view/dashboard/absensi/kehadiran';
 import RekapAbsensi from '../view/dashboard/absensi/rekap_absensi';
+import Dashboard_Akun from '../view/dashboard/profile/akun';
 
 
 const routes = {
@@ -61,6 +62,7 @@ const routes = {
   '/input_absensi': InputAbsensi,
   '/kehadiran': Kehadiran,
   '/rekap_absensi': RekapAbsensi,
+  '/dashboard_akun': Dashboard_Akun,
 
 };
 

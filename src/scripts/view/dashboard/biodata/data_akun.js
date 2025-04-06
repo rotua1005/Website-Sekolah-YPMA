@@ -31,19 +31,7 @@ const DataAkun = {
                                 </tr>
                             </thead>
                             <tbody id="dataTable" class="text-gray-700">
-                                <tr class="border-t">
-                                    <td class="py-4 px-6">1</td>
-                                    <td class="py-4 px-6">John Doe</td>
-                                    <td class="py-4 px-6">johndoe</td>
-                                    <td class="py-4 px-6">johndoe@example.com</td>
-                                    <td class="py-4 px-6">
-                                        <span class="bg-green-500 text-white px-3 py-1 rounded">Kepala Sekolah</span>
-                                    </td>
-                                    <td class="py-4 px-6 flex space-x-4">
-                                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn">Edit</button>
-                                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn">Hapus</button>
-                                    </td>
-                                </tr>
+                                ${this.loadData()}
                             </tbody>
                         </table>
                     </div>
@@ -56,33 +44,37 @@ const DataAkun = {
         MenuDashboard.afterRender();
 
         document.getElementById('tambahAkunBtn').addEventListener('click', function () {
+            showModal('Tambah Akun Baru');
+        });
+
+        function showModal(title, data = {}) {
             const modalHtml = `
                 <div id="modalAkun" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
                     <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
-                        <h2 class="text-3xl font-bold mb-6 text-center">Tambah Akun Baru</h2>
+                        <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
                         
                         <div class="grid grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Nama Lengkap</label>
-                                <input type="text" id="namaAkun" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Nama Lengkap">
+                                <input type="text" id="namaAkun" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Nama Lengkap" value="${data.nama || ''}">
                             </div>
 
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Username</label>
-                                <input type="text" id="usernameAkun" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Username">
+                                <input type="text" id="usernameAkun" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Username" value="${data.username || ''}">
                             </div>
 
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Email</label>
-                                <input type="email" id="emailAkun" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Email">
+                                <input type="email" id="emailAkun" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Email" value="${data.email || ''}">
                             </div>
 
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Role</label>
                                 <select id="roleAkun" class="w-full border p-3 rounded-lg text-lg">
-                                    <option value="Kepala Sekolah">Kepala Sekolah</option>
-                                    <option value="User">User</option>
-                                    <option value="Admin">Admin</option>
+                                    <option value="Kepala Sekolah" ${data.role === 'Kepala Sekolah' ? 'selected' : ''}>Kepala Sekolah</option>
+                                    <option value="User" ${data.role === 'User' ? 'selected' : ''}>User</option>
+                                    <option value="Admin" ${data.role === 'Admin' ? 'selected' : ''}>Admin</option>
                                 </select>
                             </div>
                         </div>
@@ -107,123 +99,89 @@ const DataAkun = {
                 const email = document.getElementById('emailAkun').value;
                 const role = document.getElementById('roleAkun').value;
 
-                if (nama === '' || username === '' || email === '') {
+                if (!nama || !username || !email) {
                     alert('Harap isi semua data!');
                     return;
                 }
 
-                const table = document.getElementById('dataTable');
-                const rowCount = table.rows.length + 1;
+                const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
+                if (data.index !== undefined) {
+                    akunData[data.index] = { nama, username, email, role };
+                } else {
+                    akunData.push({ nama, username, email, role });
+                }
+                localStorage.setItem('dataAkun', JSON.stringify(akunData));
 
-                const newRow = `
-                    <tr class="border-t">
-                        <td class="py-4 px-6">${rowCount}</td>
-                        <td class="py-4 px-6">${nama}</td>
-                        <td class="py-4 px-6">${username}</td>
-                        <td class="py-4 px-6">${email}</td>
-                        <td class="py-4 px-6">
-                            <span class="bg-${role === 'Kepala Sekolah' ? 'green' : role === 'Admin' ? 'red' : 'blue'}-500 text-white px-3 py-1 rounded">${role}</span>
-                        </td>
-                        <td class="py-4 px-6 flex space-x-4">
-                            <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn">Edit</button>
-                            <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn">Hapus</button>
-                        </td>
-                    </tr>
-                `;
-
-                table.insertAdjacentHTML('beforeend', newRow);
                 document.getElementById('modalAkun').remove();
-                attachRowEventListeners();
+                renderTable();
             });
-        });
+        }
+
+        function renderTable() {
+            const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
+            const tableBody = document.getElementById('dataTable');
+            tableBody.innerHTML = akunData.map((akun, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${akun.nama}</td>
+                    <td class="py-4 px-6">${akun.username}</td>
+                    <td class="py-4 px-6">${akun.email}</td>
+                    <td class="py-4 px-6">
+                        <span class="bg-${akun.role === 'Kepala Sekolah' ? 'green' : akun.role === 'Admin' ? 'red' : 'blue'}-500 text-white px-3 py-1 rounded">${akun.role}</span>
+                    </td>
+                    <td class="py-4 px-6 flex space-x-4">
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            attachRowEventListeners();
+        }
 
         function attachRowEventListeners() {
             document.querySelectorAll('.edit-btn').forEach((btn) => {
                 btn.addEventListener('click', function () {
-                    const row = btn.closest('tr');
-                    const nama = row.children[1].textContent;
-                    const username = row.children[2].textContent;
-                    const email = row.children[3].textContent;
-                    const role = row.children[4].textContent.trim();
-
-                    const modalHtml = `
-                        <div id="modalEditAkun" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                            <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
-                                <h2 class="text-3xl font-bold mb-6 text-center">Edit Akun</h2>
-                                
-                                <div class="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-lg font-semibold mb-2">Nama Lengkap</label>
-                                        <input type="text" id="editNamaAkun" class="w-full border p-3 rounded-lg text-lg" value="${nama}">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-lg font-semibold mb-2">Username</label>
-                                        <input type="text" id="editUsernameAkun" class="w-full border p-3 rounded-lg text-lg" value="${username}">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-lg font-semibold mb-2">Email</label>
-                                        <input type="email" id="editEmailAkun" class="w-full border p-3 rounded-lg text-lg" value="${email}">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-lg font-semibold mb-2">Role</label>
-                                        <select id="editRoleAkun" class="w-full border p-3 rounded-lg text-lg">
-                                            <option value="Kepala Sekolah" ${role === 'Kepala Sekolah' ? 'selected' : ''}>Kepala Sekolah</option>
-                                            <option value="User" ${role === 'User' ? 'selected' : ''}>User</option>
-                                            <option value="Admin" ${role === 'Admin' ? 'selected' : ''}>Admin</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end space-x-4 mt-6">
-                                    <button id="batalEditAkun" class="bg-gray-500 text-white px-6 py-3 rounded-lg text-lg">Batal</button>
-                                    <button id="simpanEditAkun" class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">Simpan</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-                    document.getElementById('batalEditAkun').addEventListener('click', function () {
-                        document.getElementById('modalEditAkun').remove();
-                    });
-
-                    document.getElementById('simpanEditAkun').addEventListener('click', function () {
-                        const newNama = document.getElementById('editNamaAkun').value;
-                        const newUsername = document.getElementById('editUsernameAkun').value;
-                        const newEmail = document.getElementById('editEmailAkun').value;
-                        const newRole = document.getElementById('editRoleAkun').value;
-
-                        if (newNama === '' || newUsername === '' || newEmail === '') {
-                            alert('Harap isi semua data!');
-                            return;
-                        }
-
-                        row.children[1].textContent = newNama;
-                        row.children[2].textContent = newUsername;
-                        row.children[3].textContent = newEmail;
-                        row.children[4].innerHTML = `
-                            <span class="bg-${newRole === 'Kepala Sekolah' ? 'green' : newRole === 'Admin' ? 'red' : 'blue'}-500 text-white px-3 py-1 rounded">${newRole}</span>
-                        `;
-
-                        document.getElementById('modalEditAkun').remove();
-                    });
+                    const index = btn.getAttribute('data-index');
+                    const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
+                    const data = { ...akunData[index], index };
+                    showModal('Edit Akun', data);
                 });
             });
 
             document.querySelectorAll('.delete-btn').forEach((btn) => {
                 btn.addEventListener('click', function () {
                     if (confirm('Apakah Anda yakin ingin menghapus akun ini?')) {
-                        btn.closest('tr').remove();
+                        const index = btn.getAttribute('data-index');
+                        const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
+                        akunData.splice(index, 1);
+                        localStorage.setItem('dataAkun', JSON.stringify(akunData));
+                        renderTable();
                     }
                 });
             });
         }
 
-        attachRowEventListeners();
+        renderTable();
+    },
+
+    loadData() {
+        const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
+        return akunData.map((akun, index) => `
+            <tr class="border-t">
+                <td class="py-4 px-6">${index + 1}</td>
+                <td class="py-4 px-6">${akun.nama}</td>
+                <td class="py-4 px-6">${akun.username}</td>
+                <td class="py-4 px-6">${akun.email}</td>
+                <td class="py-4 px-6">
+                    <span class="bg-${akun.role === 'Kepala Sekolah' ? 'green' : akun.role === 'Admin' ? 'red' : 'blue'}-500 text-white px-3 py-1 rounded">${akun.role}</span>
+                </td>
+                <td class="py-4 px-6 flex space-x-4">
+                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                </td>
+            </tr>
+        `).join('');
     }
 };
 
