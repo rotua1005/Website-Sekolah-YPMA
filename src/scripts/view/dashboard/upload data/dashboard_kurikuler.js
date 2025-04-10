@@ -122,18 +122,18 @@ const Dashboard_EkstraKurikuler = {
             ekstrakurikulerListContainer.innerHTML = filteredEkstrakurikuler.map((ekstrakurikuler, index) => {
                 const deskripsi = ekstrakurikuler.deskripsi.length > 100 ? ekstrakurikuler.deskripsi.substring(0, 100) + '... <a href="#" class="selengkapnya" data-index="' + index + '">Selengkapnya</a>' : ekstrakurikuler.deskripsi;
                 return `
-                <div class="ekstrakurikuler-item p-4 border rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold">${ekstrakurikuler.nama}</h3>
-                    <p class="text-gray-700 whitespace-pre-line">${deskripsi}</p>
-                    <p class="text-gray-500">${ekstrakurikuler.tanggal}</p>
-                    <img src="${ekstrakurikuler.gambar}" alt="${ekstrakurikuler.nama}" class="w-full h-32 object-cover rounded-lg mt-2">
-                    <div class="mt-4 flex justify-between space-x-1">
-                        <button class="detail-btn bg-blue-500 text-white p-2 rounded" data-index="${index}">Detail</button>
-                        <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
-                        <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                    <div class="ekstrakurikuler-item p-4 border rounded-lg shadow-lg">
+                        <h3 class="text-xl font-bold">${ekstrakurikuler.nama}</h3>
+                        <p class="text-gray-700 whitespace-pre-line">${deskripsi}</p>
+                        <p class="text-gray-500">${ekstrakurikuler.tanggal}</p>
+                        <img src="${ekstrakurikuler.gambar}" alt="${ekstrakurikuler.nama}" class="w-full h-32 object-cover rounded-lg mt-2">
+                        <div class="mt-4 flex justify-between space-x-1">
+                            <button class="detail-btn bg-blue-500 text-white p-2 rounded" data-index="${index}">Detail</button>
+                            <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
+                            <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                        </div>
                     </div>
-                </div>
-                `;
+                    `;
             }).join("");
 
             if (filteredEkstrakurikuler.length === 0) {
@@ -156,7 +156,7 @@ const Dashboard_EkstraKurikuler = {
                     const index = this.getAttribute("data-index");
                     const ekstrakurikuler = ekstrakurikulerList[index];
                     if (ekstrakurikuler) {
-                        // Show detail ekstrakurikuler in a modal or another way
+                        // Tambahkan logika untuk menampilkan detail ekstrakurikuler (bisa berupa modal atau cara lain)
                     }
                 });
             });

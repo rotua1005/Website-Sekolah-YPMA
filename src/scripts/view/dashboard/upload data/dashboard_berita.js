@@ -62,9 +62,12 @@ const Dashboard_Berita = {
                 const gambarSrc = e.target.result;
                 if (editIndex === null) {
                     if (!beritaList.some(berita => berita.judul === judul && berita.tanggal === tanggal)) {
-                        beritaList.push({ judul, deskripsi, tanggal, gambar: gambarSrc });
+                        const newBerita = { judul, deskripsi, tanggal, gambar: gambarSrc };
+                        beritaList.push(newBerita);
                         try {
                             localStorage.setItem("berita", JSON.stringify(beritaList));
+                            // Update data berita di localStorage untuk halaman depan
+                            localStorage.setItem("beritaDepan", JSON.stringify(beritaList.slice(0, 3))); // Ambil 3 berita terbaru untuk halaman depan (bisa disesuaikan)
                         } catch (e) {
                             if (e.name === 'QuotaExceededError') {
                                 showAlert('Storage limit exceeded. Please delete some items.', 'danger');
@@ -80,6 +83,8 @@ const Dashboard_Berita = {
                 } else {
                     beritaList[editIndex] = { judul, deskripsi, tanggal, gambar: gambarSrc };
                     localStorage.setItem("berita", JSON.stringify(beritaList));
+                    // Update data berita di localStorage untuk halaman depan setelah edit
+                    localStorage.setItem("beritaDepan", JSON.stringify(beritaList.slice(0, 3))); // Ambil 3 berita terbaru
                     form.reset();
                     preview.classList.add("hidden");
                     tampilkanBerita();
@@ -122,17 +127,17 @@ const Dashboard_Berita = {
             beritaListContainer.innerHTML = filteredBerita.map((berita, index) => {
                 const deskripsi = berita.deskripsi.length > 100 ? berita.deskripsi.substring(0, 100) + '... <a href="#" class="selengkapnya" data-index="' + index + '">Selengkapnya</a>' : berita.deskripsi;
                 return `
-                <div class="berita-item p-4 border rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold">${berita.judul}</h3>
-                    <p class="text-gray-700 whitespace-pre-line">${deskripsi}</p>
-                    <p class="text-gray-500">${berita.tanggal}</p>
-                    <img src="${berita.gambar}" alt="${berita.judul}" class="w-full h-32 object-cover rounded-lg mt-2">
-                    <div class="mt-4 flex justify-between space-x-1">
-                        <button class="detail-btn bg-blue-500 text-white p-2 rounded" data-index="${index}">Detail</button>
-                        <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
-                        <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                    <div class="berita-item p-4 border rounded-lg shadow-lg">
+                        <h3 class="text-xl font-bold">${berita.judul}</h3>
+                        <p class="text-gray-700 whitespace-pre-line">${deskripsi}</p>
+                        <p class="text-gray-500">${berita.tanggal}</p>
+                        <img src="${berita.gambar}" alt="${berita.judul}" class="w-full h-32 object-cover rounded-lg mt-2">
+                        <div class="mt-4 flex justify-between space-x-1">
+                            <button class="detail-btn bg-blue-500 text-white p-2 rounded" data-index="${index}">Detail</button>
+                            <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
+                            <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                        </div>
                     </div>
-                </div>
                 `;
             }).join("");
 
@@ -183,6 +188,8 @@ const Dashboard_Berita = {
                     const index = this.getAttribute("data-index");
                     beritaList.splice(index, 1);
                     localStorage.setItem("berita", JSON.stringify(beritaList));
+                    // Update data berita di localStorage untuk halaman depan setelah hapus
+                    localStorage.setItem("beritaDepan", JSON.stringify(beritaList.slice(0, 3))); // Ambil 3 berita terbaru
                     tampilkanBerita();
                     showAlert('Berita berhasil dihapus.', 'danger');
                 });

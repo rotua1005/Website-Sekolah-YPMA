@@ -13,7 +13,7 @@ const DataSiswa = {
 
                 <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
                     <h1 class="text-center text-4xl font-bold mb-6">DATA SISWA</h1>
-                    
+
                     <div class="flex justify-between items-center mb-4">
                         <button id="tambahSiswaBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg">
                             Tambah Siswa
@@ -95,7 +95,7 @@ const DataSiswa = {
                 <div id="modalSiswa" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
                     <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
                         <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
-                        
+
                         <div class="grid grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Nama</label>

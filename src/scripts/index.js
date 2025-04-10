@@ -9,17 +9,18 @@ import '../styles/dashboard/dashboard.css';
 import App from './view/app';
 
 const app = new App({
-  button: document.querySelector('#menu-toggle'),
-  drawer: document.querySelector('.navbar'),
-  content: document.querySelector('#mainContent'),
-  appBar: document.querySelector('.header'),
-  footer: document.querySelector('footer'),
+    button: document.querySelector('#menu-toggle'),
+    drawer: document.querySelector('.navbar'),
+    content: document.querySelector('#mainContent'),
+    appBar: document.querySelector('.header'),
+    footer: document.querySelector('footer'),
+    topBar: document.querySelector('.top-bar') 
 });
 
 window.addEventListener('hashchange', () => {
-  app.renderPage();
+    app.renderPage();
 });
 
 window.addEventListener('load', () => {
-  app.renderPage();
+    app.renderPage();
 });

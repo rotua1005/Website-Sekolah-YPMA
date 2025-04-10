@@ -1,168 +1,259 @@
+/* main.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
 }
 
 body {
-  background-size: cover;
-  background-position: center;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Top Bar */
+.top-bar {
+    background-color: #f0fff0; /* Light green background */
+    width: 100%;
+    padding: 10px 5%; /* Adjust padding to be consistent with header */
+    display: flex;
+    justify-content: space-between; /* Distribute items horizontally */
+    align-items: center; /* Align items vertically in the center */
+    border-bottom: 1px solid #8fbc8f; /* Dark seagreen bottom border */
+    /* position: fixed; /* Removed fixed positioning */
+    top: 0; /* Stick it to the top */
+    left: 0;
+    z-index: 110; /* Ensure it's above the header */
+    padding-bottom: 15px; /* Added padding at the bottom */
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+}
+
+.top-bar-logo {
+    height: 50px; /* Adjust logo size as needed */
+    margin-right: 15px;
+}
+
+.top-bar-info {
+    text-align: left;
+}
+
+.top-bar-info h1 {
+    font-size: 1em; /* Increased font size */
+    color: #2e8b57;
+    margin-bottom: 2px;
+}
+
+.top-bar-info h2 {
+    font-size: 0.9em; /* Increased font size */
+    color: #3cb371;
+    margin-bottom: 1px;
+}
+
+.top-bar-info p {
+    font-size: 0.8em; /* Increased font size */
+    color: #6b8e23;
+    margin-bottom: 0;
+}
+
+.top-bar-right {
+    text-align: right;
+}
+
+.top-bar-right p {
+    font-size: 0.9em; /* Increased font size */
+    color: #2e8b57;
+    margin-bottom: 1px;
+}
+
+#mainContent{
+  margin-top: 0px;
 }
 
 /* Header */
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 0.5rem 5%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  z-index: 100;
+    /* position: fixed; /* Removed fixed positioning */
+    top: auto; /* Reset top */
+    left: 0;
+    width: 100%;
+    padding: 0.5rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0fff0;
+    backdrop-filter: blur(10px);
+    z-index: 100;
 }
 
 .logo {
-  font-size: 1.6rem;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 700;
+    font-size: 1.6rem;
+    color: #0bb02f;
+    text-decoration: none;
+    font-weight: 700;
 }
 
 /* Navbar */
 .navbar {
-  display: flex;
-  gap: 2rem;
+    display: flex;
+    gap: 2rem;
 }
 
 .navbar a {
-  font-size: 1rem;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 10px 15px;
-  transition: 0.3s ease;
+    font-size: 1rem;
+    color: #0a0a0a;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 15px;
+    transition: 0.3s ease;
 }
 
 .navbar a:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
+    background: rgba(1, 65, 5, 0.3);
+    border-radius: 8px;
 }
 
 /* Tombol Login */
 .login-btn {
-  display: inline-block;
-  padding: 8px 20px;
-  background-color: #088d18;
-  color: white;
-  border-radius: 10px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  transition: background 0.3s;
+    display: inline-block;
+    padding: 8px 20px;
+    background-color: #088d18;
+    color: white;
+    border-radius: 10px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.3s;
 }
 
 .login-btn:hover {
-  background-color: #1a3e7b;
+    background-color: #1a3e7b;
 }
 
 /* Hamburger Menu */
 #menu-toggle {
-  display: none;
+    display: none;
 }
 
 .icons {
-  font-size: 1.8rem;
-  color: #fff;
-  cursor: pointer;
-  display: none;
+    font-size: 1.8rem;
+    color: #fff;
+    cursor: pointer;
+    display: none;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .icons {
-    display: block;
-  }
+    .icons {
+        display: block;
+    }
 
-  .navbar {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: rgba(59, 59, 59, 0.9);
-    backdrop-filter: blur(10px);
-    flex-direction: column;
-    align-items: center;
-    height: 0;
-    overflow: hidden;
-    transition: 0.3s ease;
-  }
+    .navbar {
+        position: absolute;
+        top: 100%; /* Adjust based on header height */
+        left: 0;
+        width: 100%;
+        background: rgba(59, 59, 59, 0.9);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the left in mobile */
+        height: 0;
+        overflow: hidden;
+        transition: 0.3s ease;
+        z-index: 90; /* Ensure it's below the top bar but above other content */
+        padding: 0 5%; /* Maintain horizontal padding in mobile */
+    }
 
-  #menu-toggle:checked ~ .navbar {
-    height: 250px;
-    padding: 20px 0;
-  }
+    #menu-toggle:checked ~ .navbar {
+        height: auto; /* Adjust height automatically */
+        padding: 20px 5%;
+    }
 
-  .navbar a {
-    padding: 10px;
-    font-size: 1.2rem;
-    width: 100%;
-    text-align: center;
-  }
+    .navbar a {
+        padding: 10px 0; /* Adjust vertical padding */
+        font-size: 1.2rem;
+        width: 100%;
+        text-align: left; /* Left align links in mobile */
+    }
 
-  .icons #close-icon {
-    display: none;
-  }
+    .icons #close-icon {
+        display: none;
+    }
 
-  #menu-toggle:checked ~ .icons #menu-icon {
-    display: none;
-  }
+    #menu-toggle:checked ~ .icons #menu-icon {
+        display: none;
+    }
 
-  #menu-toggle:checked ~ .icons #close-icon {
-    display: block;
-  }
+    #menu-toggle:checked ~ .icons #close-icon {
+        display: block;
+    }
+
+    .header {
+        top: auto; /* Reset top in mobile */
+        position: static; /* Make header static in mobile */
+        flex-direction: column; /* Stack logo and icons */
+        align-items: flex-start; /* Left align items in header */
+    }
+
+    .logo {
+        margin-bottom: 10px; /* Add some space below the logo */
+    }
+
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        padding-bottom: 10px; /* Adjust bottom padding in mobile */
+    }
+
+    .top-bar-right {
+        text-align: left;
+        margin-top: 5px;
+    }
 }
 
 /* Hero Section */
 .hero {
-  background-image: url('../public/images/walpaper.png');
-  background-size: cover;
-  background-position: center;
-  height: 100vh;
-  display: flex;
-  align-items: center; 
-  justify-content: center;
-  text-align: center;
-  color: white;
-  position: relative;
+    /* Your existing hero styles */
+    background-image: url('../public/images/walpaper.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    position: relative;
+    /* margin-top: -[previous margin]; /* Remove any negative top margin */
+    padding-top: 10px; /* Add padding to push content down */
 }
 
 .hero::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3); /* Lapisan gelap transparan */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3); /* Lapisan gelap transparan */
 }
 
 .hero h1, .hero p {
-  position: relative;
-  z-index: 1; /* Supaya teks tetap di atas overlay */
+    position: relative;
+    z-index: 1; /* Supaya teks tetap di atas overlay */
 }
 
 .hero-content {
-  width: 80%;
+    width: 80%;
 }
 
 @media (min-width: 1200px) {
-  .hero {
-    min-width: 1000px;
-  }
+    .hero {
+        min-width: 1000px;
+    }
 }

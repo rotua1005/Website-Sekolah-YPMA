@@ -12,8 +12,12 @@ const Dashboard_Prestasi = {
                 </header>
 
                 <main class="bg-white shadow-lg rounded-lg p-6">
-                    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Upload Prestasi</h1>
+                    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Upload Prestasi Ekstrakurikuler</h1>
                     <form id="upload-form" class="space-y-6 bg-gray-50 p-6 rounded-lg shadow">
+                        <div>
+                            <label class="block font-semibold text-lg text-gray-700">Nama Ekstrakurikuler</label>
+                            <input type="text" id="nama_ekstra" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
+                        </div>
                         <div>
                             <label class="block font-semibold text-lg text-gray-700">Judul Prestasi</label>
                             <input type="text" id="judul" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
@@ -47,11 +51,12 @@ const Dashboard_Prestasi = {
         const submitButton = document.getElementById("submit-button");
         const cancelEditButton = document.getElementById("cancel-edit");
         const searchInput = document.getElementById("search");
-        let prestasiList = JSON.parse(localStorage.getItem("prestasi")) || [];
+        let prestasiList = JSON.parse(localStorage.getItem("prestasi_ekstra")) || []; // Gunakan key baru untuk prestasi ekstrakurikuler
         let editIndex = null;
 
         form.addEventListener("submit", function (event) {
             event.preventDefault();
+            const nama_ekstra = document.getElementById("nama_ekstra").value;
             const judul = document.getElementById("judul").value;
             const deskripsi = document.getElementById("deskripsi").value;
             const tanggal = new Date().toLocaleDateString();
@@ -60,26 +65,23 @@ const Dashboard_Prestasi = {
 
             reader.onload = function(e) {
                 const gambarSrc = e.target.result;
+                const prestasiData = { nama_ekstra, judul, deskripsi, tanggal, gambar: gambarSrc };
                 if (editIndex === null) {
-                    if (!prestasiList.some(prestasi => prestasi.judul === judul && prestasi.tanggal === tanggal)) {
-                        prestasiList.push({ judul, deskripsi, tanggal, gambar: gambarSrc });
-                        try {
-                            localStorage.setItem("prestasi", JSON.stringify(prestasiList));
-                        } catch (e) {
-                            if (e.name === 'QuotaExceededError') {
-                                showAlert('Storage limit exceeded. Please delete some items.', 'danger');
-                            }
+                    prestasiList.push(prestasiData);
+                    try {
+                        localStorage.setItem("prestasi_ekstra", JSON.stringify(prestasiList)); // Simpan ke key baru
+                    } catch (e) {
+                        if (e.name === 'QuotaExceededError') {
+                            showAlert('Storage limit exceeded. Please delete some items.', 'danger');
                         }
-                        form.reset();
-                        preview.classList.add("hidden");
-                        tampilkanPrestasi();
-                        showAlert('Prestasi berhasil diupload.', 'success');
-                    } else {
-                        showAlert('Prestasi sudah ada.', 'warning');
                     }
+                    form.reset();
+                    preview.classList.add("hidden");
+                    tampilkanPrestasi();
+                    showAlert('Prestasi berhasil diupload dan ditambahkan ke daftar prestasi ekstrakurikuler.', 'success');
                 } else {
-                    prestasiList[editIndex] = { judul, deskripsi, tanggal, gambar: gambarSrc };
-                    localStorage.setItem("prestasi", JSON.stringify(prestasiList));
+                    prestasiList[editIndex] = prestasiData;
+                    localStorage.setItem("prestasi_ekstra", JSON.stringify(prestasiList)); // Simpan perubahan ke key baru
                     form.reset();
                     preview.classList.add("hidden");
                     tampilkanPrestasi();
@@ -117,23 +119,24 @@ const Dashboard_Prestasi = {
         });
 
         function tampilkanPrestasi(searchTerm = "") {
-            const filteredPrestasi = prestasiList.filter(prestasi => prestasi.judul.toLowerCase().includes(searchTerm.toLowerCase()));
+            const filteredPrestasi = prestasiList.filter(prestasi => prestasi.judul.toLowerCase().includes(searchTerm.toLowerCase()) || prestasi.nama_ekstra.toLowerCase().includes(searchTerm.toLowerCase()));
             const prestasiListContainer = document.getElementById("prestasi-list");
             prestasiListContainer.innerHTML = filteredPrestasi.map((prestasi, index) => {
                 const deskripsi = prestasi.deskripsi.length > 100 ? prestasi.deskripsi.substring(0, 100) + '... <a href="#" class="selengkapnya" data-index="' + index + '">Selengkapnya</a>' : prestasi.deskripsi;
                 return `
-                <div class="prestasi-item p-4 border rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold">${prestasi.judul}</h3>
-                    <p class="text-gray-700 whitespace-pre-line">${deskripsi}</p>
-                    <p class="text-gray-500">${prestasi.tanggal}</p>
-                    <img src="${prestasi.gambar}" alt="${prestasi.judul}" class="w-full h-32 object-cover rounded-lg mt-2">
-                    <div class="mt-4 flex justify-between space-x-1">
-                        <button class="detail-btn bg-blue-500 text-white p-2 rounded" data-index="${index}">Detail</button>
-                        <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
-                        <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                    <div class="prestasi-item p-4 border rounded-lg shadow-lg">
+                        <h4 class="text-lg font-semibold text-indigo-700">${prestasi.nama_ekstra}</h4>
+                        <h3 class="text-xl font-bold">${prestasi.judul}</h3>
+                        <p class="text-gray-700 whitespace-pre-line">${deskripsi}</p>
+                        <p class="text-gray-500">${prestasi.tanggal}</p>
+                        <img src="${prestasi.gambar}" alt="${prestasi.judul}" class="w-full h-32 object-cover rounded-lg mt-2">
+                        <div class="mt-4 flex justify-between space-x-1">
+                            <button class="detail-btn bg-blue-500 text-white p-2 rounded" data-index="${index}">Detail</button>
+                            <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
+                            <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                        </div>
                     </div>
-                </div>
-                `;
+                    `;
             }).join("");
 
             if (filteredPrestasi.length === 0) {
@@ -146,7 +149,7 @@ const Dashboard_Prestasi = {
                     const index = this.getAttribute("data-index");
                     const prestasi = prestasiList[index];
                     if (prestasi) {
-                        showAlert(`Detail Prestasi:<br>Judul: ${prestasi.judul}<br>Deskripsi: ${prestasi.deskripsi.replace(/\n/g, '<br>')}<br>Tanggal: ${prestasi.tanggal}`, 'info');
+                        showAlert(`Detail Prestasi:<br>Ekstrakurikuler: ${prestasi.nama_ekstra}<br>Judul: ${prestasi.judul}<br>Deskripsi: ${prestasi.deskripsi.replace(/\n/g, '<br>')}<br>Tanggal: ${prestasi.tanggal}`, 'info');
                     }
                 });
             });
@@ -166,6 +169,7 @@ const Dashboard_Prestasi = {
                     const index = this.getAttribute("data-index");
                     const prestasi = prestasiList[index];
                     if (prestasi) {
+                        document.getElementById("nama_ekstra").value = prestasi.nama_ekstra;
                         document.getElementById("judul").value = prestasi.judul;
                         document.getElementById("deskripsi").value = prestasi.deskripsi;
                         preview.src = prestasi.gambar;
@@ -182,7 +186,7 @@ const Dashboard_Prestasi = {
                 button.addEventListener("click", function() {
                     const index = this.getAttribute("data-index");
                     prestasiList.splice(index, 1);
-                    localStorage.setItem("prestasi", JSON.stringify(prestasiList));
+                    localStorage.setItem("prestasi_ekstra", JSON.stringify(prestasiList)); // Update penyimpanan
                     tampilkanPrestasi();
                     showAlert('Prestasi berhasil dihapus.', 'danger');
                 });

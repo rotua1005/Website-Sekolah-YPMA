@@ -1,9 +1,11 @@
+// menu/menu_dashboard.js
 const MenuDashboard = {
     render() {
         return `
         <div class="dashboard-sidebar bg-green-700 text-white p-6 shadow-lg w-72 min-h-screen flex flex-col">
+
             <div class="mb-8 flex items-center justify-center border-b border-green-600 pb-4">
-                <h1 class="text-2xl font-bold">Admin Sekolah</h1>
+                <h1 class="text-2xl font-bold hidden md:block">Admin Sekolah</h1>
             </div>
             <nav class="flex-grow">
                 <a href="#/dashboard" class="dashboard-link block py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out">Dashboard</a>
@@ -89,6 +91,8 @@ const MenuDashboard = {
         const arrows = document.querySelectorAll(".dashboard-menu-btn .arrow");
         const submenuLinks = document.querySelectorAll(".dashboard-submenu-link");
         const dashboardLinks = document.querySelectorAll(".dashboard-link");
+        const sidebar = document.querySelector(".dashboard-sidebar");
+        const mainContent = document.querySelector(".dashboard-main");
 
         // Function to close all menus and reset arrows
         const closeAllMenus = () => {
@@ -195,22 +199,6 @@ const MenuDashboard = {
                 dashboardLink.classList.add("active");
             }
         }
-
-        // Close all menus when clicking outside the sidebar
-        document.addEventListener("click", (event) => {
-            if (!event.target.closest(".dashboard-sidebar")) {
-                closeAllMenus();
-                submenuLinks.forEach(el => el.classList.remove("active"));
-                dashboardLinks.forEach(el => {
-                    if (el.getAttribute('href') === window.location.hash) {
-                        el.classList.add('active');
-                    } else {
-                        el.classList.remove('active');
-                    }
-                });
-                localStorage.removeItem("activeSubmenu");
-            }
-        });
     }
 };
 

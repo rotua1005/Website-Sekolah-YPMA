@@ -1,96 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sedan+SC&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-  <title>Sekolah Yayasan Pesantren Modern Adnan</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sedan+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="main.css"> <title>Sekolah Yayasan Pesantren Modern Adnan</title>
 </head>
 <body>
 
-  <header class="header">
-    <a href="#" class="logo">Sekolah Yayasan Pesantren Modern Adnan</a>
-    <input type="checkbox" id="menu-toggle">
-    <label for="menu-toggle" class="icons">
-        <i class="fas fa-bars" id="menu-icon"></i>
-        <i class="fas fa-times" id="close-icon"></i>
-    </label>
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <img src="images/logo.png" alt="Logo YPMA" class="top-bar-logo">
+            <div class="top-bar-info">
+                <h1>YAYASAN PESANTREN MODERN ADNAN</h1>
+                <h2>Sekolah Yayasan Pesantren Modern Adnan</h2>
+                <p>KECAMATAN MEDAN SUNGGAL - KOTA MEDAN</p>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <p>JALAN PESANTREN NO. 15 KELURAHAN SEI SEKAMBING -B MEDAN 20122</p>
+            <p>TELEPON: (061) 8454883</p>
+        </div>
+    </div>
 
-    <nav class="navbar">
-        <a href="#/beranda">Beranda</a>
-        <a href="#/berita">Berita</a>
-        <a href="#/ekstrakurikuler">Ekstrakurikuler</a>
-        <a href="#/tentang">Tentang Kami</a>
-        <a href="#/login" class="login-btn">Login</a>
-    </nav>
-</header>
+    <header class="header">
+        <a href="#" class="logo">SD SWASTA PESANTREN YPMA</a>
+        <input type="checkbox" id="menu-toggle">
+        <label for="menu-toggle" class="icons">
+            <i class="fas fa-bars" id="menu-icon"></i>
+            <i class="fas fa-times" id="close-icon"></i>
+        </label>
 
-<main id="mainContent" class="mt-16"></main>
+        <nav class="navbar">
+            <a href="#/beranda">Beranda</a>
+            <a href="#/berita">Berita</a>
+            <a href="#/ekstrakurikuler">Ekstrakurikuler</a>
+            <a href="#/tentang">Tentang Kami</a>
+            <a href="#/login" class="login-btn">Login</a>
+        </nav>
+    </header>
 
+    <main id="mainContent" class="mt-16"></main>
 
+    <footer class="bg-gray-900 text-white mt-10 py-8">
+        <div class="container mx-auto px-6 md:px-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+                <div>
+                    <h3 class="text-lg font-bold text-green-400 uppercase">Alamat</h3>
+                    <p class="mt-3 text-gray-300 leading-relaxed">
+                        Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123
+                    </p>
+                </div>
 
-<!-- Footer -->
-<footer class="bg-gray-900 text-white mt-10 py-8">
-  <div class="container mx-auto px-6 md:px-12">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-          <!-- Alamat -->
-          <div>
-              <h3 class="text-lg font-bold text-green-400 uppercase">Alamat</h3>
-              <p class="mt-3 text-gray-300 leading-relaxed">
-                  Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123
-              </p>
-          </div>
+                <div>
+                    <h3 class="text-lg font-bold text-green-400 uppercase">Profil</h3>
+                    <ul class="mt-3 space-y-2">
+                        <li><a href="#" class="hover:text-green-400 transition-all">Home</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-all">Tentang Kami</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-all">Prestasi</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-all">Berita</a></li>
+                    </ul>
+                </div>
 
-          <!-- Profil -->
-          <div>
-              <h3 class="text-lg font-bold text-green-400 uppercase">Profil</h3>
-              <ul class="mt-3 space-y-2">
-                  <li><a href="#" class="hover:text-green-400 transition-all">Home</a></li>
-                  <li><a href="#" class="hover:text-green-400 transition-all">Tentang Kami</a></li>
-                  <li><a href="#" class="hover:text-green-400 transition-all">Prestasi</a></li>
-                  <li><a href="#" class="hover:text-green-400 transition-all">Berita</a></li>
-              </ul>
-          </div>
+                <div>
+                    <h3 class="text-lg font-bold text-green-400 uppercase">Ekstrakurikuler</h3>
+                    <ul class="mt-3 space-y-2">
+                        <li><a href="#" class="hover:text-green-400 transition-all">Prestasi</a></li>
+                        <li><a href="#" class="hover:text-green-400 transition-all">Berita</a></li>
+                    </ul>
+                </div>
+            </div>
 
-          <!-- Ekstrakurikuler -->
-          <div>
-              <h3 class="text-lg font-bold text-green-400 uppercase">Ekstrakurikuler</h3>
-              <ul class="mt-3 space-y-2">
-                  <li><a href="#" class="hover:text-green-400 transition-all">Prestasi</a></li>
-                  <li><a href="#" class="hover:text-green-400 transition-all">Berita</a></li>
-              </ul>
-          </div>
-      </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between text-gray-400 text-sm">
+                <p>© 2024 SD Pesantren YPMA. All Rights Reserved.</p>
 
-      <!-- Sosial Media & Copyright -->
-      <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row items-center justify-between text-gray-400 text-sm">
-          <p>© 2024 SD Pesantren YPMA. All Rights Reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-          <!-- Ikon Sosial Media -->
-          <div class="flex space-x-4 mt-4 md:mt-0">
-              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
-                  <i class="fab fa-facebook-f"></i>
-              </a>
-              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
-                  <i class="fab fa-twitter"></i>
-              </a>
-              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
-                  <i class="fab fa-instagram"></i>
-              </a>
-              <a href="#" class="text-gray-400 hover:text-green-400 transition-all text-lg">
-                  <i class="fab fa-youtube"></i>
-              </a>
-          </div>
-      </div>
-  </div>
-</footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const navbar = document.querySelector('.navbar');
+
+            menuToggle.addEventListener('change', function() {
+                navbar.classList.toggle('active');
+            });
+        });
+    </script>
 
 </body>
 </html>
