@@ -2,10 +2,9 @@ import MenuDashboard from '../../menu/menu_dashboard';
 
 const RekapAbsensi = {
     async render() {
-        const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
-        const namaKelas = kelasData.nama || '-';
-        const waliKelas = kelasData.wali || '-';
-        const tahunPelajaran = kelasData.tahunPelajaran || '-';
+        const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
+        const tahunData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+        const currentTahun = tahunData.length > 0 ? tahunData[tahunData.length - 1] : { tahun: 'N/A', semester: 'N/A' };
 
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
@@ -23,29 +22,41 @@ const RekapAbsensi = {
                             <table class="w-full table-auto shadow-md rounded-lg">
                                 <thead class="bg-gray-800 text-white">
                                     <tr>
-                                        <th class="py-3 px-4 text-left">#</th>
-                                        <th class="py-3 px-4 text-left">Kelas</th>
+                                        <th class="py-3 px-4 text-left">Nomor</th>
                                         <th class="py-3 px-4 text-left">Wali Kelas</th>
-                                        <th class="py-3 px-4 text-left">Tahun Pelajaran</th>
+                                        <th class="py-3 px-4 text-left">Kelas</th>
+                                        <th class="py-3 px-4 text-left">Jumlah Siswa</th>
+                                        <th class="py-3 px-4 text-left">Tahun Akademik | Semester</th>
                                         <th class="py-3 px-4 text-left">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-gray-50">
-                                    <tr>
-                                        <td class="py-3 px-4">1</td>
-                                        <td class="py-3 px-4">${namaKelas}</td>
-                                        <td class="py-3 px-4">${waliKelas}</td>
-                                        <td class="py-3 px-4">${tahunPelajaran}</td>
-                                        <td class="py-3 px-4">
-                                            <button
-                                                id="cetakRekapBtn"
-                                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue active:bg-blue-800"
-                                            >
-                                                <i class="fas fa-print mr-2"></i> Cetak Rekapitulasi
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    </tbody>
+                                    ${kelasData.map((kelas, index) => `
+                                        <tr>
+                                            <td class="py-3 px-4">${index + 1}</td>
+                                            <td class="py-3 px-4">${kelas.wali}</td>
+                                            <td class="py-3 px-4">${kelas.nama}</td>
+                                            <td class="py-3 px-4">${kelas.jumlah}</td>
+                                            <td class="py-3 px-4">${currentTahun.tahun} | Semester ${currentTahun.semester}</td>
+                                            <td class="py-3 px-4 flex space-x-2">
+                                                <button
+                                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                                    data-index="${index}"
+                                                    id="detailRekapBtn-${index}"
+                                                >
+                                                    Detail
+                                                </button>
+                                                <button
+                                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                                                    data-index="${index}"
+                                                    id="kelolaRekapBtn-${index}"
+                                                >
+                                                    Kelola
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -56,131 +67,27 @@ const RekapAbsensi = {
 
     async afterRender() {
         MenuDashboard.afterRender();
-        const cetakRekapBtn = document.getElementById('cetakRekapBtn');
-        if (cetakRekapBtn) {
-            cetakRekapBtn.addEventListener('click', () => {
-                // Implementasikan logika cetak rekapitulasi di sini
-                const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
-                const namaKelas = kelasData.nama || '-';
-                const bulanDipilih = JSON.parse(localStorage.getItem('bulanUntukKehadiran')) || {};
-                const selectedMonthName = bulanDipilih.nama || this.getMonthName(new Date().getMonth());
-                const selectedYear = bulanDipilih.tahun || new Date().getFullYear();
 
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(`
-                    <html>
-                    <head>
-                        <title>Rekapitulasi Absensi - ${namaKelas} - ${selectedMonthName} ${selectedYear}</title>
-                        <style>
-                            body { font-family: sans-serif; }
-                            table { width: 100%; border-collapse: collapse; }
-                            th, td { border: 1px solid black; padding: 8px; text-align: left; }
-                            th { background-color: #f2f2f2; }
-                            .text-center { text-align: center; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>Rekapitulasi Absensi</h1>
-                        <h2>Kelas: ${namaKelas}</h2>
-                        <h2>Bulan: ${selectedMonthName} ${selectedYear}</h2>
-                        <div id="rekap-content">Loading Data...</div>
-                    </body>
-                    </html>
-                `);
-                printWindow.document.close();
+        document.querySelectorAll('[id^="detailRekapBtn-"]').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                const index = btn.getAttribute('data-index');
+                const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
+                const data = kelasData[index];
 
-                this.generateRekapitulasiTable(namaKelas, selectedMonthName, selectedYear)
-                    .then(tableHTML => {
-                        printWindow.document.getElementById('rekap-content').innerHTML = tableHTML;
-                    });
+                alert(`Detail Kelas:\nWali Kelas: ${data.wali}\nKelas: ${data.nama}\nJumlah Siswa: ${data.jumlah}`);
             });
-        }
-    },
+        });
 
-    async generateRekapitulasiTable(namaKelas, selectedMonthName, selectedYear) {
-        const daysInMonth = new Date(selectedYear, this.getMonthIndex(selectedMonthName) + 1, 0).getDate();
-        const daysArray = Array.from({ length: daysInMonth }, (_, i) => String(i + 1).padStart(2, '0'));
-        const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        const siswaSesuaiKelas = dataSiswa.filter(siswa => siswa.kelas === namaKelas);
+        document.querySelectorAll('[id^="kelolaRekapBtn-"]').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                const index = btn.getAttribute('data-index');
+                const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
+                const selectedKelas = kelasData[index];
 
-        let tableHTML = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Siswa</th>
-                        <th>NIS</th>
-                        ${daysArray.map(day => `<th class="text-center">${day}</th>`).join('')}
-                        <th>Hadir</th>
-                        <th>Sakit</th>
-                        <th>Izin</th>
-                        <th>Alpa</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        for (let i = 0; i < siswaSesuaiKelas.length; i++) {
-            const siswa = siswaSesuaiKelas[i];
-            let hadir = 0;
-            let sakit = 0;
-            let izin = 0;
-            let alpa = 0;
-            let dailyStatuses = [];
-
-            for (const day of daysArray) {
-                const formattedDate = `${day}-${selectedMonthName}-${selectedYear}`;
-                const absensiHarian = JSON.parse(localStorage.getItem(`absensi_${namaKelas}_${formattedDate}`)) || [];
-                const siswaAbsensi = absensiHarian.find(a => a.nis === siswa.nis);
-                let status = '';
-                if (siswaAbsensi) {
-                    status = siswaAbsensi.keterangan.charAt(0).toUpperCase();
-                    switch (status) {
-                        case 'H': hadir++; break;
-                        case 'S': sakit++; break;
-                        case 'I': izin++; break;
-                        case 'A': alpa++; break;
-                    }
-                    dailyStatuses.push(`<td class="text-center">${status}</td>`);
-                } else {
-                    dailyStatuses.push(`<td class="text-center">-</td>`);
-                }
-            }
-
-            tableHTML += `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>${siswa.nama}</td>
-                    <td>${siswa.nis}</td>
-                    ${dailyStatuses.join('')}
-                    <td class="text-center">${hadir}</td>
-                    <td class="text-center">${sakit}</td>
-                    <td class="text-center">${izin}</td>
-                    <td class="text-center">${alpa}</td>
-                </tr>
-            `;
-        }
-
-        tableHTML += `
-                </tbody>
-            </table>
-        `;
-
-        return tableHTML;
-    },
-
-    getMonthIndex(monthName) {
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-        ];
-        return monthNames.indexOf(monthName);
-    },
-
-    getMonthName(month) {
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-        ];
-        return monthNames[month];
+                localStorage.setItem('kelasUntukAbsensi', JSON.stringify(selectedKelas));
+                window.location.hash = '#/rekap2_absensi';
+            });
+        });
     }
 };
 

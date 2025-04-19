@@ -33,6 +33,7 @@ import NilaiGuru from '../view/dashboard/nilai/nilai_guru';
 import NilaiAkhir from '../view/dashboard/nilai/nilai_akhir';
 import KelolaNilaiAkhir from '../view/dashboard/nilai/kelola_nilaiakhir';
 import HasilInputNilai from '../view/dashboard/nilai/hasil_inputnilai';
+import Rekap2Absensi from '../view/dashboard/absensi/rekap2_absensi';
 
 
 
@@ -71,6 +72,7 @@ const routes = {
   '/input_absensi': InputAbsensi,
   '/kehadiran': Kehadiran,
   '/rekap_absensi': RekapAbsensi,
+  '/rekap2_absensi': Rekap2Absensi,
   '/dashboard_akun': Dashboard_Akun,
 
 };
