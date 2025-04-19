@@ -37,46 +37,35 @@ const DataMataPelajaran = {
 
     async afterRender() {
         MenuDashboard.afterRender();
+        this.renderTable(); // Call renderTable here to initially populate the table
+        this.attachRowEventListeners();
+    },
 
-        function renderTable() {
-            const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-            const tableBody = document.getElementById('dataMapelTable');
-            tableBody.innerHTML = mapelData.map((mapel, index) => `
-                <tr class="border-t">
-                    <td class="py-4 px-6">${index + 1}</td>
-                    <td class="py-4 px-6">${mapel.nama}</td>
-                    <td class="py-4 px-6">${mapel.guru}</td>
-                    <td class="py-4 px-6">${mapel.kelas}</td>
-                    <td class="py-4 px-6">
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded detail-btn" data-index="${index}">Detail</button>
-                    </td>
-                </tr>
-            `).join('');
+    renderTable() {
+        const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
+        const tableBody = document.getElementById('dataMapelTable');
+        tableBody.innerHTML = mapelData.map((mapel, index) => `
+            <tr class="border-t">
+                <td class="py-4 px-6">${index + 1}</td>
+                <td class="py-4 px-6">${mapel.mapel}</td>
+                <td class="py-4 px-6">${mapel.guru}</td>
+                <td class="py-4 px-6">${mapel.kelas}</td>
+                <td class="py-4 px-6">
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded detail-btn" data-index="${index}">Detail</button>
+                </td>
+            </tr>
+        `).join('');
+    },
 
-            attachRowEventListeners();
-        }
-
-        function attachRowEventListeners() {
-            document.querySelectorAll('.detail-btn').forEach((btn) => {
-                btn.addEventListener('click', function () {
-                    const index = btn.getAttribute('data-index');
-                    const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-                    const data = mapelData[index];
-                    alert(`Detail Mata Pelajaran:\nNama: ${data.nama}\nGuru: ${data.guru}\nKelas: ${data.kelas}`);
-                });
+    attachRowEventListeners() {
+        document.querySelectorAll('.detail-btn').forEach((btn) => {
+            btn.addEventListener('click', function () {
+                const index = btn.getAttribute('data-index');
+                const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
+                const data = mapelData[index];
+                alert(`Detail Mata Pelajaran:\nNama: ${data.mapel}\nGuru: ${data.guru}\nKelas: ${data.kelas}`);
             });
-        }
-
-        function ensureGuruExists() {
-            const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
-            if (guruData.length === 0) {
-                alert('Harap tambahkan data guru pengajar terlebih dahulu.');
-                window.location.href = '#/dashboard/guru';
-            }
-        }
-
-        ensureGuruExists();
-        renderTable();
+        });
     },
 
     loadData() {
@@ -84,7 +73,7 @@ const DataMataPelajaran = {
         return mapelData.map((mapel, index) => `
             <tr class="border-t">
                 <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${mapel.nama}</td>
+                <td class="py-4 px-6">${mapel.mapel}</td>
                 <td class="py-4 px-6">${mapel.guru}</td>
                 <td class="py-4 px-6">${mapel.kelas}</td>
                 <td class="py-4 px-6">

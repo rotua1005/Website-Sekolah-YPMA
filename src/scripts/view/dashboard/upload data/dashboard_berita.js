@@ -39,7 +39,7 @@ const Dashboard_Berita = {
         </div>
         `;
     },
-
+ 
     async afterRender() {
         MenuDashboard.afterRender();
         const form = document.getElementById("upload-form");

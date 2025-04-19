@@ -1,14 +1,42 @@
 const Tentang = {
     async render() {
+        const profile = JSON.parse(localStorage.getItem("profile")) || [];
+        let profileCards = '';
+
+        console.log("Data profil dari localStorage:", profile); // Langkah debugging 1
+
+        if (profile.length > 0) {
+            profileCards = profile
+                .filter(p => ["Guru", "Tata Usaha", "Kepala Sekolah"].includes(p.jabatan))
+                .map(p => {
+                    let detailTambahan = '';
+                    if (p.mata_pelajaran && p.jabatan === "Guru") {
+                        detailTambahan = `<p class="text-gray-600 text-sm mt-1">Mata Pelajaran: ${p.mata_pelajaran}</p>`;
+                    }
+                    return `
+                        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all">
+                            <img src="${p.foto}" alt="${p.nama}" class="w-32 h-32 mx-auto rounded-full border-4 border-green-500 shadow-md object-cover">
+                            <h3 class="text-green-600 font-bold text-xl mt-4">${p.nama}</h3>
+                            <p class="text-gray-700 text-lg">${p.jabatan}</p>
+                            ${detailTambahan}
+                        </div>
+                    `;
+                }).join("");
+
+            console.log("HTML profileCards yang dihasilkan:", profileCards); // Langkah debugging 2
+        } else {
+            profileCards = `<p class="text-center text-gray-500">Belum ada profile guru atau staff yang diupload.</p>`;
+        }
+
         return `
 <main class="w-full mt-8">
     <section class="relative text-center w-full">
         <div class="relative w-full">
             <img alt="School Building" class="w-full h-[300px] md:h-[450px] lg:h-[550px] object-cover" src="./images/Lapangan.jpg"/>
             <img src="./images/logo.png" alt="School Logo" class="absolute top-4 left-4 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-lg transition-all hover:scale-110">
-<h1 class="absolute inset-0 flex items-center justify-center left-6 text-4xl md:text-5xl lg:text-6xl font-bold text-green-500">Tentang Kami</h1>
+            <h1 class="absolute inset-0 flex items-center justify-center left-6 text-4xl md:text-5xl lg:text-6xl font-bold text-green-500">Tentang Kami</h1>
         </div>
-</section>
+    </section>
 
     <section class="mt-8 md:mt-12 bg-white p-6 md:p-10 lg:p-12 shadow-md w-full">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
@@ -76,24 +104,11 @@ const Tentang = {
         </div>
     </section>
 
-        <section class="w-full py-14 md:py-16 bg-gray-100">
+    <section class="w-full py-14 md:py-16 bg-gray-100">
         <div class="max-w-screen-xl mx-auto px-4 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold mb-10 text-green-600">Profil Guru</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                ${[
-                    { name: "Ust. Ahmad Fadli", role: "Kepala Sekolah", image: "./images/guru1.jpg" },
-                    { name: "Ust. Siti Rahma", role: "Guru Al-Qur'an", image: "./images/guru2.jpg" },
-                    { name: "Ust. Budi Santoso", role: "Guru Matematika", image: "./images/guru3.jpg" },
-                    { name: "Ust. Dewi Anggraini", role: "Guru Bahasa Inggris", image: "./images/guru4.jpg" },
-                ].map(
-                    (guru) => `
-                        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all">
-                            <img src="${guru.image}" alt="${guru.name}" class="w-32 h-32 mx-auto rounded-full border-4 border-green-500 shadow-md object-cover">
-                            <h3 class="text-green-600 font-bold text-xl mt-4">${guru.name}</h3>
-                            <p class="text-gray-700 text-lg">${guru.role}</p>
-                        </div>
-                    `
-                ).join("")}
+            <h2 class="text-3xl md:text-4xl font-bold mb-10 text-green-600">Profil Guru & Staff</h2>
+            <div id="guru-staff-profiles" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                ${profileCards}
             </div>
         </div>
     </section>

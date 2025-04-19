@@ -29,6 +29,11 @@ import InputAbsensi from '../view/dashboard/absensi/input_absensi';
 import Kehadiran from '../view/dashboard/absensi/kehadiran';
 import RekapAbsensi from '../view/dashboard/absensi/rekap_absensi';
 import Dashboard_Akun from '../view/dashboard/profile/akun';
+import NilaiGuru from '../view/dashboard/nilai/nilai_guru';
+import NilaiAkhir from '../view/dashboard/nilai/nilai_akhir';
+import KelolaNilaiAkhir from '../view/dashboard/nilai/kelola_nilaiakhir';
+import HasilInputNilai from '../view/dashboard/nilai/hasil_inputnilai';
+
 
 
 const routes = {
@@ -57,7 +62,11 @@ const routes = {
   '/tahun_akademik':TahunAkademik,
   '/absensi1':Absensi1,
   '/input_nilai': InputNilai,
+  '/nilai_guru' :NilaiGuru,
   '/kelola_nilai': KelolaNilai,
+  '/nilai_akhir': NilaiAkhir,
+  '/kelola_nilaiakhir': KelolaNilaiAkhir,
+  '/hasil_inputnilai': HasilInputNilai,
   '/kelola_absensi': KelolaAbsensi,
   '/input_absensi': InputAbsensi,
   '/kehadiran': Kehadiran,

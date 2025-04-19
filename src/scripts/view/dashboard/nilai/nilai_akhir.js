@@ -1,6 +1,6 @@
 import MenuDashboard from '../../menu/menu_dashboard';
 
-const Absensi1 = {
+const NilaiAkhir = {
     async render() {
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
@@ -12,7 +12,7 @@ const Absensi1 = {
                     </header>
 
                     <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
-                        <h1 class="text-center text-4xl font-bold mb-6">Absensi</h1>
+                        <h1 class="text-center text-4xl font-bold mb-6">Nilai Akhir Siswa</h1>
 
                         <div class="shadow-xl rounded-lg p-6 overflow-x-auto">
                             <table class="w-full border shadow-lg rounded-lg text-lg">
@@ -22,7 +22,8 @@ const Absensi1 = {
                                         <th class="py-4 px-6">Wali Kelas</th>
                                         <th class="py-4 px-6">Kelas</th>
                                         <th class="py-4 px-6">Jumlah Siswa</th>
-                                        <th class="py-4 px-6">Tahun | Semester</th>
+                                        <th class="py-4 px-6">Tahun Akademik</th>
+                                        <th class="py-4 px-6">Semester</th>
                                         <th class="py-4 px-6">Aksi</th>
                                     </tr>
                                 </thead>
@@ -42,18 +43,21 @@ const Absensi1 = {
     },
 
     loadData() {
-        const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
-        const tahunData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        const currentTahun = tahunData.length > 0 ? tahunData[tahunData.length - 1] : { tahun: 'N/A', semester: 'N/A' };
+        const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
 
-        return kelasData.map((kelas, index) => {
+        return waliKelasData.map((wali, index) => {
+            const tahunAkademik = tahunAkademikData.length > 0 ? tahunAkademikData[0].tahun : 'N/A';
+            const semester = tahunAkademikData.length > 0 ? `Semester ${tahunAkademikData[0].semester}` : 'N/A';
+
             return `
                 <tr class="border-t">
                     <td class="py-4 px-6">${index + 1}</td>
-                    <td class="py-4 px-6">${kelas.wali}</td>
-                    <td class="py-4 px-6">${kelas.nama}</td>
-                    <td class="py-4 px-6">${kelas.jumlah}</td>
-                    <td class="py-4 px-6">${currentTahun.tahun} | Semester ${currentTahun.semester}</td>
+                    <td class="py-4 px-6">${wali.nama}</td>
+                    <td class="py-4 px-6">${wali.kelas}</td>
+                    <td class="py-4 px-6">${wali.jumlahSiswa}</td>
+                    <td class="py-4 px-6">${tahunAkademik}</td>
+                    <td class="py-4 px-6">${semester}</td>
                     <td class="py-4 px-6 flex space-x-4">
                         <button class="bg-blue-500 text-white px-4 py-2 rounded detail-btn" data-index="${index}">Detail</button>
                         <button class="bg-yellow-400 text-white px-4 py-2 rounded kelola-btn" data-index="${index}">Kelola</button>
@@ -67,24 +71,25 @@ const Absensi1 = {
         document.querySelectorAll('.detail-btn').forEach((btn) => {
             btn.addEventListener('click', function () {
                 const index = btn.getAttribute('data-index');
-                const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
-                const data = kelasData[index];
+                const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+                const data = waliKelasData[index];
 
-                alert(`Detail Kelas:\nWali Kelas: ${data.wali}\nKelas: ${data.nama}\nJumlah Siswa: ${data.jumlah}`);
+                alert(`Detail Wali Kelas:\nNama: ${data.nama}\nKelas: ${data.kelas}\nJumlah Siswa: ${data.jumlahSiswa}`);
             });
         });
 
         document.querySelectorAll('.kelola-btn').forEach((btn) => {
             btn.addEventListener('click', function () {
                 const index = btn.getAttribute('data-index');
-                const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
-                const selectedKelas = kelasData[index];
+                const waliKelasData = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
+                const selectedData = waliKelasData[index];
 
-                localStorage.setItem('kelasUntukAbsensi', JSON.stringify(selectedKelas));
-                window.location.hash = '#/input_absensi';
+                // Simpan kelas yang akan dikelola
+                localStorage.setItem('kelasUntukNilai', selectedData.kelas);
+                window.location.hash = '#/kelola_nilaiakhir';
             });
         });
     }
 };
 
-export default Absensi1;
+export default NilaiAkhir;

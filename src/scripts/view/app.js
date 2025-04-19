@@ -60,7 +60,7 @@ class App {
             '/dashboard_prestasi', '/dashboard_profile', '/dashboard_kelas',
             '/dashboard_mapel', '/dashboard_settings', '/data_siswa', '/data_akun','/data_walikelas','/menu_dashboard','/data_guru',
             '/data_admin','/data_kelas','/data_sekolah','/data_mapel','/tahun_akademik','/absensi1','/kelola_absensi','/input_nilai','/kelola_nilai','/input_absensi','/kehadiran',
-            '/rekap_absensi','/dashboard_akun','/login'
+            '/rekap_absensi','/dashboard_akun','/login','/nilai_guru','/nilai_akhir','/kelola_nilaiakhir'
         ];
 
         // Tampilkan Top Bar hanya di halaman umum (non-dashboard)

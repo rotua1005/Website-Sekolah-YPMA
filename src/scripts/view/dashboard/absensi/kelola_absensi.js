@@ -5,28 +5,23 @@ const KelolaAbsensi = {
         const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
         const namaKelas = kelasData.nama || '-';
         const waliKelas = kelasData.wali || '-';
-        const tahunPelajaran = kelasData.tahunPelajaran || '-';
         const jumlahSiswa = kelasData.jumlah || '-';
         const currentYear = new Date().getFullYear();
 
-        const semester = kelasData.semester || 1; // Default ke semester 1 jika tidak ada data
-        const bulanData = semester === 1
-            ? [
-                { nama: 'Januari', warna: 'bg-blue-500', index: 0 },
-                { nama: 'Februari', warna: 'bg-green-500', index: 1 },
-                { nama: 'Maret', warna: 'bg-yellow-500 text-gray-900', index: 2 },
-                { nama: 'April', warna: 'bg-teal-500', index: 3 },
-                { nama: 'Mei', warna: 'bg-red-500', index: 4 },
-                { nama: 'Juni', warna: 'bg-gray-500', index: 5 },
-            ]
-            : [
-                { nama: 'Juli', warna: 'bg-indigo-500', index: 6 },
-                { nama: 'Agustus', warna: 'bg-orange-500', index: 7 },
-                { nama: 'September', warna: 'bg-purple-500', index: 8 },
-                { nama: 'Oktober', warna: 'bg-lime-500 text-gray-900', index: 9 },
-                { nama: 'November', warna: 'bg-sky-500', index: 10 },
-                { nama: 'Desember', warna: 'bg-rose-500', index: 11 },
-            ];
+        const bulanData = [
+            { nama: 'Januari', warna: 'bg-blue-500', index: 0 },
+            { nama: 'Februari', warna: 'bg-green-500', index: 1 },
+            { nama: 'Maret', warna: 'bg-yellow-500 text-gray-900', index: 2 },
+            { nama: 'April', warna: 'bg-teal-500', index: 3 },
+            { nama: 'Mei', warna: 'bg-red-500', index: 4 },
+            { nama: 'Juni', warna: 'bg-gray-500', index: 5 },
+            { nama: 'Juli', warna: 'bg-indigo-500', index: 6 },
+            { nama: 'Agustus', warna: 'bg-orange-500', index: 7 },
+            { nama: 'September', warna: 'bg-purple-500', index: 8 },
+            { nama: 'Oktober', warna: 'bg-lime-500 text-gray-900', index: 9 },
+            { nama: 'November', warna: 'bg-sky-500', index: 10 },
+            { nama: 'Desember', warna: 'bg-rose-500', index: 11 },
+        ];
 
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
@@ -38,7 +33,7 @@ const KelolaAbsensi = {
                     </header>
 
                     <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
-                        <h1 class="text-center text-4xl font-bold mb-6">Absensi</h1>
+                        <h1 class="text-center text-4xl font-bold mb-6">Kelola Absensi</h1>
 
                         <div class="bg-gray-100 p-6 rounded-md mb-6">
                             <div class="space-y-4">
@@ -49,13 +44,7 @@ const KelolaAbsensi = {
                                     <strong class="w-40">Kelas</strong>: ${namaKelas}
                                 </div>
                                 <div class="text-xl flex">
-                                    <strong class="w-40">Tahun Pelajaran</strong>: ${tahunPelajaran}
-                                </div>
-                                <div class="text-xl flex">
                                     <strong class="w-40">Jumlah Siswa</strong>: ${jumlahSiswa}
-                                </div>
-                                <div class="text-xl flex">
-                                    <strong class="w-40">Semester</strong>: ${semester}
                                 </div>
                             </div>
                         </div>
@@ -94,7 +83,7 @@ const KelolaAbsensi = {
                     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
                 ];
                 const selectedMonthName = monthNames[bulanIndex];
-                localStorage.setItem('bulanUntukKehadiran', JSON.stringify({ nama: selectedMonthName, index: bulanIndex, tahun: currentYear }));
+                localStorage.setItem('bulanUntukKehadiran', JSON.stringify({ nama: selectedMonthName, index: parseInt(bulanIndex), tahun: currentYear }));
                 window.location.hash = '#/kehadiran';
             });
         });

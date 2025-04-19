@@ -5,8 +5,6 @@ const Kehadiran = {
         const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
         const namaKelas = kelasData.nama || '-';
         const waliKelas = kelasData.wali || '-';
-        const tahunPelajaran = kelasData.tahunPelajaran || '-';
-        const jumlahSiswa = kelasData.jumlah || '-';
 
         const bulanDipilih = JSON.parse(localStorage.getItem('bulanUntukKehadiran')) || {};
         const selectedMonthName = bulanDipilih.nama || this.getMonthName(new Date().getMonth());
@@ -117,12 +115,6 @@ const Kehadiran = {
                                 </div>
                                 <div class="text-xl flex">
                                     <strong class="w-40">Kelas</strong>: ${namaKelas}
-                                </div>
-                                <div class="text-xl flex">
-                                    <strong class="w-40">Tahun Pelajaran</strong>: ${tahunPelajaran}
-                                </div>
-                                <div class="text-xl flex">
-                                    <strong class="w-40">Jumlah Siswa</strong>: ${siswaSesuaiKelas.length}
                                 </div>
                             </div>
                         </div>

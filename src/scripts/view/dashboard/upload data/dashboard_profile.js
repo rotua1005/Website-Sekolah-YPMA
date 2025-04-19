@@ -13,45 +13,32 @@ const Dashboard_Profile = {
 
                 <main class="bg-white shadow-lg rounded-lg p-6">
                     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Upload Profile</h1>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <form id="upload-form-kepala" class="space-y-6 bg-gray-50 p-6 rounded-lg shadow">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Kepala Sekolah</h2>
-                            <div>
-                                <label class="block font-semibold text-lg text-gray-700">Jabatan</label>
-                                <input type="text" id="jabatan-kepala" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-lg text-gray-700">Nama</label>
-                                <input type="text" id="nama-kepala" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-lg text-gray-700">Upload Foto</label>
-                                <input type="file" id="foto-kepala" accept="image/*" class="w-full p-3 border rounded-lg" required>
-                                <img id="preview-kepala" class="mt-4 hidden w-full h-48 object-cover rounded-lg shadow-md" alt="Preview Image">
-                            </div>
-                            <button type="submit" id="submit-button-kepala" class="w-full bg-green-600 text-white p-3 rounded-lg text-xl font-semibold hover:bg-green-700 transition-all shadow">Upload Profile</button>
-                            <button type="button" id="cancel-edit-kepala" class="hidden w-full bg-gray-500 text-white p-3 rounded-lg text-xl font-semibold hover:bg-gray-600 transition-all shadow">Batal</button>
-                        </form>
-
-                        <form id="upload-form-guru" class="space-y-6 bg-gray-50 p-6 rounded-lg shadow">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Guru</h2>
-                            <div>
-                                <label class="block font-semibold text-lg text-gray-700">Jabatan</label>
-                                <input type="text" id="jabatan-guru" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-lg text-gray-700">Nama</label>
-                                <input type="text" id="nama-guru" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
-                            </div>
-                            <div>
-                                <label class="block font-semibold text-lg text-gray-700">Upload Foto</label>
-                                <input type="file" id="foto-guru" accept="image/*" class="w-full p-3 border rounded-lg" required>
-                                <img id="preview-guru" class="mt-4 hidden w-full h-48 object-cover rounded-lg shadow-md" alt="Preview Image">
-                            </div>
-                            <button type="submit" id="submit-button-guru" class="w-full bg-green-600 text-white p-3 rounded-lg text-xl font-semibold hover:bg-green-700 transition-all shadow">Upload Profile</button>
-                            <button type="button" id="cancel-edit-guru" class="hidden w-full bg-gray-500 text-white p-3 rounded-lg text-xl font-semibold hover:bg-gray-600 transition-all shadow">Batal</button>
-                        </form>
-                    </div>
+                    <form id="upload-form" class="space-y-6 bg-gray-50 p-6 rounded-lg shadow">
+                        <div>
+                            <label for="jabatan" class="block font-semibold text-lg text-gray-700">Jabatan</label>
+                            <select id="jabatan" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
+                                <option value="" disabled selected>Pilih Jabatan</option>
+                                <option value="Kepala Sekolah">Kepala Sekolah</option>
+                                <option value="Guru">Guru</option>
+                                <option value="Tata Usaha">Tata Usaha</option>
+                            </select>
+                        </div>
+                        <div id="mata-pelajaran-container" class="hidden">
+                            <label for="mata_pelajaran" class="block font-semibold text-lg text-gray-700">Mata Pelajaran</label>
+                            <input type="text" id="mata_pelajaran" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300">
+                        </div>
+                        <div>
+                            <label for="nama" class="block font-semibold text-lg text-gray-700">Nama</label>
+                            <input type="text" id="nama" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" required>
+                        </div>
+                        <div>
+                            <label for="foto" class="block font-semibold text-lg text-gray-700">Upload Foto</label>
+                            <input type="file" id="foto" accept="image/*" class="w-full p-3 border rounded-lg" required>
+                            <img id="preview" class="mt-4 hidden w-full h-48 object-cover rounded-lg shadow-md" alt="Preview Image">
+                        </div>
+                        <button type="submit" id="submit-button" class="w-full bg-green-600 text-white p-3 rounded-lg text-xl font-semibold hover:bg-green-700 transition-all shadow">Upload Profile</button>
+                        <button type="button" id="cancel-edit" class="hidden w-full bg-gray-500 text-white p-3 rounded-lg text-xl font-semibold hover:bg-gray-600 transition-all shadow">Batal</button>
+                    </form>
                     <div class="mt-6">
                         <input type="text" id="search" class="w-full p-3 border rounded-lg text-lg focus:ring focus:ring-green-300" placeholder="Cari profile...">
                     </div>
@@ -64,88 +51,103 @@ const Dashboard_Profile = {
 
     async afterRender() {
         MenuDashboard.afterRender();
-        const formKepala = document.getElementById("upload-form-kepala");
-        const previewKepala = document.getElementById("preview-kepala");
-        const submitButtonKepala = document.getElementById("submit-button-kepala");
-        const cancelEditButtonKepala = document.getElementById("cancel-edit-kepala");
-
-        const formGuru = document.getElementById("upload-form-guru");
-        const previewGuru = document.getElementById("preview-guru");
-        const submitButtonGuru = document.getElementById("submit-button-guru");
-        const cancelEditButtonGuru = document.getElementById("cancel-edit-guru");
-
+        const form = document.getElementById("upload-form");
+        const preview = document.getElementById("preview");
+        const submitButton = document.getElementById("submit-button");
+        const cancelButton = document.getElementById("cancel-edit"); // Perbaikan nama variabel
         const searchInput = document.getElementById("search");
+        const jabatanSelect = document.getElementById("jabatan");
+        const mataPelajaranContainer = document.getElementById("mata-pelajaran-container");
+        const mataPelajaranInput = document.getElementById("mata_pelajaran");
+
         let profileList = JSON.parse(localStorage.getItem("profile")) || [];
         let editIndex = null;
 
-        formKepala.addEventListener("submit", function (event) {
+        mataPelajaranContainer.classList.add("hidden");
+
+        jabatanSelect.addEventListener("change", function() {
+            if (this.value === "Guru") {
+                mataPelajaranContainer.classList.remove("hidden");
+                mataPelajaranInput.setAttribute("required", "");
+            } else {
+                mataPelajaranContainer.classList.add("hidden");
+                mataPelajaranInput.removeAttribute("required");
+                mataPelajaranInput.value = "";
+            }
+        });
+
+        form.addEventListener("submit", function (event) {
             event.preventDefault();
-            handleFormSubmit("kepala");
+            handleFormSubmit();
         });
 
-        formGuru.addEventListener("submit", function (event) {
-            event.preventDefault();
-            handleFormSubmit("guru");
+        document.getElementById("foto").addEventListener("change", function() {
+            handleFileChange(this, preview);
         });
 
-        document.getElementById("foto-kepala").addEventListener("change", function() {
-            handleFileChange(this, previewKepala);
-        });
-
-        document.getElementById("foto-guru").addEventListener("change", function() {
-            handleFileChange(this, previewGuru);
-        });
-
-        cancelEditButtonKepala.addEventListener("click", function() {
-            handleCancelEdit("kepala");
-        });
-
-        cancelEditButtonGuru.addEventListener("click", function() {
-            handleCancelEdit("guru");
+        cancelButton.addEventListener("click", function() {
+            handleCancelEdit();
         });
 
         searchInput.addEventListener("input", function() {
             tampilkanProfile(this.value);
         });
 
-        function handleFormSubmit(type) {
-            const jabatan = document.getElementById(`jabatan-${type}`).value;
-            const nama = document.getElementById(`nama-${type}`).value;
-            const foto = document.getElementById(`foto-${type}`).files[0];
+        function handleFormSubmit() {
+            const jabatan = document.getElementById("jabatan").value;
+            const nama = document.getElementById("nama").value;
+            const foto = document.getElementById("foto").files[0];
+            const mataPelajaran = document.getElementById("mata_pelajaran").value;
             const reader = new FileReader();
 
             reader.onload = function(e) {
                 const fotoSrc = e.target.result;
+                const newProfile = { jabatan, nama, foto: fotoSrc };
+                if (jabatan === "Guru") {
+                    newProfile.mata_pelajaran = mataPelajaran;
+                }
+
+                let storedProfiles = JSON.parse(localStorage.getItem("profile")) || [];
+
                 if (editIndex === null) {
-                    if (!profileList.some(profile => profile.nama === nama && profile.jabatan === jabatan)) {
-                        profileList.push({ jabatan, nama, foto: fotoSrc });
-                        try {
-                            localStorage.setItem("profile", JSON.stringify(profileList));
-                        } catch (e) {
-                            if (e.name === 'QuotaExceededError') {
-                                showAlert('Storage limit exceeded. Please delete some items.', 'danger');
-                            }
+                    if (jabatan === "Kepala Sekolah") {
+                        if (!storedProfiles.some(profile => profile.jabatan === "Kepala Sekolah")) {
+                            storedProfiles.push(newProfile);
+                            localStorage.setItem("profile", JSON.stringify(storedProfiles));
+                            resetForm();
+                            tampilkanProfile();
+                            showAlert('Profile Kepala Sekolah berhasil diupload.', 'success');
+                        } else {
+                            showAlert('Profile Kepala Sekolah sudah ada. Tidak dapat mengupload lebih dari satu.', 'warning');
                         }
-                        document.getElementById(`upload-form-${type}`).reset();
-                        document.getElementById(`preview-${type}`).classList.add("hidden");
-                        tampilkanProfile();
-                        showAlert('Profile berhasil diupload.', 'success');
                     } else {
-                        showAlert('Profile sudah ada.', 'warning');
+                        storedProfiles.push(newProfile);
+                        localStorage.setItem("profile", JSON.stringify(storedProfiles));
+                        resetForm();
+                        tampilkanProfile();
+                        showAlert(`Profile ${jabatan} berhasil diupload.`, 'success');
                     }
                 } else {
-                    profileList[editIndex] = { jabatan, nama, foto: fotoSrc };
-                    localStorage.setItem("profile", JSON.stringify(profileList));
-                    document.getElementById(`upload-form-${type}`).reset();
-                    document.getElementById(`preview-${type}`).classList.add("hidden");
+                    storedProfiles[editIndex] = newProfile;
+                    localStorage.setItem("profile", JSON.stringify(storedProfiles));
+                    resetForm();
                     tampilkanProfile();
-                    showAlert('Profile berhasil diedit.', 'success');
+                    showAlert(`Profile ${jabatan} berhasil diedit.`, 'success');
                     editIndex = null;
-                    document.getElementById(`submit-button-${type}`).textContent = "Upload Profile";
-                    document.getElementById(`cancel-edit-${type}`).classList.add("hidden");
+                    submitButton.textContent = "Upload Profile";
+                    cancelButton.classList.add("hidden");
                 }
+                profileList = JSON.parse(localStorage.getItem("profile")) || [];
+                tampilkanProfile();
             };
             reader.readAsDataURL(foto);
+        }
+
+        function resetForm() {
+            form.reset();
+            preview.classList.add("hidden");
+            mataPelajaranContainer.classList.add("hidden");
+            mataPelajaranInput.value = "";
         }
 
         function handleFileChange(input, preview) {
@@ -160,28 +162,32 @@ const Dashboard_Profile = {
             }
         }
 
-        function handleCancelEdit(type) {
-            document.getElementById(`upload-form-${type}`).reset();
-            document.getElementById(`preview-${type}`).classList.add("hidden");
+        function handleCancelEdit() {
+            resetForm();
             editIndex = null;
-            document.getElementById(`submit-button-${type}`).textContent = "Upload Profile";
-            document.getElementById(`cancel-edit-${type}`).classList.add("hidden");
+            submitButton.textContent = "Upload Profile";
+            cancelButton.classList.add("hidden");
         }
 
         function tampilkanProfile(searchTerm = "") {
             const filteredProfile = profileList.filter(profile => profile.nama.toLowerCase().includes(searchTerm.toLowerCase()));
             const profileListContainer = document.getElementById("profile-list");
             profileListContainer.innerHTML = filteredProfile.map((profile, index) => {
+                let detailTambahan = '';
+                if (profile.mata_pelajaran) {
+                    detailTambahan = `<p class="text-gray-600 text-sm mt-1">Mata Pelajaran: ${profile.mata_pelajaran}</p>`;
+                }
                 return `
-                <div class="profile-item p-4 border rounded-lg shadow-lg">
-                    <h3 class="text-xl font-bold">${profile.jabatan}</h3>
-                    <p class="text-gray-700">${profile.nama}</p>
-                    <img src="${profile.foto}" alt="${profile.nama}" class="w-full h-32 object-cover rounded-lg mt-2">
-                    <div class="mt-4 flex justify-between space-x-1">
-                        <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
-                        <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                    <div class="profile-item p-4 border rounded-lg shadow-lg">
+                        <h3 class="text-xl font-bold">${profile.jabatan}</h3>
+                        <p class="text-gray-700">${profile.nama}</p>
+                        ${detailTambahan}
+                        <img src="${profile.foto}" alt="${profile.nama}" class="w-full h-32 object-cover rounded-lg mt-2">
+                        <div class="mt-4 flex justify-between space-x-1">
+                            <button class="edit-btn bg-yellow-500 text-white p-2 rounded" data-index="${index}">Edit</button>
+                            <button class="hapus-btn bg-red-500 text-white p-2 rounded" data-index="${index}">Hapus</button>
+                        </div>
                     </div>
-                </div>
                 `;
             }).join("");
 
@@ -194,14 +200,22 @@ const Dashboard_Profile = {
                     const index = this.getAttribute("data-index");
                     const profile = profileList[index];
                     if (profile) {
-                        const type = profile.jabatan.toLowerCase().includes("kepala") ? "kepala" : "guru";
-                        document.getElementById(`jabatan-${type}`).value = profile.jabatan;
-                        document.getElementById(`nama-${type}`).value = profile.nama;
-                        document.getElementById(`preview-${type}`).src = profile.foto;
-                        document.getElementById(`preview-${type}`).classList.remove("hidden");
+                        document.getElementById("jabatan").value = profile.jabatan;
+                        document.getElementById("nama").value = profile.nama;
+                        document.getElementById("preview").src = profile.foto;
+                        document.getElementById("preview").classList.remove("hidden");
                         editIndex = index;
-                        document.getElementById(`submit-button-${type}`).textContent = "Edit Data";
-                        document.getElementById(`cancel-edit-${type}`).classList.remove("hidden");
+                        submitButton.textContent = "Edit Data";
+                        cancelButton.classList.remove("hidden");
+                        if (profile.jabatan === "Guru" && profile.mata_pelajaran) {
+                            mataPelajaranContainer.classList.remove("hidden");
+                            mataPelajaranInput.value = profile.mata_pelajaran;
+                            mataPelajaranInput.setAttribute("required", "");
+                        } else {
+                            mataPelajaranContainer.classList.add("hidden");
+                            mataPelajaranInput.value = "";
+                            mataPelajaranInput.removeAttribute("required");
+                        }
                         showAlert('Profile siap untuk diedit.', 'info');
                     }
                 });
@@ -210,10 +224,21 @@ const Dashboard_Profile = {
             document.querySelectorAll(".hapus-btn").forEach(button => {
                 button.addEventListener("click", function() {
                     const index = this.getAttribute("data-index");
-                    profileList.splice(index, 1);
-                    localStorage.setItem("profile", JSON.stringify(profileList));
-                    tampilkanProfile();
-                    showAlert('Profile berhasil dihapus.', 'danger');
+                    const profileToDelete = profileList[index];
+                    if (profileToDelete.jabatan === "Kepala Sekolah" && profileList.filter(p => p.jabatan === "Kepala Sekolah").length === 1) {
+                        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus profile Kepala Sekolah? Ini adalah satu-satunya profile dengan jabatan ini.");
+                        if (confirmDelete) {
+                            profileList.splice(index, 1);
+                            localStorage.setItem("profile", JSON.stringify(profileList));
+                            tampilkanProfile();
+                            showAlert('Profile Kepala Sekolah berhasil dihapus.', 'danger');
+                        }
+                    } else {
+                        profileList.splice(index, 1);
+                        localStorage.setItem("profile", JSON.stringify(profileList));
+                        tampilkanProfile();
+                        showAlert('Profile berhasil dihapus.', 'danger');
+                    }
                 });
             });
         }
@@ -233,5 +258,4 @@ const Dashboard_Profile = {
         tampilkanProfile();
     }
 };
-
 export default Dashboard_Profile;

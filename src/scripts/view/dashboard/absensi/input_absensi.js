@@ -5,7 +5,6 @@ const InputAbsensi = {
         const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
         const namaKelas = kelasData.nama || '-';
         const waliKelas = kelasData.wali || '-';
-        const tahunPelajaran = kelasData.tahunPelajaran || '-';
 
         // Ambil data siswa dari localStorage berdasarkan kelas yang dipilih
         const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
@@ -31,6 +30,10 @@ const InputAbsensi = {
         const now = new Date();
         const tanggalHariIni = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
+        // Ambil data tahun akademik dan semester dari localStorage
+        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-', semester: '-' };
+
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
                 ${MenuDashboard.render()}
@@ -55,7 +58,10 @@ const InputAbsensi = {
                                     <strong class="w-32">Kelas</strong>: ${namaKelas}
                                 </div>
                                 <div class="text-lg flex">
-                                    <strong class="w-32">Tahun Pelajaran</strong>: ${tahunPelajaran}
+                                    <strong class="w-32">Tahun Akademik</strong>: ${tahunAkademikAktif.tahun}
+                                </div>
+                                <div class="text-lg flex">
+                                    <strong class="w-32">Semester</strong>: Semester ${tahunAkademikAktif.semester}
                                 </div>
                             </div>
                         </div>

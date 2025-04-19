@@ -11,7 +11,10 @@ const Berita = {
                     <h3 class="text-xl font-bold mt-2 text-green-700">${berita.judul}</h3>
                     <p class="mt-2 text-gray-700">${berita.deskripsi.substring(0, 100)}...</p>
                     <p class="mt-2 text-sm text-gray-500">Admin | ${berita.tanggal}</p>
-                    <a href="#" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-green-700">Read More</a>
+                    <a href="#/detail_berita?judul=${encodeURIComponent(berita.judul)}"
+                       class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-green-700">
+                       Read More
+                    </a>
                 </div>
             `).join('');
         } else {
@@ -39,7 +42,7 @@ const Berita = {
     },
 
     async afterRender() {
-        // Fungsi tambahan bisa ditambahkan di sini jika diperlukan
+        // Tidak diperlukan untuk sekarang
     }
 };
 
