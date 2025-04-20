@@ -172,15 +172,23 @@ const Tentang = {
                 const selectedRating = ratingInputs.length > 0 ? ratingInputs[0].value : '';
 
                 const feedbackData = {
-                    name: nameInput.value,
+                    nama: nameInput.value,
                     email: emailInput.value,
-                    rating: selectedRating,
-                    message: feedbackInput.value,
+                    skala: selectedRating,
+                    masukan: feedbackInput.value,
                     timestamp: new Date().toISOString(),
                 };
 
-                // Anda bisa menambahkan logika untuk mengirim data feedback ke server di sini
-                console.log('Data Feedback:', feedbackData);
+                // Ambil data feedback yang sudah ada dari localStorage
+                const existingFeedback = JSON.parse(localStorage.getItem('feedbackData')) || [];
+
+                // Tambahkan feedback baru ke array yang sudah ada
+                existingFeedback.push(feedbackData);
+
+                // Simpan kembali ke localStorage
+                localStorage.setItem('feedbackData', JSON.stringify(existingFeedback));
+
+                console.log('Data Feedback Tersimpan:', feedbackData);
 
                 // Tampilkan pesan terima kasih
                 feedbackForm.reset();

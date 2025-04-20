@@ -27,16 +27,6 @@ const Dashboard = {
                         <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Selamat Datang di ${welcomeMessage}</h1>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-blue-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
-                                <div>
-                                    <div class="text-3xl font-bold">Data Siswa</div>
-                                    <div class="text-sm mt-1">jumlah siswa</div>
-                                </div>
-                                <div class="flex justify-end items-center">
-                                    <button id="dataSiswaButton" class="bg-white text-blue-500 px-4 py-2 rounded hover:bg-blue-100 transition">Detail</button>
-                                </div>
-                            </div>
-
                             <div class="bg-green-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
                                 <div>
                                     <div class="text-3xl font-bold">Absensi</div>
@@ -66,6 +56,16 @@ const Dashboard = {
                                     <button id="profilButton" class="bg-white text-teal-500 px-4 py-2 rounded hover:bg-teal-100 transition">Detail</button>
                                 </div>
                             </div>
+
+                            <div class="bg-purple-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
+                                <div>
+                                    <div class="text-3xl font-bold">Feedback</div>
+                                    <div class="text-sm mt-1">Kritik dan Saran</div>
+                                </div>
+                                <div class="flex justify-end items-center">
+                                    <button id="feedbackButton" class="bg-white text-purple-500 px-4 py-2 rounded hover:bg-purple-100 transition">Detail</button>
+                                </div>
+                            </div>
                         </div>
                     </main>
                 </div>
@@ -83,10 +83,6 @@ const Dashboard = {
             window.location.hash = '/';
         });
 
-        document.getElementById('dataSiswaButton').addEventListener('click', () => {
-            window.location.hash = '/data_siswa';
-        });
-
         document.getElementById('absensiButton').addEventListener('click', () => {
             window.location.hash = '/absensi1';
         });
@@ -97,6 +93,10 @@ const Dashboard = {
 
         document.getElementById('profilButton').addEventListener('click', () => {
             window.location.hash = '/dashboard_akun';
+        });
+
+        document.getElementById('feedbackButton').addEventListener('click', () => {
+            window.location.hash = '/feedback';
         });
 
         const loginAlert = document.getElementById('loginAlert');
