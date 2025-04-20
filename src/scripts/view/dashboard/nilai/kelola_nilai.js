@@ -3,65 +3,71 @@ import MenuDashboard from '../../menu/menu_dashboard';
 const KelolaNilai = {
   async render() {
     return `
-        <div class="dashboard-container bg-gray-100 min-h-screen flex">
-          ${MenuDashboard.render()}
-          <div class="dashboard-main flex-1 p-8">
-            <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
-              <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
-            </header>
+      <div class="dashboard-container bg-gray-100 min-h-screen flex">
+        ${MenuDashboard.render()}
+        <div class="dashboard-main flex-1 p-8">
+          <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
+            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
+          </header>
 
-            <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
-              <h1 class="text-center text-4xl font-bold mb-6">Kelola Nilai</h1>
+          <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
+            <h1 class="text-center text-4xl font-bold mb-6">Kelola Nilai</h1>
 
-              <div class="shadow-xl rounded-lg p-6 overflow-x-auto mb-6">
-                <h2 class="text-xl font-semibold mb-4">Detail Informasi Mata Pelajaran</h2>
-                <div id="detailNilai" class="mb-4">
-                  </div>
+            <div class="shadow-xl rounded-lg p-6 overflow-x-auto mb-6">
+              <h2 class="text-xl font-semibold mb-4">Detail Informasi Mata Pelajaran</h2>
+              <div id="detailNilai" class="mb-4">
               </div>
+            </div>
 
-              <div class="bg-white shadow-xl rounded-lg p-6 overflow-x-auto">
-                <h2 class="text-xl font-semibold mb-4">Input Nilai Siswa</h2>
-                <table class="w-full border shadow-lg rounded-lg text-lg">
-                  <thead class="bg-gray-800 text-white">
-                    <tr>
-                      <th class="py-4 px-6">#</th>
-                      <th class="py-4 px-6">NIS</th>
-                      <th class="py-4 px-6">Nama</th>
-                      <th class="py-4 px-6">Nilai Harian</th>
-                      <th class="py-4 px-6">Nilai Tengah Semester</th>
-                      <th class="py-4 px-6">Nilai Semester</th>
-                      <th class="py-4 px-6">Rata-rata</th>
-                    </tr>
-                  </thead>
-                  <tbody id="inputNilaiSiswa" class="text-gray-700">
-                    </tbody>
-                </table>
-                <div class="mt-6 text-right">
-                  <button id="simpanSemuaNilaiBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Simpan Semua Nilai</button>
-                </div>
+            <div class="bg-white shadow-xl rounded-lg p-6 overflow-x-auto">
+              <h2 class="text-xl font-semibold mb-4">Input Nilai Siswa</h2>
+              <table class="min-w-full bg-white border border-gray-300">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="py-2 px-4 border-b">#</th>
+                    <th class="py-2 px-4 border-b">NIS</th>
+                    <th class="py-2 px-4 border-b">Nama Siswa</th>
+                    <th class="py-2 px-4 border-b">Nilai Harian</th>
+                    <th class="py-2 px-4 border-b">Nilai Tengah Semester</th>
+                    <th class="py-2 px-4 border-b">Nilai Semester</th>
+                    <th class="py-2 px-4 border-b">Rata-Rata</th>
+                    <th class="py-2 px-4 border-b">Capaian TP Optimal</th>
+                    <th class="py-2 px-4 border-b">Capaian TP Perlu Peningkatan</th>
+                  </tr>
+                </thead>
+                <tbody id="nilaiSiswaTableBody">
+                  </tbody>
+              </table>
+              <div class="mt-4 flex items-center justify-end">
+                <input type="checkbox" id="konfirmasiUbah" class="mr-2">
+                <label for="konfirmasiUbah" class="text-gray-700">Saya yakin akan mengubah data tersebut</label>
+                <button id="simpanNilaiBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition ml-4" disabled>Simpan</button>
               </div>
             </div>
           </div>
-        </div>`;
+        </div>
+      </div>`;
   },
 
   async afterRender() {
     MenuDashboard.afterRender();
-    this.loadDetailNilaiInfo();
-    await this.loadInputNilaiForm(); // Tambahkan await di sini
+    await this.loadDetailNilaiInfo();
+    await this.loadDataSiswa();
     this.setupEventListeners();
   },
 
-  loadDetailNilaiInfo() {
+  async loadDetailNilaiInfo() {
+    console.log('KelolaNilai - Memuat detail informasi nilai...');
     const detailNilaiContainer = document.getElementById('detailNilai');
     const guruData = JSON.parse(localStorage.getItem('guruUntukKelola'));
+    console.log('KelolaNilai - Data guru yang dibaca dari localStorage (loadDetailNilaiInfo):', guruData);
     const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
 
     if (guruData) {
       const tahunAkademik = tahunAkademikData.length > 0 ? tahunAkademikData[0].tahun : 'N/A';
       const semester = tahunAkademikData.length > 0 ? `Semester ${tahunAkademikData[0].semester}` : 'N/A';
-      const kkm = 75; // KKM default
+      const kkm = 75;
 
       localStorage.setItem('nilaiUntukDikelola', JSON.stringify({
         mapel: guruData.mapel,
@@ -86,144 +92,164 @@ const KelolaNilai = {
     }
   },
 
-  async loadInputNilaiForm() {
-    const inputNilaiSiswaBody = document.getElementById('inputNilaiSiswa');
-    const nilaiDikelola = JSON.parse(localStorage.getItem('nilaiUntukDikelola'));
-    const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-    const kelasYangDipilih = nilaiDikelola ? nilaiDikelola.kelas : null;
+  async loadDataSiswa() {
+    console.log('KelolaNilai - Memuat data siswa...');
+    const guruData = JSON.parse(localStorage.getItem('guruUntukKelola'));
+    console.log('KelolaNilai - Data guru yang diterima (loadDataSiswa):', guruData);
+    const allSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+    const kelasGuru = guruData ? guruData.kelas : '';
 
-    if (kelasYangDipilih) {
-      const siswaSatuKelas = dataSiswa.filter(siswa => siswa.kelas === kelasYangDipilih);
-      let tableRowsHTML = '';
-      siswaSatuKelas.forEach((siswa, index) => {
-        tableRowsHTML += `
-          <tr class="border-t">
-            <td class="py-4 px-6">${index + 1}</td>
-            <td class="py-4 px-6">${siswa.nis}</td>
-            <td class="py-4 px-6">${siswa.nama}</td>
-            <td class="py-4 px-6"><input type="number" class="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline nilai-harian" id="nilai-harian-${siswa.nis}" placeholder="0-100"></td>
-            <td class="py-4 px-6"><input type="number" class="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline nilai-tengah-semester" id="nilai-tengah-semester-${siswa.nis}" placeholder="0-100"></td>
-            <td class="py-4 px-6"><input type="number" class="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline nilai-semester" id="nilai-semester-${siswa.nis}" placeholder="0-100"></td>
-            <td class="py-4 px-6" id="rata-rata-${siswa.nis}">-</td>
-          </tr>
-        `;
-      });
-      inputNilaiSiswaBody.innerHTML = tableRowsHTML;
-      
-      // Hitung rata-rata awal jika ada nilai yang sudah diinput
-      siswaSatuKelas.forEach(siswa => {
-        this.updateRataRata(siswa.nis);
-      });
-    } else {
-      inputNilaiSiswaBody.innerHTML = '<tr><td colspan="7" class="py-4 px-6 text-center">Data kelas tidak ditemukan.</td></tr>';
-    }
+    const siswaKelasIni = allSiswa.filter(siswa => siswa.kelas === kelasGuru);
+    console.log('KelolaNilai - Data siswa yang difilter berdasarkan kelas:', siswaKelasIni);
+    this.renderTableSiswa(siswaKelasIni);
+  },
+
+  renderTableSiswa(dataSiswa) {
+    const tableBody = document.getElementById('nilaiSiswaTableBody');
+    tableBody.innerHTML = dataSiswa.map((siswa, index) => `
+      <tr>
+        <td class="py-2 px-4 border-b">${index + 1}</td>
+        <td class="py-2 px-4 border-b">${siswa.nis}</td>
+        <td class="py-2 px-4 border-b">${siswa.nama}</td>
+        <td class="py-2 px-4 border-b"><input type="number" class="w-20 border rounded py-1 px-2 nilai-input" data-row="${index}" data-type="harian" value=""></td>
+        <td class="py-2 px-4 border-b"><input type="number" class="w-20 border rounded py-1 px-2 nilai-input" data-row="${index}" data-type="tengah_semester" value=""></td>
+        <td class="py-2 px-4 border-b"><input type="number" class="w-20 border rounded py-1 px-2 nilai-input" data-row="${index}" data-type="semester" value=""></td>
+        <td class="py-2 px-4 border-b rata-rata" data-row="${index}"></td>
+        <td class="py-2 px-4 border-b capaian-optimal" data-row="${index}"></td>
+        <td class="py-2 px-4 border-b capaian-perlu-peningkatan" data-row="${index}"></td>
+      </tr>
+    `).join('');
+
+    this.setupEventListenersOnRows();
   },
 
   setupEventListeners() {
-    const simpanSemuaNilaiBtn = document.getElementById('simpanSemuaNilaiBtn');
-    simpanSemuaNilaiBtn.addEventListener('click', () => {
-      if (this.validateInputs()) {
-        this.simpanDataNilaiSiswa();
-      }
-    });
-  
-    const inputs = document.querySelectorAll('.nilai-harian, .nilai-tengah-semester, .nilai-semester');
-    inputs.forEach(input => {
-      input.addEventListener('input', (event) => {
-        const nis = event.target.id.split('-').pop();
-        this.updateRataRata(nis);
+    const konfirmasiUbah = document.getElementById('konfirmasiUbah');
+    const simpanNilaiBtn = document.getElementById('simpanNilaiBtn');
+
+    if (konfirmasiUbah && simpanNilaiBtn) {
+      konfirmasiUbah.addEventListener('change', function() {
+        simpanNilaiBtn.disabled = !this.checked;
       });
-    });
-  
-    // Ensure inputs are initialized with default values to trigger updateRataRata
-    inputs.forEach(input => {
-      const nis = input.id.split('-').pop();
-      this.updateRataRata(nis);
-    });
-  },
 
-  updateRataRata(nis) {
-    const nilaiHarian = parseFloat(document.getElementById(`nilai-harian-${nis}`).value) || 0;
-    const nilaiTengahSemester = parseFloat(document.getElementById(`nilai-tengah-semester-${nis}`).value) || 0;
-    const nilaiSemester = parseFloat(document.getElementById(`nilai-semester-${nis}`).value) || 0;
-
-    const rataRata = ((nilaiHarian + nilaiTengahSemester + (nilaiSemester * 2)) / 4).toFixed(2);
-    document.getElementById(`rata-rata-${nis}`).textContent = rataRata;
-  },
-
-  validateInputs() {
-    const inputs = document.querySelectorAll('.nilai-harian, .nilai-tengah-semester, .nilai-semester');
-    for (const input of inputs) {
-      if (!input.value || isNaN(input.value)) {
-        alert('Harap isi semua nilai dengan benar sebelum menyimpan.');
-        return false;
-      }
-    }
-    return true;
-  },
-
-  simpanDataNilaiSiswa() {
-    const nilaiDikelola = JSON.parse(localStorage.getItem('nilaiUntukDikelola'));
-    const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-    const allDataNilaiSiswa = JSON.parse(localStorage.getItem('dataNilaiSiswa')) || [];
-    const kelasYangDipilih = nilaiDikelola ? nilaiDikelola.kelas : null;
-    const mataPelajaran = nilaiDikelola ? nilaiDikelola.mapel : null;
-    const tahunAkademik = nilaiDikelola ? nilaiDikelola.tahunAkademik : null;
-    const semester = nilaiDikelola ? nilaiDikelola.semester : null;
-
-    if (!kelasYangDipilih || !mataPelajaran || !tahunAkademik || !semester) {
-      alert('Informasi mata pelajaran atau kelas tidak lengkap.');
-      return;
+      simpanNilaiBtn.addEventListener('click', this.simpanDataNilai);
     }
 
-    const siswaSatuKelas = dataSiswa.filter(siswa => siswa.kelas === kelasYangDipilih);
-    const nilaiSiswaBaru = [];
-    let hasError = false;
+    this.setupEventListenersOnRows();
+  },
 
-    siswaSatuKelas.forEach(siswa => {
-      const nilaiHarianInput = document.getElementById(`nilai-harian-${siswa.nis}`);
-      const nilaiTengahSemesterInput = document.getElementById(`nilai-tengah-semester-${siswa.nis}`);
-      const nilaiSemesterInput = document.getElementById(`nilai-semester-${siswa.nis}`);
+  setupEventListenersOnRows() {
+    const nilaiInputs = document.querySelectorAll('.nilai-input');
+    nilaiInputs.forEach(input => {
+      input.addEventListener('input', this.updateRataRata);
+    });
+  },
 
-      const nilaiHarian = parseInt(nilaiHarianInput.value) || null;
-      const nilaiTengahSemester = parseInt(nilaiTengahSemesterInput.value) || null;
-      const nilaiSemester = parseInt(nilaiSemesterInput.value) || null;
+  updateRataRata(event) {
+    const input = event.target;
+    const row = parseInt(input.dataset.row);
+    const tableBody = document.getElementById('nilaiSiswaTableBody');
+    const rowElement = tableBody.querySelectorAll('tr')[row];
+    const nilaiInputsInRow = rowElement.querySelectorAll('.nilai-input');
+    const rataRataCell = rowElement.querySelector('.rata-rata');
+    const capaianOptimalCell = rowElement.querySelector('.capaian-optimal');
+    const capaianPerluPeningkatanCell = rowElement.querySelector('.capaian-perlu-peningkatan');
+    let nilaiHarian = parseFloat(nilaiInputsInRow[0]?.value) || 0;
+    let nilaiTengahSemester = parseFloat(nilaiInputsInRow[1]?.value) || 0;
+    let nilaiSemester = parseFloat(nilaiInputsInRow[2]?.value) || 0;
+    let jumlahNilaiValid = 0;
+    let totalNilai = 0;
 
-      if (nilaiHarian === null || nilaiTengahSemester === null || nilaiSemester === null || isNaN(nilaiHarian) || isNaN(nilaiTengahSemester) || isNaN(nilaiSemester)) {
-        alert(`Harap isi semua nilai untuk siswa ${siswa.nama}.`);
-        hasError = true;
-        return;
+    if (!isNaN(nilaiHarian)) {
+      totalNilai += nilaiHarian;
+      jumlahNilaiValid++;
+    }
+    if (!isNaN(nilaiTengahSemester)) {
+      totalNilai += nilaiTengahSemester;
+      jumlahNilaiValid++;
+    }
+    if (!isNaN(nilaiSemester)) {
+      totalNilai += nilaiSemester * 2; // Nilai semester bobotnya 2
+      jumlahNilaiValid++;
+    }
+
+    let rataRata = '';
+    let capaianOptimal = '';
+    let capaianPerluPeningkatan = '';
+
+    if (jumlahNilaiValid > 0) {
+      rataRata = totalNilai / (jumlahNilaiValid + (isNaN(parseFloat(nilaiInputsInRow[2]?.value)) ? 0 : 1)); // Sesuaikan pembagi karena nilai semester bobot 2
+      rataRataCell.textContent = rataRata.toFixed(2);
+
+      if (rataRata >= 85) {
+        capaianOptimal = 'Baik';
+      } else {
+        capaianPerluPeningkatan = 'Kurang Baik';
       }
+    } else {
+      rataRataCell.textContent = '';
+    }
 
-      const hasilSemesterDikali2 = nilaiSemester * 2;
-      const nilaiAkhir = Math.round((nilaiHarian + nilaiTengahSemester + hasilSemesterDikali2) / 4);
+    capaianOptimalCell.textContent = capaianOptimal;
+    capaianPerluPeningkatanCell.textContent = capaianPerluPeningkatan;
+  },
 
-      nilaiSiswaBaru.push({
-        nis: siswa.nis,
-        namaSiswa: siswa.nama,
-        mataPelajaran: mataPelajaran,
-        kelas: kelasYangDipilih,
-        tahunAkademik: tahunAkademik,
-        semester: semester,
-        nilaiHarian: nilaiHarian,
-        nilaiTengahSemester: nilaiTengahSemester,
-        nilaiSemester: nilaiSemester,
-        hasilSemesterDikali2: hasilSemesterDikali2,
-        nilaiAkhir: nilaiAkhir
-      });
+  async simpanDataNilai() {
+    const tableBody = document.getElementById('nilaiSiswaTableBody');
+    const rows = tableBody.querySelectorAll('tr');
+    const dataNilai = [];
+    const infoMapel = JSON.parse(localStorage.getItem('nilaiUntukDikelola'));
+    const allSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
+    const guruData = JSON.parse(localStorage.getItem('guruUntukKelola'));
+    const kelasGuru = guruData ? guruData.kelas : '';
+    const siswaKelasIni = allSiswa.filter(siswa => siswa.kelas === kelasGuru);
+    const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+    const semester = tahunAkademikData.length > 0 ? tahunAkademikData[0].semester : 'Ganjil'; // Ambil semester
+
+    rows.forEach((row, index) => {
+      const cells = row.querySelectorAll('td');
+      const siswa = siswaKelasIni[index];
+      if (cells.length > 0 && siswa && infoMapel) {
+        const nilaiHarian = cells[3].querySelector('input').value;
+        const nilaiTengahSemester = cells[4].querySelector('input').value;
+        const nilaiSemester = cells[5].querySelector('input').value;
+        const rataRata = cells[6].textContent; // Ambil nilai rata-rata dari tabel
+
+        dataNilai.push({
+          nis: siswa.nis,
+          nama: siswa.nama,
+          kelas: infoMapel.kelas,
+          mapel: infoMapel.mapel,
+          semester: semester,
+          nilai_harian: nilaiHarian,
+          nilai_tengah_semester: nilaiTengahSemester,
+          nilai_semester: nilaiSemester,
+          rata_rata: rataRata, // Simpan nilai rata-rata
+        });
+      }
     });
 
-    if (!hasError && nilaiSiswaBaru.length > 0) {
-      const updatedDataNilaiSiswa = allDataNilaiSiswa.filter(
-        item => !(item.nis && item.mataPelajaran === mataPelajaran && item.kelas === kelasYangDipilih && item.semester === semester)
+    // Simpan atau perbarui data nilai siswa berdasarkan NIS, Kelas, Mapel, dan Semester
+    const existingDataNilaiSiswa = JSON.parse(localStorage.getItem('dataNilaiSiswa')) || [];
+    dataNilai.forEach(nilaiBaru => {
+      const index = existingDataNilaiSiswa.findIndex(nilaiLama =>
+        nilaiLama.nis === nilaiBaru.nis &&
+        nilaiLama.kelas === nilaiBaru.kelas &&
+        nilaiLama.mapel === nilaiBaru.mapel &&
+        nilaiLama.semester === nilaiBaru.semester
       );
-      updatedDataNilaiSiswa.push(...nilaiSiswaBaru);
-      localStorage.setItem('dataNilaiSiswa', JSON.stringify(updatedDataNilaiSiswa));
-      alert('Data nilai siswa berhasil disimpan.');
-      window.location.hash = '#/hasil_inputnilai';
-    } else if (!hasError && siswaSatuKelas.length === 0) {
-      alert('Tidak ada siswa di kelas ini.');
-    }
+
+      if (index !== -1) {
+        existingDataNilaiSiswa[index] = nilaiBaru; // Perbarui jika sudah ada
+      } else {
+        existingDataNilaiSiswa.push(nilaiBaru); // Tambah jika belum ada
+      }
+    });
+
+    localStorage.setItem('dataNilaiSiswa', JSON.stringify(existingDataNilaiSiswa));
+
+    console.log('KelolaNilai - Data nilai berhasil disimpan/diperbarui:', dataNilai);
+    alert('Data nilai berhasil disimpan/diperbarui dan akan tersedia di Kelola Nilai Akhir.');
   },
 };
 
