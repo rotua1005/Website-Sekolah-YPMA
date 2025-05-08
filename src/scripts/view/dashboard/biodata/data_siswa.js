@@ -104,7 +104,14 @@ const DataSiswa = {
 
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Kelas</label>
-                                <input type="text" id="kelasSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Kelas" value="${data.kelas || ''}">
+                                <select id="kelasSiswa" class="w-full border p-3 rounded-lg text-lg">
+                                    <option value="1" ${data.kelas === '1' ? 'selected' : ''}>Kelas 1</option>
+                                    <option value="2" ${data.kelas === '2' ? 'selected' : ''}>Kelas 2</option>
+                                    <option value="3" ${data.kelas === '3' ? 'selected' : ''}>Kelas 3</option>
+                                    <option value="4" ${data.kelas === '4' ? 'selected' : ''}>Kelas 4</option>
+                                    <option value="5" ${data.kelas === '5' ? 'selected' : ''}>Kelas 5</option>
+                                    <option value="6" ${data.kelas === '6' ? 'selected' : ''}>Kelas 6</option>
+                                </select>
                             </div>
 
                             <div>

@@ -17,7 +17,7 @@ body {
 
 /* Sidebar */
 .dashboard-sidebar {
-    width: 250px;
+    width: 265px;
     height: 100vh;
     position: fixed; /* Sidebar tetap di tempat */
     top: 0;
@@ -245,3 +245,4 @@ body {
         padding-left: 50px; /* Adjust padding to accommodate hamburger menu */
     }
 }
+

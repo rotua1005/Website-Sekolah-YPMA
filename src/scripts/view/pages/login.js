@@ -1,3 +1,4 @@
+// components/login.js
 const Login = {
     async render() {
         return `
@@ -55,14 +56,14 @@ const Login = {
         const passwordInput = document.getElementById('password');
 
         loginAdminBtn.addEventListener('click', () => {
-            emailInput.value = "admin@example.com";
-            passwordInput.value = "123456";
+            emailInput.value = "admin@ypma.sch.id";
+            passwordInput.value = "admin123";
             loginForm.style.display = 'block';
         });
 
         loginKepalaSekolahBtn.addEventListener('click', () => {
-            emailInput.value = "kepalasekolah@example.com";
-            passwordInput.value = "qwerty";
+            emailInput.value = "kepsek@ypma.sch.id";
+            passwordInput.value = "kepsek456";
             loginForm.style.display = 'block';
         });
 
@@ -72,15 +73,19 @@ const Login = {
             const email = emailInput.value;
             const password = passwordInput.value;
 
-            if (email === "admin@example.com" && password === "123456") {
+            if (email === "admin@ypma.sch.id" && password === "admin123") {
                 alert("Login berhasil sebagai Admin!");
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("userRole", "admin"); // Simpan peran pengguna
+                localStorage.setItem("username", "Administrator"); // Simpan username
+                localStorage.setItem("email", email); // Simpan email
                 window.location.href = "/#/dashboard";
-            } else if (email === "kepalasekolah@example.com" && password === "qwerty") {
+            } else if (email === "kepsek@ypma.sch.id" && password === "kepsek456") {
                 alert("Login berhasil sebagai Kepala Sekolah!");
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("userRole", "kepalasekolah"); // Simpan peran pengguna
+                localStorage.setItem("username", "Kepala Sekolah"); // Simpan username
+                localStorage.setItem("email", email); // Simpan email
                 window.location.href = "/#/dashboard";
             } else {
                 alert("Email atau Password salah!");

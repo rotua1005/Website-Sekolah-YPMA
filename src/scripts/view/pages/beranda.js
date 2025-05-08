@@ -1,40 +1,39 @@
-//beranda
 const Beranda = {
     async render() {
-        const beritaTerbaru = JSON.parse(localStorage.getItem("beritaDepan")) || [];
-
-        let beritaCards = '';
-        if (beritaTerbaru.length > 0) {
-            beritaCards = beritaTerbaru.map(berita => `
-                <div class="bg-white p-4 rounded-lg shadow-md transition-all hover:shadow-lg hover:-translate-y-1">
-                    <img src="${berita.gambar}" alt="${berita.judul}" class="w-full h-48 object-cover rounded">
-                    <p class="mt-3 text-sm text-gray-500">Berita</p>
-                    <h3 class="text-xl font-bold mt-2 text-green-700">${berita.judul}</h3>
-                    <p class="mt-2 text-gray-700">${berita.deskripsi.substring(0, 100)}...</p>
-                    <p class="mt-2 text-sm text-gray-500">Admin | ${berita.tanggal}</p>
-                    <a href="#" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:bg-green-700">Read More</a>
-                </div>
-            `).join('');
-        } else {
-            beritaCards = '<p class="text-center text-gray-500">Belum ada berita terbaru.</p>';
-        }
-
         return `
             <div class="main-container">
-
                 <section class="hero">
-                    <div class="hero-content">
-                        <h1 id="main">Selamat Datang Di Sekolah Yayasan Pesatren YPMA</h1>
-                        <p>Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123</p>
+                    <div class="hero-slider-container">
+                        <div class="hero-slide active" style="background-image: url('images/walpaper.png');">
+                            <div class="hero-content">
+                                <h1 id="main">Selamat Datang Di Sekolah Yayasan Pesatren YPMA</h1>
+                                <p>Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123</p>
+                            </div>
+                        </div>
+                        <div class="hero-slide" style="background-image: url('images/news.jpg');">
+                            <div class="hero-content">
+                                <h1 id="main">Excellent with Integral Character</h1>
+                                <p>Cerdas, Taqwa, Mandiri, Berwawasan Global</p>
+                            </div>
+                        </div>
+                        <div class="hero-slide" style="background-image: url('images/Pesantren 2.jpg');">
+                            <div class="hero-content">
+                                <h1 id="main">Berakhlak Mulia</h1>
+                                <p>Menerapkan akhlak yang mulia sesuai tuntunan Al-Qur'an dalam kehidupan sehari-hari.</p>
+                            </div>
+                        </div>
+                        <button class="slide-control prev-slide">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="slide-control next-slide">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </section>
 
                 <section class="sekolah-section">
                     <div class="p-4 flex justify-between items-center">
-                        <h2 class="text-xl font-bold text-green-500">Informasi &amp; Pendaftaran Siswa Baru</h2>
-                        <button class="bg-green-500 text-white px-3 py-1 text-sm rounded hover:bg-green-600 transition-all">
-                            Informasi PSBB
-                        </button>
+
                     </div>
                 </section>
 
@@ -72,9 +71,6 @@ const Beranda = {
                             <p class="text-gray-600 text-center mb-4 leading-relaxed">
                                 Program pendidikan yang dirancang untuk memberikan ilmu akademik serta nilai-nilai keislaman dengan kurikulum berkualitas.
                             </p>
-                            <button class="bg-green-600 text-white px-6 py-3 rounded-lg mt-auto hover:bg-green-700 transition-all">
-                                Read More
-                            </button>
                         </div>
 
                         <div class="bg-white text-black p-6 rounded-lg shadow-md transition-all hover:scale-105 flex flex-col items-center">
@@ -83,9 +79,6 @@ const Beranda = {
                             <p class="text-gray-600 text-center mb-4 leading-relaxed">
                                 Program unggulan bagi siswa yang ingin menghafal Alquran dengan metode yang efektif serta bimbingan dari guru tahfidz berpengalaman.
                             </p>
-                            <button class="bg-green-600 text-white px-6 py-3 rounded-lg mt-auto hover:bg-green-700 transition-all">
-                                Read More
-                            </button>
                         </div>
 
                         <div class="bg-white text-black p-6 rounded-lg shadow-md transition-all hover:scale-105 flex flex-col items-center">
@@ -94,13 +87,9 @@ const Beranda = {
                             <p class="text-gray-600 text-center mb-4 leading-relaxed">
                                 Program yang mendukung pengembangan soft skills, kepemimpinan, serta keterampilan sosial siswa agar siap menghadapi masa depan.
                             </p>
-                            <button class="bg-green-600 text-white px-6 py-3 rounded-lg mt-auto hover:bg-green-700 transition-all">
-                                Read More
-                            </button>
                         </div>
                     </div>
                 </section>
-
 
                 <section class="bg-dark-taupe text-black py-12 px-6 mt-10">
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-8">
@@ -163,9 +152,6 @@ const Beranda = {
                                     </div>
                                 </li>
                             </ul>
-                            <a href="#" class="inline-block mt-8 bg-green-500 text-white text-lg py-3 px-6 rounded-lg shadow-lg hover:bg-green-600 transition-all no-underline">
-                                Ingin Bertanya?
-                            </a>
                         </div>
 
                         <div class="md:w-2/3 flex flex-wrap justify-center gap-6">
@@ -173,41 +159,72 @@ const Beranda = {
                             <img src="images/kurikulum.png" alt="Siswa dalam suasana belajar" class="rounded-lg shadow-lg w-full max-w-2xl md:max-w-4xl aspect-video transition-transform transform hover:scale-105">
                             <img src="images/Pesantren 1.jpg" alt="Siswa dalam suasana belajar" class="rounded-lg shadow-lg w-full max-w-2xl md:max-w-4xl aspect-video transition-transform transform hover:scale-105">
                         </div>
-
-
                     </div>
                 </section>
 
-                <section class="bg-white pt-4 md:p-8 rounded-lg shadow-md mt-6">
-                    <h3 class="text-2xl font-semibold text-center text-green-700 mb-10">Mengapa Memilih SD Pesantren YPMA?</h3>
+<section class="pendaftaran-section bg-green-700 text-white py-20 relative overflow-hidden">
+    <div class="container mx-auto text-center">
+        <h2 class="text-4xl font-bold mb-6">PENDAFTARAN PESERTA DIDIK BARU</h2>
+        <p class="text-lg mb-8">Kami mengundang putra dan putri terbaik Negeri untuk bergabung bersama SD Yayasan Pesantren Modern Adnan, Medan</p>
+    </div>
+    <div class="container mx-auto text-center mt-8">
+        <button onclick="window.open('https://wa.me/+6283854537823', '_blank')" class="bg-white text-green-700 font-bold py-3 px-8 rounded-full hover:bg-green-100 transition-all inline-flex items-center no-underline">
+            <i class="fab fa-whatsapp text-2xl mr-2"></i> Daftar Sekarang
+        </button>
+    </div>
+</section>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-green-100 p-6 rounded-lg flex flex-col h-full justify-between items-start min-h-[160px] transition-all hover:shadow-lg hover:-translate-y-1">
-                            <h3 class="text-xl font-bold text-green-600">Pendidikan Karakter Islami</h3>
-                            <p class="mt-3 text-gray-700">Pembelajaran Al-Quran, hadis, dan akhlak Islami dilengkapi dengan kurikulum nasional yang memungkinkan siswa memperoleh ilmu dunia dan akhirat.</p>
+                <section class="py-12 bg-gray-100">
+                    <div class="container mx-auto">
+                        <h2 class="text-3xl font-bold text-center text-green-600 mb-8">Berita Terbaru</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                <img src="images/berita1.jpg" alt="Berita 1" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold mb-2 text-gray-800">SMA Luqman Al Hakim Surabaya Gelar Daurah dan Sertifikasi Al-Qur'an di Masjid Nasional Al Akbar</h3>
+                                    <p class="text-gray-600 text-sm mb-4">April 17, 2025 - No Comments</p>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                <img src="images/berita2.jpg" alt="Berita 2" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold mb-2 text-gray-800">SMA Luqman Al Hakim Surabaya Mengucapkan Selamat Hari Raya Idul Fitri</h3>
+                                    <p class="text-gray-600 text-sm mb-4">March 30, 2025 - No Comments</p>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                <img src="images/berita3.jpg" alt="Berita 3" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold mb-2 text-gray-800">Santri SMA Luqman Al Hakim Sukses Lolos SNBP 2025 ke PTN dan Kampus Internasional Favorit</h3>
+                                    <p class="text-gray-600 text-sm mb-4">March 20, 2025 - No Comments</p>
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="bg-green-100 p-6 rounded-lg flex flex-col h-full justify-between items-start min-h-[160px] transition-all hover:shadow-lg hover:-translate-y-1">
-                            <h3 class="text-xl font-bold text-green-600">Pengembangan Keterampilan Kepemimpinan & Kemandirian</h3>
-                            <p class="mt-3 text-gray-700">Di Pesantren YPMA, siswa tidak hanya diajarkan ilmu agama dan akademik, tetapi juga dibekali keterampilan kepemimpinan dan kemandirian melalui berbagai kegiatan ekstrakurikuler.</p>
-                        </div>
-
-                        <div class="bg-green-100 p-6 rounded-lg flex flex-col h-full justify-between items-start min-h-[160px] transition-all hover:shadow-lg hover:-translate-y-1">
-                            <h3 class="text-xl font-bold text-green-600">Lingkungan yang Nyaman & Aman</h3>
-                            <p class="mt-3 text-gray-700">Pesantren YPMA menyediakan sekolah yang bersih, aman, dan kondusif untuk pembelajaran, memberikan kenyamanan bagi para siswa dalam beribadah dan belajar.</p>
+                        <div class="flex justify-center mt-8">
+                            <button class="bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Lihat Berita Lainnya</button>
                         </div>
                     </div>
                 </section>
 
-                <section class="mt-10">
-                    <h2 class="text-2xl font-bold mb-6 text-center text-green-700">Berita Terbaru</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        ${beritaCards}
-                    </div>
-                </section>
-
-            </main>
+<section class="py-12 bg-white">
+    <div class="container mx-auto text-center">
+        <h2 class="text-3xl font-bold text-green-600 mb-8">Lokasi Sekolah Kami</h2>
+        <p class="text-lg text-gray-700 mb-4">Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123</p>
+        <div class="rounded-lg overflow-hidden shadow-md mb-6">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3981.940799799419!2d98.6487487747888!3d3.56955799644139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312e23f34b3e31%3A0x3a7a2b6b3b3b3b3b!2sJl.+Pesantren+No.15%2C+Sei+Sikambing+B%2C+Kec.+Medan+Sunggal%2C+Kota+Medan%2C+Sumatera+Utara+20123!5e0!3m2!1sid!2sid!4v1715153988388!5m2!1sid!2sid"
+                width="100%"
+                height="300"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+</section>
+            </div>
         `;
     },
 
@@ -229,6 +246,67 @@ const Beranda = {
         elementsToAnimate.forEach(element => {
             observer.observe(element);
         });
+
+        // Hero Slider Functionality
+        const sliderContainer = document.querySelector('.hero-slider-container');
+        const slides = document.querySelectorAll('.hero-slide');
+        const prevButton = document.querySelector('.prev-slide');
+        const nextButton = document.querySelector('.next-slide');
+        let currentIndex = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                slide.style.transform = `translateX(${100 * (i - index)}%)`;
+            });
+            slides[index].classList.add('active');
+
+            // Animasikan teks pada slide yang aktif
+            const activeSlide = slides[index];
+            const h1 = activeSlide.querySelector('h1#main');
+            const p = activeSlide.querySelector('p');
+
+            if (h1) {
+                // Hapus kelas animasi sebelumnya jika ada
+                h1.style.opacity = 0;
+                h1.style.transform = 'translateY(30px)';
+                // Setelah sedikit delay, tambahkan kembali agar animasi berjalan
+                setTimeout(() => {
+                    h1.style.opacity = 1;
+                    h1.style.transform = 'translateY(0)';
+                }, 50);
+            }
+
+            if (p) {
+                p.style.opacity = 0;
+                p.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    p.style.opacity = 1;
+                    p.style.transform = 'translateY(0)';
+                }, 250); // Delay sedikit lebih lama untuk paragraf
+            }
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % slides.length;
+            showSlide(currentIndex);
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+            showSlide(currentIndex);
+        }
+
+        if (nextButton && prevButton) {
+            nextButton.addEventListener('click', nextSlide);
+            prevButton.addEventListener('click', prevSlide);
+
+            // Optional: Auto slide
+            // setInterval(nextSlide, 5000);
+        }
+
+        // Initial slide display
+        showSlide(currentIndex);
     },
 };
 

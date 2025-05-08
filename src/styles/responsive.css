@@ -1,3 +1,206 @@
+/* Top Bar */
+.top-bar {
+  background-color: #f0fff0; /* Light green background */
+  width: 100%;
+  padding: 10px 5%; /* Adjust padding to be consistent with header */
+  display: flex;
+  justify-content: space-between; /* Distribute items horizontally */
+  align-items: center; /* Align items vertically in the center */
+  border-bottom: 1px solid #8fbc8f; /* Dark seagreen bottom border */
+  /* position: fixed; /* Removed fixed positioning */
+  top: 0; /* Stick it to the top */
+  left: 0;
+  z-index: 110; /* Ensure it's above the header */
+  padding-bottom: 15px; /* Added padding at the bottom */
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-logo {
+  height: 50px; /* Adjust logo size as needed */
+  margin-right: 15px;
+}
+
+.top-bar-info {
+  text-align: left;
+}
+
+.top-bar-info h1 {
+  font-size: 1em; /* Increased font size */
+  color: #2e8b57;
+  margin-bottom: 2px;
+}
+
+.top-bar-info h2 {
+  font-size: 0.9em; /* Increased font size */
+  color: #3cb371;
+  margin-bottom: 1px;
+}
+
+.top-bar-info p {
+  font-size: 0.8em; /* Increased font size */
+  color: #6b8e23;
+  margin-bottom: 0;
+}
+
+.top-bar-right {
+  text-align: right;
+}
+
+.top-bar-right p {
+  font-size: 0.9em; /* Increased font size */
+  color: #2e8b57;
+  margin-bottom: 1px;
+}
+
+#mainContent{
+margin-top: 0px;
+}
+
+/* Header */
+.header {
+  /* position: fixed; /* Removed fixed positioning */
+  top: auto; /* Reset top */
+  left: 0;
+  width: 100%;
+  padding: 0.5rem 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f0fff0;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.6rem;
+  color: #0bb02f;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  gap: 2rem;
+}
+
+.navbar a {
+  font-size: 1rem;
+  color: #0a0a0a;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 10px 15px;
+  transition: 0.3s ease;
+}
+
+.navbar a:hover {
+  background: rgba(1, 65, 5, 0.3);
+  border-radius: 8px;
+}
+
+/* Tombol Login */
+.login-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background-color: #088d18;
+  color: white;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.login-btn:hover {
+  background-color: #1a3e7b;
+}
+
+/* Hamburger Menu */
+#menu-toggle {
+  display: none;
+}
+
+.icons {
+  font-size: 1.8rem;
+  color: #fff;
+  cursor: pointer;
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .icons {
+      display: block;
+  }
+
+  .navbar {
+      position: absolute;
+      top: 100%; /* Adjust based on header height */
+      left: 0;
+      width: 100%;
+      background: rgba(59, 59, 59, 0.9);
+      backdrop-filter: blur(10px);
+      flex-direction: column;
+      align-items: flex-start; /* Align items to the left in mobile */
+      height: 0;
+      overflow: hidden;
+      transition: 0.3s ease;
+      z-index: 90; /* Ensure it's below the top bar but above other content */
+      padding: 0 5%; /* Maintain horizontal padding in mobile */
+  }
+
+  #menu-toggle:checked ~ .navbar {
+      height: auto; /* Adjust height automatically */
+      padding: 20px 5%;
+  }
+
+  .navbar a {
+      padding: 10px 0; /* Adjust vertical padding */
+      font-size: 1.2rem;
+      width: 100%;
+      text-align: left; /* Left align links in mobile */
+  }
+
+  .icons #close-icon {
+      display: none;
+  }
+
+  #menu-toggle:checked ~ .icons #menu-icon {
+      display: none;
+  }
+
+  #menu-toggle:checked ~ .icons #close-icon {
+      display: block;
+  }
+
+  .header {
+      top: auto; /* Reset top in mobile */
+      position: static; /* Make header static in mobile */
+      flex-direction: column; /* Stack logo and icons */
+      align-items: flex-start; /* Left align items in header */
+  }
+
+  .logo {
+      margin-bottom: 10px; /* Add some space below the logo */
+  }
+
+  .top-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      padding-bottom: 10px; /* Adjust bottom padding in mobile */
+  }
+
+  .top-bar-right {
+      text-align: left;
+      margin-top: 5px;
+  }
+}
+
 .scroll-to-top {
   position: fixed;
   bottom: 20px;
@@ -25,4 +228,462 @@
 
 .scroll-to-top:hover {
   background-color: #1a3e7b;
+}
+
+/* Hero Section */
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: rgb(223, 215, 215);
+  position: relative;
+  overflow: hidden; 
+  padding-top: 10px; 
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100px;
+}
+.hero-slider-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  transition: transform 0.5s ease-in-out; /* Animasi transisi */
+}
+
+.hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-in-out;
+  transform: translateX(100%); /* Geser ke kanan secara default */
+}
+
+.hero-slide.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0%);
+  z-index: 1; /* Pastikan slide aktif di atas overlay */
+}
+
+.hero-slide .hero-content {
+  position: relative;
+  z-index: 2; /* Pastikan konten di atas gambar slide */
+  width: 80%;
+}
+
+.hero-content h1#main {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  opacity: 1; /* Pastikan teks terlihat */
+  transform: translateY(0); /* Kembalikan ke posisi normal */
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  color: #FFD700; /* Warna kuning keemasan */
+  /* Atau bisa juga menggunakan kode warna oranye kekuningan seperti #FFA500 atau #FFC125 */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efek bayangan untuk menonjol */
+}
+
+.hero-slide.active .hero-content h1#main {
+  opacity: 1; /* Tampilkan saat slide aktif */
+  transform: translateY(0); /* Kembali ke posisi normal */
+}
+
+/* Gaya untuk teks paragraf di Hero */
+
+.hero-content p {
+  color: #fcfcf9; /* Warna kuning keemasan */
+  /* Atau bisa juga menggunakan kode warna oranye kekuningan seperti #FFA500 atau #FFC125 */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efek bayangan untuk menonjol */
+  opacity: 0; /* Awalnya tidak terlihat untuk animasi */
+  transform: translateY(30px); /* Posisi awal di bawah */
+  transition: opacity 0.5s ease-in-out 0.2s, transform 0.5s ease-in-out 0.2s; /* Transisi dengan sedikit delay */
+}
+
+.hero-slide.active .hero-content p {
+  opacity: 1; 
+  transform: translateY(0); /* Kembali ke posisi normal */
+}
+
+.slide-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 3;
+  padding: 10px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.slide-control:hover {
+  opacity: 1;
+}
+
+.prev-slide {
+  left: 20px;
+}
+
+.next-slide {
+  right: 20px;
+}
+
+/* Hero Section Responsive */
+@media (min-width: 1200px) {
+  .hero {
+      min-width: 1000px;
+  }
+}
+
+
+/* Bagian Tentang Sekolah Kami */
+.bg-white {
+  background-color: #fff;
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.md\:flex-row {
+  @media (min-width: 768px) {
+      flex-direction: row;
+  }
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+.md\:w-1\/2 {
+  @media (min-width: 768px) {
+      width: 50%;
+  }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-green-600 {
+  color: #16a34a;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-gray-700 {
+  color: #4b5563;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.leading-relaxed {
+  line-height: 1.625;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  margin-left: 0.5rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.bg-green-600 {
+  background-color: #16a34a;
+}
+
+.text-white {
+  color: #fff;
+}
+
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.hover\:bg-green-700:hover {
+  background-color: #15803d;
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Bagian Program Pendidikan */
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .md\:grid-cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .md\:px-12 {
+      padding-left: 3rem;
+      padding-right: 3rem;
+  }
+}
+
+.object-cover {
+  object-fit: cover;
+}
+
+.h-48 {
+  height: 12rem;
+}
+
+.mt-auto {
+  margin-top: auto;
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+/* Bagian Visi Pendidikan */
+.bg-dark-taupe {
+  background-color: #eae5e5; /* Contoh warna, sesuaikan jika perlu */
+}
+
+.text-green-400 {
+  color: #6ee7b7;
+}
+
+.mt-10 {
+  margin-top: 2.5rem;
+}
+
+.container {
+  width: 100%;
+  @media (min-width: 640px) {
+      max-width: 640px;
+  }
+  @media (min-width: 768px) {
+      max-width: 768px;
+  }
+  @media (min-width: 1024px) {
+      max-width: 1024px;
+  }
+  @media (min-width: 1280px) {
+      max-width: 1280px;
+  }
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.md\:flex-row {
+  @media (min-width: 768px) {
+      flex-direction: row;
+  }
+}
+
+.gap-8 {
+  gap: 2rem;
+}
+
+.md\:w-2\/3 {
+  @media (min-width: 768px) {
+      width: 66.666667%;
+  }
+}
+
+.mt-6 {
+  margin-top: 1.5rem;
+}
+
+.leading-relaxed {
+  line-height: 1.625;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1rem;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.w-full {
+  width: 100%;
+}
+
+.max-w-2xl {
+  max-width: 42rem;
+}
+
+@media (min-width: 768px) {
+  .md\:max-w-4xl {
+      max-width: 56rem;
+  }
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transform {
+  transform: translate(0);
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+.no-underline {
+  text-decoration: none;
 }

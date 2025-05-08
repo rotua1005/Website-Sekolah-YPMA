@@ -54,14 +54,13 @@ class App {
         const page = routes[url];
 
         // Halaman yang menampilkan App Bar, Top Bar & Footer
-        const allowedPages = ['/', '/beranda', '/tentang', '/berita', '/ekstrakurikuler'];
+        const allowedPages = ['/', '/beranda', '/tentang', '/berita', '/ekstrakurikuler', '/feedbackpage'];
         const dashboardPages = [
             '/dashboard', '/dashboard_berita', '/dashboard_kurikuler',
             '/dashboard_prestasi', '/dashboard_profile', '/dashboard_kelas',
-            '/dashboard_mapel', '/dashboard_settings', '/data_siswa', '/data_akun','/data_walikelas','/menu_dashboard','/data_guru',
+            '/dashboard_mapel', '/dashboard_settings', '/data_siswa','/data_walikelas','/menu_dashboard','/data_guru',
             '/data_admin','/data_kelas','/data_sekolah','/data_mapel','/tahun_akademik','/absensi1','/kelola_absensi','/input_nilai','/kelola_nilai','/input_absensi','/kehadiran',
-            '/rekap_absensi','/dashboard_akun','/login','/nilai_guru','/nilai_akhir','/kelola_nilaiakhir','/feedback','/rekap_nilai',
-        ];
+            '/rekap_absensi','/dashboard_akun','/login','/nilai_guru','/nilai_akhir','/kelola_nilaiakhir','/feedback','/rekap_nilai','/upload_berita','/upload_eskul','/upload_prestasi',];
 
         // Tampilkan Top Bar hanya di halaman umum (non-dashboard)
         this._toggleVisibility(this._topBar, allowedPages.includes(url) && !dashboardPages.includes(url));

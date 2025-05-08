@@ -76,7 +76,7 @@ const Ekstrakulikuler = {
                         ${prestasiCards}
                     </div>
                 </section>
-            </main>
+            </main> 
         `;
     },
 

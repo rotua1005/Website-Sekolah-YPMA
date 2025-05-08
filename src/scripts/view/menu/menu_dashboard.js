@@ -1,106 +1,132 @@
 // menu/menu_dashboard.js
 const MenuDashboard = {
     render() {
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const formattedTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
         return `
-        <div class="dashboard-sidebar bg-green-700 text-white p-6 shadow-lg w-72 min-h-screen flex flex-col">
+            <div class="dashboard-sidebar bg-indigo-700 text-white p-6 shadow-lg w-64 min-h-screen flex flex-col overflow-y-auto">
+                <div class="mb-5 flex items-center justify-center border-b border-indigo-600 pb-3">
+                    <h1 class="text-xl font-bold hidden md:block">Admin Sekolah</h1>
+                </div>
+                <nav class="flex-grow">
+                    <a href="#/dashboard" class="dashboard-link block py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out">
+                        <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                    </a>
 
-            <div class="mb-8 flex items-center justify-center border-b border-green-600 pb-4">
-                <h1 class="text-2xl font-bold hidden md:block">Admin Sekolah</h1>
+                    <div class="mt-3">
+                        <p class="mb-1 text-xs font-semibold text-indigo-300 uppercase tracking-wider">MASTER DATA</p>
+                        <div class="dashboard-menu mt-1">
+                            <button class="dashboard-menu-btn w-full text-left py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="biodataMenu">
+                                <i class="fas fa-database mr-2"></i>
+                                <span class="font-semibold">Biodata</span>
+                                <span class="arrow transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div id="biodataMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
+                                <a href="#/data_guru" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Guru</a>
+                                <a href="#/data_siswa" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Siswa</a>
+                                <a href="#/data_walikelas" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Wali Kelas</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1 text-xs font-semibold text-indigo-300 uppercase tracking-wider">AKADEMIK</p>
+                        <div class="dashboard-menu mt-1">
+                            <button class="dashboard-menu-btn w-full text-left py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="akademikMenu">
+                                <i class="fas fa-exchange-alt mr-2"></i>
+                                <span class="font-semibold">Akademik</span>
+                                <span class="arrow transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div id="akademikMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
+                                <a href="#/tahun_akademik" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Tahun Akademik</a>
+                                <a href="#/data_kelas" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Kelas</a>
+                                <a href="#/data_mapel" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Mata Pelajaran</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1 text-xs font-semibold text-indigo-300 uppercase tracking-wider">ABSENSI</p>
+                        <div class="dashboard-menu mt-1">
+                            <button class="dashboard-menu-btn w-full text-left py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="absensiMenu">
+                                <i class="fas fa-file-alt mr-2"></i>
+                                <span class="font-semibold">Absensi</span>
+                                <span class="arrow transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div id="absensiMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
+                                <a href="#/absensi1" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Input Absensi</a>
+                                <a href="#/rekap_absensi" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Rekap Absensi</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1 text-xs font-semibold text-indigo-300 uppercase tracking-wider">RAPORT</p>
+                        <div class="dashboard-menu mt-1">
+                            <button class="dashboard-menu-btn w-full text-left py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="raportMenu">
+                                <i class="fas fa-chart-bar mr-2"></i>
+                                <span class="font-semibold">Raport</span>
+                                <span class="arrow transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div id="raportMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
+                                <a href="#/input_nilai" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Input Nilai</a>
+                                <a href="#/nilai_akhir" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Nilai Akhir</a>
+                                <a href="#/rekap_nilai" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Rekap Nilai</a>
+                                <a href="#/perbaikan_nilai" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Perbaikan Nilai</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1 text-xs font-semibold text-indigo-300 uppercase tracking-wider">UPLOAD INFORMASI</p>
+                        <div class="dashboard-menu mt-1">
+                            <button class="dashboard-menu-btn w-full text-left py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="informasiMenu">
+                                <i class="fas fa-bullhorn mr-2"></i>
+                                <span class="font-semibold">Informasi</span>
+                                <span class="arrow transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div id="informasiMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
+                                <a href="#/dashboard_berita" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Berita</a>
+                                <a href="#/dashboard_kurikuler" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Ekstrakurikuler</a>
+                                <a href="#/dashboard_prestasi" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Prestasi</a>
+                                <a href="#/dashboard_profile" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Profile Sekolah</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="mb-1 text-xs font-semibold text-indigo-300 uppercase tracking-wider">PROFILE</p>
+                        <a href="#/dashboard_akun" class="dashboard-link block py-2.5 px-4 rounded hover:bg-indigo-600 transition duration-200 ease-in-out">
+                            <i class="fas fa-user-circle mr-2"></i> Profile
+                        </a>
+                    </div>
+                </nav>
+                <div class="mt-5 p-4 border-t border-indigo-600 text-center">
+                    <p class="text-xs text-indigo-300">${formattedDate}</p>
+                    <p class="text-xs text-indigo-300">${formattedTime}</p>
+                    <p class="text-xs text-indigo-300">Medan, Indonesia</p>
+                </div>
             </div>
-            <nav class="flex-grow">
-                <a href="#/dashboard" class="dashboard-link block py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out">Dashboard</a>
-
-                <div class="dashboard-menu mt-2">
-                    <button class="dashboard-menu-btn w-full text-left py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="dataSekolahMenu">
-                        <span class="font-semibold">Upload Data</span>
-                        <span class="arrow transform transition-transform duration-300">▼</span>
-                    </button>
-                    <div id="dataSekolahMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
-                        <a href="#/dashboard_berita" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Berita</a>
-                        <a href="#/dashboard_kurikuler" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Ekstrakurikuler</a>
-                        <a href="#/dashboard_prestasi" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Prestasi</a>
-                        <a href="#/dashboard_profile" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Profile Sekolah</a>
-                    </div>
-                </div>
-
-                <div class="dashboard-menu mt-2">
-                    <button class="dashboard-menu-btn w-full text-left py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="dataBiodataMenu">
-                        <span class="font-semibold">Biodata</span>
-                        <span class="arrow transform transition-transform duration-300">▼</span>
-                    </button>
-                    <div id="dataBiodataMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
-                        <a href="#/data_akun" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Akun</a>
-                        <a href="#/data_siswa" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Siswa</a>
-                        <a href="#/data_walikelas" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Wali Kelas</a>
-                        <a href="#/data_guru" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Guru</a>
-                        <a href="#/data_admin" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Admin</a>
-                    </div>
-                </div>
-
-                <div class="dashboard-menu mt-2">
-                    <button class="dashboard-menu-btn w-full text-left py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="dataAkademikMenu">
-                        <span class="font-semibold">Data Akademik</span>
-                        <span class="arrow transform transition-transform duration-300">▼</span>
-                    </button>
-                    <div id="dataAkademikMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
-                        <a href="#/data_kelas" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Kelas</a>
-                        <a href="#/data_mapel" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Mapel</a>
-                        <a href="#/data_sekolah" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Data Sekolah</a>
-                        <a href="#/tahun_akademik" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Tahun Akademik</a>
-                    </div>
-                </div>
-
-                <div class="dashboard-menu mt-2">
-                    <button class="dashboard-menu-btn w-full text-left py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="dataAbsensiMenu">
-                        <span class="font-semibold">Data Absensi</span>
-                        <span class="arrow transform transition-transform duration-300">▼</span>
-                    </button>
-                    <div id="dataAbsensiMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
-                        <a href="#/absensi1" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Absensi</a>
-                        <a href="#/rekap_absensi" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Rekap Absensi</a>
-                    </div>
-                </div>
-
-                <div class="dashboard-menu mt-2">
-                    <button class="dashboard-menu-btn w-full text-left py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out flex items-center justify-between" data-menu="dataNilaiMenu">
-                        <span class="font-semibold">Data Nilai</span>
-                        <span class="arrow transform transition-transform duration-300">▼</span>
-                    </button>
-                    <div id="dataNilaiMenu" class="dashboard-submenu mt-1 space-y-1 hidden">
-                        <a href="#/input_nilai" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Input Nilai</a>
-                        <a href="#/nilai_akhir" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Nilai Akhir</a>
-                        <a href="#/rekap_nilai" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Rekap Nilai</a>
-                        <a href="#/perbaikan_nilai" class="dashboard-submenu-link block py-2 px-6 rounded hover:bg-green-500 transition duration-200 ease-in-out">Perbaikan Nilai</a>
-                    </div>
-                </div>
-
-                <a href="#/dashboard_akun" class="dashboard-link block mt-2 py-3 px-4 rounded hover:bg-green-600 transition duration-200 ease-in-out">Profile</a>
-            </nav>
-            <div class="mt-8 p-4 border-t border-green-600">
-                <p class="text-sm text-green-300">Medan, Indonesia</p>
-                <p class="text-sm text-green-300">${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                <p class="text-sm text-green-300">${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
-            </div>
-        </div>`;
+        `;
     },
 
     afterRender() {
-        console.log("MenuDashboard afterRender is running");
         const menuButtons = document.querySelectorAll(".dashboard-menu-btn");
         const menus = document.querySelectorAll(".dashboard-submenu");
         const arrows = document.querySelectorAll(".dashboard-menu-btn .arrow");
         const submenuLinks = document.querySelectorAll(".dashboard-submenu-link");
         const dashboardLinks = document.querySelectorAll(".dashboard-link");
-        const sidebar = document.querySelector(".dashboard-sidebar");
-        const mainContent = document.querySelector(".dashboard-main");
 
-        // Function to close all menus and reset arrows
+        // Fungsi untuk menutup semua menu dan reset panah
         const closeAllMenus = () => {
             menus.forEach(menu => menu.classList.add("hidden"));
             arrows.forEach(arrow => arrow.classList.remove("rotate-180"));
             localStorage.removeItem("openMenu");
         };
 
+        // Event listener untuk tombol menu utama
         menuButtons.forEach(button => {
             button.addEventListener("click", (event) => {
                 event.stopPropagation();
@@ -109,17 +135,17 @@ const MenuDashboard = {
                 const arrow = button.querySelector(".arrow");
                 const isOpen = !menu.classList.contains("hidden");
 
-                // Close all other menus
+                // Tutup semua menu lain
                 menus.forEach(m => {
                     if (m.id !== menuId) m.classList.add("hidden");
                 });
 
-                // Reset all other arrows
+                // Reset semua panah lain
                 arrows.forEach(a => {
                     if (a !== arrow) a.classList.remove("rotate-180");
                 });
 
-                // Toggle the current menu and arrow
+                // Toggle menu saat ini
                 if (!isOpen) {
                     menu.classList.remove("hidden");
                     arrow.classList.add("rotate-180");
@@ -132,20 +158,22 @@ const MenuDashboard = {
             });
         });
 
+        // Event listener untuk link submenu
         submenuLinks.forEach(link => {
             link.addEventListener("click", (event) => {
                 event.stopPropagation();
-                localStorage.setItem("activeSubmenu", event.target.getAttribute("href"));
+                const target = event.target;
+                localStorage.setItem("activeSubmenu", target.getAttribute("href"));
 
-                // Remove active class from all links
+                // Hapus kelas aktif dari semua link
                 submenuLinks.forEach(el => el.classList.remove("active"));
-                dashboardLinks.forEach(el => el.classList.remove("active")); // Also remove from top-level links
+                dashboardLinks.forEach(el => el.classList.remove("active"));
 
-                // Add active class to the clicked link
-                event.target.classList.add("active");
+                // Tambahkan kelas aktif ke link yang diklik
+                target.classList.add("active");
 
-                // Keep the parent menu open and arrow rotated
-                const parentMenu = event.target.closest(".dashboard-submenu");
+                // Buka menu induk dan putar panah
+                const parentMenu = target.closest(".dashboard-submenu");
                 if (parentMenu) {
                     parentMenu.classList.remove("hidden");
                     const parentButton = document.querySelector(`[data-menu="${parentMenu.id}"]`);
@@ -157,18 +185,18 @@ const MenuDashboard = {
             });
         });
 
+        // Event listener untuk link dashboard utama
         dashboardLinks.forEach(link => {
             link.addEventListener("click", () => {
-                // Remove active class from all submenu links
                 submenuLinks.forEach(el => el.classList.remove("active"));
                 dashboardLinks.forEach(el => el.classList.remove("active"));
                 link.classList.add("active");
-                closeAllMenus(); // Close all submenus when a top-level link is clicked
+                closeAllMenus();
                 localStorage.removeItem("activeSubmenu");
             });
         });
 
-        // Restore menu state on load
+        // Restorasi status menu dari localStorage saat halaman dimuat
         const openMenuId = localStorage.getItem("openMenu");
         if (openMenuId) {
             const openMenu = document.getElementById(openMenuId);

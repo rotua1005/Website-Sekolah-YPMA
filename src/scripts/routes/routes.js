@@ -12,7 +12,6 @@ import Tentang from '../view/pages/tentang';
 import Nav_Dashboard from '../view/dashboard/upload data/nav_dashboard';
 import DetailUpload from '../view/dashboard/upload data/detail_upload';
 import DataSiswa from '../view/dashboard/biodata/data_siswa';
-import DataAkun from '../view/dashboard/biodata/data_akun';
 import MenuDashboard from '../view/menu/menu_dashboard';
 import DataWaliKelas from '../view/dashboard/biodata/data_walikelas';
 import DataGuru from '../view/dashboard/biodata/data_guru';
@@ -36,7 +35,11 @@ import HasilInputNilai from '../view/dashboard/nilai/hasil_inputnilai';
 import Rekap2Absensi from '../view/dashboard/absensi/rekap2_absensi';
 import Feedback from '../view/dashboard/feedback/feedback';
 import RekapNilai from '../view/dashboard/nilai/rekap_nilai';
-
+import UploadBerita from '../view/dashboard/upload data/upload_berita';
+import UploadEkstraKurikuler from '../view/dashboard/upload data/upload_eskul';
+import UploadPrestasi from '../view/dashboard/upload data/upload_prestasi';
+import Upload_Profile from '../view/dashboard/upload data/upload_profile';
+import FeedbackPage from '../view/pages/page_feedback';
 
 
 const routes = {
@@ -49,12 +52,15 @@ const routes = {
   '/dashboard': Dashboard,
   './nav_dashboard':Nav_Dashboard,
   '/dashboard_berita': Dashboard_Berita,
+  '/upload_berita': UploadBerita,
   '/dashboard_prestasi': Dashboard_Prestasi,
   '/dashboard_kurikuler': Dashboard_EkstraKurikuler,
+  '/upload_eskul' :UploadEkstraKurikuler,
   '/dashboard_profile': Dashboard_Profile,
+  '/upload_profile': Upload_Profile,
+  '/upload_prestasi' : UploadPrestasi,
   '/detail_upload':DetailUpload,
   '/data_siswa':DataSiswa,
-  '/data_akun':DataAkun,
   '/data_walikelas':DataWaliKelas,
   '/menu_dashboard':MenuDashboard,
   '/data_guru':DataGuru,
@@ -78,6 +84,7 @@ const routes = {
   '/rekap2_absensi': Rekap2Absensi,
   '/dashboard_akun': Dashboard_Akun,
   '/feedback': Feedback,
+  '/feedbackpage' : FeedbackPage,
 
 };
 
