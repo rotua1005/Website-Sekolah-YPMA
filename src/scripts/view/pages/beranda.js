@@ -162,17 +162,17 @@ const Beranda = {
                     </div>
                 </section>
 
-<section class="pendaftaran-section bg-green-700 text-white py-20 relative overflow-hidden">
-    <div class="container mx-auto text-center">
-        <h2 class="text-4xl font-bold mb-6">PENDAFTARAN PESERTA DIDIK BARU</h2>
-        <p class="text-lg mb-8">Kami mengundang putra dan putri terbaik Negeri untuk bergabung bersama SD Yayasan Pesantren Modern Adnan, Medan</p>
-    </div>
-    <div class="container mx-auto text-center mt-8">
-        <button onclick="window.open('https://wa.me/+6283854537823', '_blank')" class="bg-white text-green-700 font-bold py-3 px-8 rounded-full hover:bg-green-100 transition-all inline-flex items-center no-underline">
-            <i class="fab fa-whatsapp text-2xl mr-2"></i> Daftar Sekarang
-        </button>
-    </div>
-</section>
+                <section class="pendaftaran-section bg-green-700 text-white py-20 relative overflow-hidden">
+                    <div class="container mx-auto text-center">
+                        <h2 class="text-4xl font-bold mb-6">PENDAFTARAN PESERTA DIDIK BARU</h2>
+                        <p class="text-lg mb-8">Kami mengundang putra dan putri terbaik Negeri untuk bergabung bersama SD Yayasan Pesantren Modern Adnan, Medan</p>
+                    </div>
+                    <div class="container mx-auto text-center mt-8">
+                        <button onclick="window.open('https://wa.me/+6283854537823', '_blank')" class="bg-white text-green-700 font-bold py-3 px-8 rounded-full hover:bg-green-100 transition-all inline-flex items-center no-underline">
+                            <i class="fab fa-whatsapp text-2xl mr-2"></i> Daftar Sekarang
+                        </button>
+                    </div>
+                </section>
 
                 <section class="py-12 bg-gray-100">
                     <div class="container mx-auto">
@@ -206,21 +206,51 @@ const Beranda = {
                     </div>
                 </section>
 
-
 <section class="py-12 bg-white">
-    <div class="container mx-auto text-center">
-        <h2 class="text-3xl font-bold text-green-600 mb-8">Lokasi Sekolah Kami</h2>
-        <p class="text-lg text-gray-700 mb-4">Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123</p>
-        <div class="rounded-lg overflow-hidden shadow-md mb-6">
-            <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3981.940799799419!2d98.6487487747888!3d3.56955799644139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312e23f34b3e31%3A0x3a7a2b6b3b3b3b3b!2sJl.+Pesantren+No.15%2C+Sei+Sikambing+B%2C+Kec.+Medan+Sunggal%2C+Kota+Medan%2C+Sumatera+Utara+20123!5e0!3m2!1sid!2sid!4v1715153988388!5m2!1sid!2sid"
-                width="100%"
-                height="300"
-                style="border:0;"
-                allowfullscreen=""
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
+    <div class="container mx-auto">
+        <h2 class="text-3xl font-bold text-center text-green-600 mb-8">Lokasi & Kontak Sekolah Kami</h2>
+        <div class="md:flex md:gap-8">
+            <div class="md:w-1/2">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Lokasi Kami</h3>
+                <p class="text-lg text-gray-700 mb-4">Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123</p>
+                <div class="rounded-lg overflow-hidden shadow-md">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3981.891897959313!2d98.6469879747968!3d3.5688488964345886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312e27f6b749df%3A0x49b82449a354558f!2sJl.%20Pesantren%20No.15%2C%20Sei%20Sikambing%20B%2C%20Kec.%20Medan%20Sunggal%2C%20Kota%20Medan%2C%20Sumatera%20Utara%2020123!5e0!3m2!1sid!2sid!4v1715196328987!5m2!1sid!2sid"
+                        width="100%"
+                        height="450" style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+            <div class="md:w-1/2 mt-8 md:mt-0">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Hubungi Kami</h3>
+                <p class="text-lg text-gray-700 mb-6">Silakan kirimkan pertanyaan atau pesan Anda melalui formulir di bawah ini.</p>
+                <form class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nama Lengkap</label>
+                        <input type="text" id="name" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan nama lengkap Anda">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Alamat Email</label>
+                        <input type="email" id="email" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan alamat email Anda">
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Nomor Telepon</label>
+                        <input type="tel" id="phone" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan nomor telepon Anda">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-gray-700 text-sm font-bold mb-2">Pesan Anda</label>
+                        <textarea id="message" rows="5" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Tuliskan pesan Anda di sini"></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                            Kirim Pesan
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </section>

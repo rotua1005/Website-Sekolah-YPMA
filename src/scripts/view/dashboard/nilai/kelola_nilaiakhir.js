@@ -4,7 +4,7 @@ const KelolaNilaiAkhir = {
   async render() {
     return `
       <div class="dashboard-container bg-gray-100 min-h-screen flex">
-        ${MenuDashboard.render()}
+        ${await MenuDashboard.render()}
         <div class="dashboard-main flex-1 p-8">
           <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
@@ -32,7 +32,7 @@ const KelolaNilaiAkhir = {
                   </tr>
                 </thead>
                 <tbody id="dataNilaiSiswa" class="text-gray-700">
-                  </tbody>
+                </tbody>
               </table>
             </div>
           </div>
@@ -41,12 +41,12 @@ const KelolaNilaiAkhir = {
   },
 
   async afterRender() {
-    MenuDashboard.afterRender();
+    await MenuDashboard.afterRender();
     this.loadDetailNilaiInfo();
     this.loadDataNilaiSiswa();
   },
 
-  loadDetailNilaiInfo() {
+  async loadDetailNilaiInfo() {
     const detailNilaiContainer = document.getElementById('detailNilai');
     const guruData = JSON.parse(localStorage.getItem('guruUntukKelola'));
     const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
@@ -69,28 +69,25 @@ const KelolaNilaiAkhir = {
   async loadDataNilaiSiswa() {
     const dataNilaiSiswaBody = document.getElementById('dataNilaiSiswa');
     const tableHead = document.querySelector('thead tr');
-    const nilaiDikelolaInfo = JSON.parse(localStorage.getItem('nilaiUntukDikelola'));
+    const guruDataWaliKelas = JSON.parse(localStorage.getItem('guruUntukKelola'));
     const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-    const allDataNilai = JSON.parse(localStorage.getItem('dataNilaiSiswa')) || [];
-    const kelasYangDipilih = nilaiDikelolaInfo?.kelas;
+    const dataMapel = JSON.parse(localStorage.getItem('dataMapel')) || [];
+    const kelasWaliKelas = guruDataWaliKelas?.kelas;
     const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
     const semester = tahunAkademikData.length > 0 ? tahunAkademikData[0].semester : 'Ganjil';
-    const dataMapel = JSON.parse(localStorage.getItem('dataMapel')) || [];
 
-    if (!kelasYangDipilih) {
+    if (!kelasWaliKelas) {
       dataNilaiSiswaBody.innerHTML = '<tr><td colspan="100%" class="py-4 px-6 text-center">Data kelas tidak ditemukan.</td></tr>';
       return;
     }
 
-    // Ambil list mapel berdasarkan kelas
     const mapelKelasIni = dataMapel
-      .filter(m => m.kelas === kelasYangDipilih)
+      .filter(m => m.kelas === kelasWaliKelas)
       .map(m => ({
         label: m.mapel,
         key: m.mapelKey
       }));
 
-    // Render ulang <thead> agar sesuai jumlah mapel
     let headerHTML = `
       <th class="py-4 px-6">#</th>
       <th class="py-4 px-6">NIS</th>
@@ -106,51 +103,51 @@ const KelolaNilaiAkhir = {
     `;
     tableHead.innerHTML = headerHTML;
 
-    // Filter siswa sesuai kelas
-    const siswaSatuKelas = dataSiswa.filter(siswa => siswa.kelas === kelasYangDipilih);
+    const siswaSatuKelas = dataSiswa.filter(siswa => siswa.kelas === kelasWaliKelas);
+    const dataSiswaDenganNilai = [];
 
-    // Gabungkan nilai ke data siswa dan hitung rata-rata
-    let dataSiswaDenganNilai = siswaSatuKelas.map((siswa) => {
+    for (const siswa of siswaSatuKelas) {
+      const nilaiMapelSiswa = {};
       let totalNilai = 0;
       let jumlahMapel = 0;
-      const nilaiMapelSiswa = {};
 
-      allDataNilai
-        .filter(nilai => nilai.nis === siswa.nis && nilai.kelas === kelasYangDipilih && nilai.semester === semester)
-        .forEach(nilai => {
-          nilaiMapelSiswa[nilai.mapel] = parseFloat(nilai.rata_rata) || 0;
-          totalNilai += parseFloat(nilai.rata_rata) || 0;
+      for (const mapelInfo of mapelKelasIni) {
+        const nilaiKey = `nilaiSiswa_${kelasWaliKelas}_${mapelInfo.label}`;
+        const nilaiData = JSON.parse(localStorage.getItem(nilaiKey)) || [];
+        const nilaiSiswaMapel = nilaiData.find(n => n.nisn === siswa.nisn);
+        nilaiMapelSiswa[mapelInfo.label] = nilaiSiswaMapel?.rataRata || null;
+        if (nilaiSiswaMapel?.rataRata !== undefined && nilaiSiswaMapel.rataRata !== null) {
+          totalNilai += parseFloat(nilaiSiswaMapel.rataRata);
           jumlahMapel++;
-        });
+        }
+      }
 
-      const rataRata = jumlahMapel > 0 ? totalNilai / jumlahMapel : null;
+      const rataRataKeseluruhan = jumlahMapel > 0 ? totalNilai / jumlahMapel : null;
 
-      return {
+      dataSiswaDenganNilai.push({
         ...siswa,
         ...nilaiMapelSiswa,
-        rataRata: rataRata
-      };
-    });
+        rataRata: rataRataKeseluruhan
+      });
+    }
 
-    // Hitung ranking berdasarkan rata-rata
     dataSiswaDenganNilai.sort((a, b) => (b.rataRata === null ? -1 : (a.rataRata === null ? 1 : b.rataRata - a.rataRata)));
-    dataSiswaDenganNilai = dataSiswaDenganNilai.map((siswa, index) => ({
+    const dataSiswaDenganRanking = dataSiswaDenganNilai.map((siswa, index) => ({
       ...siswa,
       ranking: siswa.rataRata !== null ? index + 1 : '-'
     }));
 
-    // Render tbody
     let tableRowsHTML = '';
-    dataSiswaDenganNilai.forEach((siswa, index) => {
+    dataSiswaDenganRanking.forEach((siswa, index) => {
       tableRowsHTML += `
         <tr class="border-t">
           <td class="py-4 px-6">${index + 1}</td>
-          <td class="py-4 px-6">${siswa.nis}</td>
+          <td class="py-4 px-6">${siswa.nisn}</td>
           <td class="py-4 px-6">${siswa.nama}</td>
           <td class="py-4 px-6">${siswa.jenisKelamin === 'L' ? 'L' : 'P'}</td>
       `;
       mapelKelasIni.forEach(m => {
-        tableRowsHTML += `<td class="py-4 px-6">${siswa[m.label] || '-'}</td>`;
+        tableRowsHTML += `<td class="py-4 px-6">${siswa[m.label] !== undefined && siswa[m.label] !== null ? parseFloat(siswa[m.label]).toFixed(2) : '-'}</td>`;
       });
       tableRowsHTML += `
           <td class="py-4 px-6">${siswa.rataRata !== null ? siswa.rataRata.toFixed(2) : '-'}</td>

@@ -74,7 +74,6 @@ const MenuDashboard = {
                                 <a href="#/input_nilai" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Input Nilai</a>
                                 <a href="#/nilai_akhir" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Nilai Akhir</a>
                                 <a href="#/rekap_nilai" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Rekap Nilai</a>
-                                <a href="#/perbaikan_nilai" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Perbaikan Nilai</a>
                             </div>
                         </div>
                     </div>

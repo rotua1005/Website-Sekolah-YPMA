@@ -40,6 +40,7 @@ import UploadEkstraKurikuler from '../view/dashboard/upload data/upload_eskul';
 import UploadPrestasi from '../view/dashboard/upload data/upload_prestasi';
 import Upload_Profile from '../view/dashboard/upload data/upload_profile';
 import FeedbackPage from '../view/pages/page_feedback';
+import RekapNilai2 from '../view/dashboard/nilai/rekap_nilai2';
 
 
 const routes = {
@@ -85,6 +86,8 @@ const routes = {
   '/dashboard_akun': Dashboard_Akun,
   '/feedback': Feedback,
   '/feedbackpage' : FeedbackPage,
+  '/rekap2_nilai': RekapNilai2,
+  
 
 };
 
