@@ -1,5 +1,6 @@
 import MenuDashboard from '../../menu/menu_dashboard';
 
+
 const UploadBerita = {
     async render() {
         return `
@@ -54,13 +55,13 @@ const UploadBerita = {
         const judulInput = document.getElementById("judul");
         const deskripsiInput = document.getElementById("deskripsi");
         const gambarInput = document.getElementById("gambar");
-        const gambarLabel = document.querySelector('label[for="gambar"]');
         const fileNameDisplay = document.getElementById("file-name");
         const preview = document.getElementById("preview");
         const submitButton = document.getElementById("submit-button");
         const cancelEditButton = document.getElementById("cancel-edit");
 
         let beritaList = JSON.parse(localStorage.getItem("berita")) || [];
+        let beritaDepanList = JSON.parse(localStorage.getItem("beritaDepan")) || [];
         let editIndex = localStorage.getItem('editIndex');
         let editData = localStorage.getItem('editBerita');
 
@@ -149,7 +150,9 @@ const UploadBerita = {
                     beritaList.push(newBerita);
                     try {
                         localStorage.setItem("berita", JSON.stringify(beritaList));
-                        localStorage.setItem("beritaDepan", JSON.stringify(beritaList.slice(0, 3)));
+                        // Update beritaDepanList dengan 3 berita terbaru
+                        const updatedBeritaDepan = beritaList.slice(-3).reverse();
+                        localStorage.setItem("beritaDepan", JSON.stringify(updatedBeritaDepan));
                     } catch (e) {
                         if (e.name === 'QuotaExceededError') {
                             showAlert('Storage limit exceeded. Please delete some items.', 'danger');
@@ -186,7 +189,7 @@ const UploadBerita = {
                 setTimeout(() => alertBox.remove(), 150);
             }, 1000);
         }
-    }
+    },
 };
 
 export default UploadBerita;

@@ -15,7 +15,7 @@ const Login = {
                     <div class="row d-flex justify-content-center align-items-center">
                         <div class="col-md-9 col-lg-6 col-xl-5">
                             <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
-                                 class="img-fluid" alt="Sample image">
+                                class="img-fluid" alt="Sample image">
                         </div>
                         <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
                             <div class="mb-3">
@@ -86,7 +86,7 @@ const Login = {
                 localStorage.setItem("userRole", "kepalasekolah"); // Simpan peran pengguna
                 localStorage.setItem("username", "Kepala Sekolah"); // Simpan username
                 localStorage.setItem("email", email); // Simpan email
-                window.location.href = "/#/dashboard";
+                window.location.href = "/#/dashboard_kepsek";
             } else {
                 alert("Email atau Password salah!");
             }

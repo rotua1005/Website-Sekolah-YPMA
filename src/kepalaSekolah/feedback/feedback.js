@@ -1,6 +1,6 @@
-import MenuDashboard from '../../menu/menu_dashboard';
+import MenuKepsek from "../menu/menu_kepsek";
 
-const Feedback = {
+const FeedbackKepsek = {
     async render() {
         const feedbackMessages = JSON.parse(localStorage.getItem('feedback')) || [];
 
@@ -56,10 +56,10 @@ const Feedback = {
 
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
-                ${MenuDashboard.render()}
+                ${MenuKepsek.render()}
                 <div class="dashboard-main flex-1 p-8">
                     <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">Dashboard Kepala Sekolah</h2>
                         <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
                     </header>
 
@@ -80,4 +80,4 @@ const Feedback = {
     }
 };
 
-export default Feedback;
+export default FeedbackKepsek;

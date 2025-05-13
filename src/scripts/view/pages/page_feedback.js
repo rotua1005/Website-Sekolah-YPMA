@@ -1,114 +1,94 @@
-const Feedback = {
+const hubungiKami = {
     async render() {
         return `
-            <main class="w-full mt-8">
-                <section class="relative text-center w-full">
-                    <div class="relative w-full">
-                        <img alt="School Building" class="w-full h-[300px] md:h-[450px] lg:h-[550px] object-cover" src="./images/Lapangan.jpg"/>
-                        <img src="./images/logo.png" alt="School Logo" class="absolute top-4 left-4 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-lg transition-all hover:scale-110">
-                        <h1 class="absolute inset-0 flex items-center justify-center left-6 text-4xl md:text-5xl lg:text-6xl font-bold text-green-500">Feedback</h1>
-                    </div>
-                </section>
-
-                <section class="w-full py-16 md:py-20 bg-white mt-8 md:mt-12 shadow-lg rounded-lg">
-                    <div class="max-w-screen-md mx-auto px-6 md:px-8">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-8 text-green-600 text-center">Berikan Masukan Anda</h2>
-                        <form id="feedbackForm" class="space-y-6">
-                            <div>
-                                <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Nama<span class="text-red-500">*</span>:</label>
-                                <input type="text" id="name" class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md py-3 px-4" placeholder="Nama Lengkap Anda" required>
+            <section class="py-12 bg-white">
+                <div class="container mx-auto">
+                    <h2 class="text-3xl font-bold text-center text-green-600 mb-8">Lokasi & Kontak Sekolah Kami</h2>
+                    <div class="md:flex md:gap-8">
+                        <div class="md:w-1/2">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Lokasi Kami</h3>
+                            <p class="text-lg text-gray-700 mb-4">Jl. Pesantren No.15, Sei Sikambing B, Kec. Medan Sunggal, Kota Medan, Sumatera Utara 20123</p>
+                            <div class="rounded-lg overflow-hidden shadow-md">
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3981.891897959313!2d98.6469879747968!3d3.5688488964345886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312e27f6b749df%3A0x49b82449a354558f!2sJl.%20Pesantren%20No.15%2C%20Sei%20Sikambing%20B%2C%20Kec.%20Medan%20Sunggal%2C%20Kota%20Medan%2C%20Sumatera%20Utara%2020123!5e0!3m2!1sid!2sid!4v1715196328987!5m2!1sid!2sid"
+                                    width="100%"
+                                    height="450" style="border:0;"
+                                    allowfullscreen=""
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade">
+                                </iframe>
                             </div>
-                            <div>
-                                <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">Email<span class="text-red-500">*</span>:</label>
-                                <input type="email" id="email" class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md py-3 px-4" placeholder="Alamat Email Anda" required>
-                            </div>
-                            <div>
-                                <label for="rating" class="block text-gray-700 text-sm font-semibold mb-2">Penilaian (Skala 1-5):</label>
-                                <div class="flex items-center space-x-2">
-                                    <input type="radio" id="rating1" name="rating" value="1" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300">
-                                    <label for="rating1" class="text-gray-700 text-sm">1 (Kurang)</label>
-                                    <input type="radio" id="rating2" name="rating" value="2" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300">
-                                    <label for="rating2" class="text-gray-700 text-sm">2 (Cukup)</label>
-                                    <input type="radio" id="rating3" name="rating" value="3" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300" checked>
-                                    <label for="rating3" class="text-gray-700 text-sm">3 (Baik)</label>
-                                    <input type="radio" id="rating4" name="rating" value="4" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300">
-                                    <label for="rating4" class="text-gray-700 text-sm">4 (Sangat Baik)</label>
-                                    <input type="radio" id="rating5" name="rating" value="5" class="focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300">
-                                    <label for="rating5" class="text-gray-700 text-sm">5 (Luar Biasa)</label>
+                        </div>
+                        <div class="md:w-1/2 mt-8 md:mt-0" id="hubungiKami">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Hubungi Kami</h3>
+                            <p class="text-lg text-gray-700 mb-6">Silakan kirimkan pertanyaan atau pesan Anda melalui formulir di bawah ini.</p>
+                            <form id="contactForm" class="space-y-6">
+                                <div>
+                                    <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nama Lengkap</label>
+                                    <input type="text" id="name" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan nama lengkap Anda">
                                 </div>
-                            </div>
-                            <div>
-                                <label for="feedback" class="block text-gray-700 text-sm font-semibold mb-2">Masukan<span class="text-red-500">*</span>:</label>
-                                <textarea id="feedback" rows="5" class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md py-3 px-4" placeholder="Bagaimana pendapat Anda tentang sekolah kami?" required></textarea>
-                            </div>
-                            <div class="flex justify-end">
-                                <button type="submit" class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    <i class="fas fa-paper-plane mr-2"></i> Kirim Masukan
-                                </button>
-                            </div>
-                        </form>
-                        <div id="feedbackMessage" class="mt-6 text-green-600 font-semibold text-center hidden">Terima kasih atas masukan Anda!</div>
+                                <div>
+                                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Alamat Email</label>
+                                    <input type="email" id="email" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan alamat email Anda">
+                                </div>
+                                <div>
+                                    <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Nomor Telepon</label>
+                                    <input type="tel" id="phone" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Masukkan nomor telepon Anda">
+                                </div>
+                                <div>
+                                    <label for="message" class="block text-gray-700 text-sm font-bold mb-2">Pesan Anda</label>
+                                    <textarea id="message" rows="5" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Tuliskan pesan Anda di sini"></textarea>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" id="submitMessage" class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                                        Kirim Pesan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </section>
-            </main>
+                </div>
+            </section>
         `;
     },
 
     async afterRender() {
-        const feedbackForm = document.getElementById('feedbackForm');
-        const feedbackMessage = document.getElementById('feedbackMessage');
+        const contactForm = document.getElementById('contactForm');
+        const submitButton = document.getElementById('submitMessage');
 
-        if (feedbackForm) {
-            feedbackForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
+        if (contactForm && submitButton) {
+            contactForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Mencegah form submit biasa
 
                 const nameInput = document.getElementById('name');
                 const emailInput = document.getElementById('email');
-                const feedbackInput = document.getElementById('feedback');
-                const ratingInputs = document.querySelectorAll('input[name="rating"]:checked');
-                const selectedRating = ratingInputs.length > 0 ? ratingInputs[0].value : '';
+                const phoneInput = document.getElementById('phone');
+                const messageInput = document.getElementById('message');
 
-                const feedbackData = {
-                    nama: nameInput.value,
+                const feedback = {
+                    name: nameInput.value,
                     email: emailInput.value,
-                    skala: selectedRating,
-                    masukan: feedbackInput.value,
-                    timestamp: new Date().toISOString(),
+                    phone: phoneInput.value,
+                    message: messageInput.value,
+                    timestamp: new Date().toISOString() // Tambahkan timestamp
                 };
 
                 // Ambil data feedback yang sudah ada dari localStorage
-                const existingFeedback = JSON.parse(localStorage.getItem('feedbackData')) || [];
+                const existingFeedback = JSON.parse(localStorage.getItem('feedback')) || [];
 
-                // Tambahkan feedback baru ke array yang sudah ada
-                existingFeedback.push(feedbackData);
+                // Tambahkan feedback baru ke array
+                existingFeedback.push(feedback);
 
                 // Simpan kembali ke localStorage
-                localStorage.setItem('feedbackData', JSON.stringify(existingFeedback));
+                localStorage.setItem('feedback', JSON.stringify(existingFeedback));
 
-                console.log('Data Feedback Tersimpan:', feedbackData);
+                // Reset form setelah berhasil menyimpan
+                contactForm.reset();
 
-                // Tampilkan pesan terima kasih
-                feedbackForm.reset();
-                feedbackMessage.classList.remove('hidden');
-
-                // Sembunyikan pesan setelah beberapa detik (opsional)
-                setTimeout(() => {
-                    feedbackMessage.classList.add('hidden');
-                }, 3000);
+                alert('Pesan Anda berhasil terkirim!'); // Berikan umpan balik kepada pengguna
             });
         }
-
-        // Menghapus bagian kode yang tidak relevan dengan halaman feedback
-        // const searchButton = document.getElementById('searchButton');
-        // if (searchButton) {
-        //     searchButton.addEventListener('click', () => {
-        //         this.render().then(html => {
-        //             document.querySelector('main').innerHTML = html;
-        //             this.afterRender();
-        //         });
-        //     });
-        // }
-    }
+    },
 };
 
-export default Feedback;
+export default hubungiKami;

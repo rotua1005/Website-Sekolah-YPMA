@@ -26,27 +26,74 @@ footer a {
 .social-icons a {
   color: #fff;
   font-size: 1.5rem;
-  margin-left: 0.5rem;
-  display: inline-flex; 
-  align-items: center; /* Menyamakan ikon di tengah vertikal */
-  justify-content: center; /* Menyamakan ikon di tengah horizontal */
-  min-width: 44px; /* Menentukan lebar minimum */
-  min-height: 44px; /* Menentukan tinggi minimum */
-  padding: 10px; /* Padding untuk memperluas area klik */
+  margin-right: 0.5rem; /* Ubah margin-left jadi margin-right agar ikon tidak terlalu rapat di awal */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px; /* Sedikit dikurangi */
+  min-height: 40px; /* Sedikit dikurangi */
+  padding: 8px; /* Sedikit dikurangi */
+  border-radius: 50%; /* Membuat ikon menjadi lingkaran */
+  background-color: rgba(255, 255, 255, 0.1); /* Latar belakang transparan */
+  transition: background-color 0.3s ease; /* Animasi latar belakang */
 }
 
+.social-icons a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
 
-.social-icons a:first-child {
-  margin-left: 0;
+.footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer ul li {
+  margin-bottom: 0.5rem;
+}
+
+.footer ul li a {
+  color: #ddd; /* Warna teks link */
+  text-decoration: none;
+}
+
+.footer ul li a:hover {
+  color: #48bb78; /* Warna hover (sesuai warna hijau app bar) */
+}
+
+.border-t {
+  /* Gaya border sudah diatur di Tailwind */
+  padding-top: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.footer .text-sm a {
+  color: #ccc;
+  text-decoration: none;
+}
+
+.footer .text-sm a:hover {
+  color: #48bb78;
+}
+
+/* Animasi hover pada footer keseluruhan */
+.footer:hover {
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3); /* Efek bayangan saat hover */
 }
 
 @media screen and (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
+  .grid-cols-md-3 > * {
+      grid-column: span 1;
+  }
+
+  .text-center {
+      text-align: center;
+  }
+
+  .md\:text-left {
+      text-align: center;
   }
 
   .social-icons {
-    margin-top: 1rem;
+      justify-content: center !important;
   }
 }

@@ -8,62 +8,108 @@ const Dashboard = {
 
         if (userRole === "admin") {
             welcomeMessage = 'Dashboard Admin';
-            alertMessage = '<div id="loginAlert" class="alert alert-success" role="alert">Anda berhasil login sebagai Admin!</div>';
+            alertMessage = '<div id="loginAlert" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724; padding: 0.75rem 1.25rem; border: 1px solid transparent; border-radius: 0.25rem; position: relative; margin-bottom: 1rem;" role="alert">' +
+                                    '<strong style="font-weight: bold;">Berhasil!</strong>' +
+                                    '<span style="display: inline;">Anda berhasil login sebagai Admin!</span>' +
+                                '</div>';
         } else if (userRole === "kepalasekolah") {
             welcomeMessage = 'Dashboard Kepala Sekolah';
-            alertMessage = '<div id="loginAlert" class="alert alert-success" role="alert">Anda berhasil login sebagai Kepala Sekolah!</div>';
+            alertMessage = '<div id="loginAlert" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724; padding: 0.75rem 1.25rem; border: 1px solid transparent; border-radius: 0.25rem; position: relative; margin-bottom: 1rem;" role="alert">' +
+                                    '<strong style="font-weight: bold;">Berhasil!</strong>' +
+                                    '<span style="display: inline;">Anda berhasil login sebagai Kepala Sekolah!</span>' +
+                                '</div>';
         }
 
+        const cardStyle = `
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        `;
+
+        const cardTitleStyle = `
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        `;
+
+        const cardSubtitleStyle = `
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        `;
+
+        const detailButtonStyle = `
+            background-color: #f9fafb;
+            color: #374151;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.15s ease-in-out;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+        `;
+
+        const detailButtonContainerStyle = `
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 1rem;
+        `;
+
         return `
-            <div class="dashboard-container bg-gray-100 min-h-screen flex">
+            <div class="dashboard-container" style="background-color: #f3f4f6; min-height: 100vh; display: flex;">
                 ${MenuDashboard.render()}
-                <div class="dashboard-main flex-1 p-8">
-                    <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">${welcomeMessage}</h2>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
+                <div class="dashboard-main" style="flex: 1; padding: 1rem;">
+                    <header style="background-color: white; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); border-radius: 0.5rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: bold; color: #374151;">${welcomeMessage}</h2>
+                        <button class="bg-red-500" style="background-color: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s ease-in-out; cursor: pointer; border: none;">Logout</button>
                     </header>
 
-                    <main class="bg-white shadow-lg rounded-lg p-6">
-                        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Selamat Datang di ${welcomeMessage}</h1>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-green-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
+                    <main style="background-color: white; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); border-radius: 0.5rem; padding: 1rem;">
+                        <h1 style="font-size: 1.875rem; font-weight: bold; text-align: center; color: #374151; margin-bottom: 1.5rem;">Selamat Datang di ${welcomeMessage}</h1>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div style="${cardStyle}; background-color: #f0fdf4; border-left: 4px solid #86efac;">
                                 <div>
-                                    <div class="text-3xl font-bold">Absensi</div>
-                                    <div class="text-sm mt-1">Kehadiran Kelas</div>
+                                    <div style="${cardTitleStyle}">Absensi</div>
+                                    <div style="${cardSubtitleStyle}">Kehadiran Kelas</div>
                                 </div>
-                                <div class="flex justify-end items-center">
-                                    <button id="absensiButton" class="bg-white text-green-500 px-4 py-2 rounded hover:bg-green-100 transition">Detail</button>
+                                <div style="${detailButtonContainerStyle}">
+                                    <button id="absensiButton" style="${detailButtonStyle}; color: #16a34a; background-color: #ecfccb;">Detail</button>
                                 </div>
                             </div>
 
-                            <div class="bg-yellow-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
+                            <div style="${cardStyle}; background-color: #fffbeb; border-left: 4px solid #facc15;">
                                 <div>
-                                    <div class="text-3xl font-bold">Nilai</div>
-                                    <div class="text-sm mt-1">Penilaian Kelas</div>
+                                    <div style="${cardTitleStyle}">Nilai</div>
+                                    <div style="${cardSubtitleStyle}">Penilaian Kelas</div>
                                 </div>
-                                <div class="flex justify-end items-center">
-                                    <button id="nilaiButton" class="bg-white text-yellow-500 px-4 py-2 rounded hover:bg-yellow-100 transition">Detail</button>
+                                <div style="${detailButtonContainerStyle}">
+                                    <button id="nilaiButton" style="${detailButtonStyle}; color: #ca8a04; background-color: #fef08a;">Detail</button>
                                 </div>
                             </div>
 
-                            <div class="bg-teal-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
+                            <div style="${cardStyle}; background-color: #f0f8ff; border-left: 4px solid #22d3ee;">
                                 <div>
-                                    <div class="text-3xl font-bold">Profil</div>
-                                    <div class="text-sm mt-1">Profil Saya</div>
+                                    <div style="${cardTitleStyle}">Profil</div>
+                                    <div style="${cardSubtitleStyle}">Profil Saya</div>
                                 </div>
-                                <div class="flex justify-end items-center">
-                                    <button id="profilButton" class="bg-white text-teal-500 px-4 py-2 rounded hover:bg-teal-100 transition">Detail</button>
+                                <div style="${detailButtonContainerStyle}">
+                                    <button id="profilButton" style="${detailButtonStyle}; color: #06b6d4; background-color: #ccfbf1;">Detail</button>
                                 </div>
                             </div>
 
-                            <div class="bg-purple-500 text-white rounded-lg shadow-md p-6 flex flex-col justify-between">
+                            <div style="${cardStyle}; background-color: #fdf2f8; border-left: 4px solid #e879f9;">
                                 <div>
-                                    <div class="text-3xl font-bold">Feedback</div>
-                                    <div class="text-sm mt-1">Kritik dan Saran</div>
+                                    <div style="${cardTitleStyle}">Feedback</div>
+                                    <div style="${cardSubtitleStyle}">Kritik dan Saran</div>
                                 </div>
-                                <div class="flex justify-end items-center">
-                                    <button id="feedbackButton" class="bg-white text-purple-500 px-4 py-2 rounded hover:bg-purple-100 transition">Detail</button>
+                                <div style="${detailButtonContainerStyle}">
+                                    <button id="feedbackButton" style="${detailButtonStyle}; color: #d946ef; background-color: #fce7f3;">Detail</button>
                                 </div>
                             </div>
                         </div>

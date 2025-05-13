@@ -41,6 +41,36 @@ import UploadPrestasi from '../view/dashboard/upload data/upload_prestasi';
 import Upload_Profile from '../view/dashboard/upload data/upload_profile';
 import FeedbackPage from '../view/pages/page_feedback';
 import RekapNilai2 from '../view/dashboard/nilai/rekap_nilai2';
+import MenuKepsek from '../../kepalaSekolah/menu/menu_kepsek';
+import DashboardKepsek from '../../kepalaSekolah/dashboard/dashboard_kepsek';
+import DataKepsekGuru from '../../kepalaSekolah/biodata/data_guru';
+import DataKepsekSiswa from '../../kepalaSekolah/biodata/data_siswa';
+import DataWaliKelasKepsek from '../../kepalaSekolah/biodata/data_walikelas';
+import TahunAkademikKepsek from '../../kepalaSekolah/akademik/tahun_akademik';
+import DataKelasKepsek from '../../kepalaSekolah/akademik/data_kelas';
+import DataMataPelajaranKepsek from '../../kepalaSekolah/akademik/data_mapel';
+import Absensi1Kepsek from '../../kepalaSekolah/absensi/absensi1';
+import KelolaAbsensiKepsek from '../../kepalaSekolah/absensi/kelola_absensi';
+import KehadiranKepsek from '../../kepalaSekolah/absensi/kehadiran';
+import RekapAbsensiKepsek from '../../kepalaSekolah/absensi/rekap_absensi';
+import Rekap2AbsensiKepsek from '../../kepalaSekolah/absensi/rekap2_absensi';
+import NilaiAkhirKepsek from '../../kepalaSekolah/nilai/nilai_akhir';
+import KelolaNilaiAkhirKepsek from '../../kepalaSekolah/nilai/kelola_nilaiakhir';
+import RekapNilaiKepsek from '../../kepalaSekolah/nilai/rekap_nilai';
+import RekapNilai2Kepsek from '../../kepalaSekolah/nilai/rekap_nilai2';
+import Dashboard_BeritaKepsek from '../../kepalaSekolah/upload data/dashboard_berita';
+import Dashboard_EkstraKurikulerKepsek from '../../kepalaSekolah/upload data/dashboard_kurikuler';
+import Dashboard_PrestasiKepsek from '../../kepalaSekolah/upload data/dashboard_prestasi';
+import Dashboard_ProfileKepsek from '../../kepalaSekolah/upload data/dashboard_profile';
+import Dashboard_AkunKepsek from '../../kepalaSekolah/profile/akun';
+import DetailEkstrakurikuler from '../view/pages/detail/ekstrakurikuler';
+import FeedbackKepsek from '../../kepalaSekolah/feedback/feedback';
+import DetailBerita from '../view/pages/detail/berita';
+import VisiMisi from '../view/pages/visiMisi';
+import Fasilitas from '../view/pages/fasilitas';
+import ProfileGuru from '../view/pages/profileGuru';
+import Prestasi from '../view/pages/prestasi';
+import DetailPrestasi from '../view/pages/detail/prestasi';
 
 
 const routes = {
@@ -85,9 +115,46 @@ const routes = {
   '/rekap2_absensi': Rekap2Absensi,
   '/dashboard_akun': Dashboard_Akun,
   '/feedback': Feedback,
-  '/feedbackpage' : FeedbackPage,
   '/rekap2_nilai': RekapNilai2,
-  
+  '/detail_berita/:id': DetailBerita,
+  '/detail_prestasi/:id': DetailPrestasi,
+  '/detail_ekstrakurikuler/:id': DetailEkstrakurikuler,
+  '/visimisi': VisiMisi,
+  '/fasilitas' : Fasilitas,
+  '/profilguru' : ProfileGuru,
+  '/prestasi':Prestasi,
+ 
+
+  // Kepala Sekolah
+  '/menu_kepsek' : MenuKepsek,
+  '/dashboard_kepsek' : DashboardKepsek,
+  '/data_guru_kepsek' : DataKepsekGuru,
+  '/data_siswa_kepsek' : DataKepsekSiswa,
+  '/data_walikelas_kepsek' : DataWaliKelasKepsek,
+
+  '/tahun_akademik_kepsek' : TahunAkademikKepsek,
+  '/data_kelas_kepsek' : DataKelasKepsek,
+  '/data_mapel_kepsek' : DataMataPelajaranKepsek,
+
+  '/absensi1_kepsek' : Absensi1Kepsek, 
+  '/kelola_absensi_kepsek': KelolaAbsensiKepsek,
+  '/kehadiran_kepsek' : KehadiranKepsek,
+  '/rekap_absensi_kepsek' : RekapAbsensiKepsek,
+  '/rekap2_absensi_kepsek' : Rekap2AbsensiKepsek,
+
+  '/nilai_akhir_kepsek' : NilaiAkhirKepsek,
+  '/kelola_nilaiakhir_kepsek' : KelolaNilaiAkhirKepsek,
+  '/rekap_nilai_kepsek' : RekapNilaiKepsek,
+  '/rekap2_nilai_kepsek' : RekapNilai2Kepsek,
+
+  '/dashboard_berita_kepsek' : Dashboard_BeritaKepsek,
+  '/dashboard_kurikuler_kepsek' : Dashboard_EkstraKurikulerKepsek,
+  '/dashboard_prestasi_kepsek' : Dashboard_PrestasiKepsek,
+  '/dashboard_profile_kepsek' : Dashboard_ProfileKepsek,
+  '/dashboard_akun_kepsek' : Dashboard_AkunKepsek,
+
+  '/feedback_kepsek' : FeedbackKepsek,
+
 
 };
 

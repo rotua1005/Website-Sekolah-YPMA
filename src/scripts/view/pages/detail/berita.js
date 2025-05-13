@@ -1,33 +1,32 @@
-// detailberita.js
-class DetailBerita {
-    constructor() {
-        this.template = '';
-        this.currentIndex = null;
-        this.beritaData = null;
-    }
-
-    async render(berita, index) {
-        this.beritaData = berita;
-        this.currentIndex = index;
+const DetailBerita = {
+    async render() {
+        const hashSegments = window.location.hash.split('/');
+        const id = parseInt(hashSegments[hashSegments.length - 1]);
         const beritaList = JSON.parse(localStorage.getItem("berita")) || [];
-        const relatedBerita = beritaList.filter((_, i) => i !== index).slice(0, 3);
-        let comments = JSON.parse(localStorage.getItem(`comments_berita_${index}`)) || [];
+        const berita = beritaList[id];
+
+        if (!berita) {
+            return `<p class="text-center text-gray-500 text-lg">Berita tidak ditemukan.</p>`;
+        }
+
+        const relatedBerita = beritaList.filter((_, i) => i !== id).slice(0, 3);
+        let comments = JSON.parse(localStorage.getItem(`comments_berita_${id}`)) || [];
 
         const renderComments = (comments) => {
             let commentHTML = '';
             comments.forEach(comment => {
                 commentHTML += `
-                    <div class="mb-4 p-4 border rounded-md shadow-sm" style="margin-left: -300px;">
+                    <div class="mb-4 p-4 border rounded-md shadow-sm">
                         <p class="font-semibold">${comment.name}</p>
                         <p class="text-sm text-gray-500">${comment.date}</p>
                         <p class="mt-2">${comment.text}</p>
                         <button class="text-blue-500 hover:underline mt-2 reply-button" data-comment-id="${comment.id}">Reply</button>
                         <div id="reply-form-${comment.id}" class="hidden mt-4">
-                            <textarea rows="2" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Balas komentar ini"></textarea>
-                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2 post-reply-button" data-parent-id="${comment.id}">Post Reply</button>
+                            <textarea rows="2" class="w-full border rounded p-2 text-sm mb-2" placeholder="Balas komentar ini"></textarea>
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded post-reply-button" data-parent-id="${comment.id}">Post Reply</button>
                         </div>
                         ${comment.replies && comment.replies.length > 0 ? `
-                            <div class="ml-6 mt-4">
+                            <div class="ml-6 mt-4 border-l pl-4">
                                 ${renderComments(comment.replies)}
                             </div>
                         ` : ''}
@@ -37,109 +36,117 @@ class DetailBerita {
             return commentHTML;
         };
 
-        this.template = `
-            <div class="w-full" style="margin-left: -300px;">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-green-700 mb-4">${berita.judul}</h2>
-                    <p class="text-lg text-gray-500 mb-5">
+        return `
+        <section class="relative w-full mb-8 berita-hero">
+            <div class="relative w-300 h-[300px] md:h-[700px] overflow-hidden">
+                <img
+                    src="${berita.gambar}"
+                    alt="${berita.judul}"
+                    class="w-full h-full object-cover brightness-75"
+                />
+            </div>
+            <div class="px-4 md:px-20 mt-6">
+                <h1 class="text-3xl md:text-5xl font-bold text-gray-800">${berita.judul}</h1>
+            </div>
+        </section>
+
+        <main class="w-full mt-0 px-4 md:px-20">
+            <section class="relative w-full mb-8 flex flex-col md:flex-row gap-8">
+                <div class="md:w-2/3">
+                    <p class="text-lg text-gray-500 mb-3">
                         Diterbitkan: ${new Date(berita.tanggal || Date.now()).toLocaleDateString('id-ID', {
                             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                         })}
                     </p>
-                    <img src="${berita.gambar}" alt="${berita.judul}" class="w-full h-auto object-cover rounded-md shadow mb-3"/>
                     <div class="text-lg text-gray-800 leading-relaxed whitespace-pre-line">
                         ${berita.deskripsi}
                     </div>
                 </div>
-
-                <div class="mt-8 border-t pt-8">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-700">Leave a Comment</h3>
-                    <form id="comment-form" class="mb-8">
-                        <div class="mb-4">
-                            <label for="comment-text" class="block text-gray-700 text-sm font-bold mb-2">Comment</label>
-                            <textarea id="comment-text" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label for="comment-name" class="block text-gray-700 text-sm font-bold mb-2">Name *</label>
-                            <input type="text" id="comment-name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
-                        <div class="mb-4">
-                            <label for="comment-email" class="block text-gray-700 text-sm font-bold mb-2">Email *</label>
-                            <input type="email" id="comment-email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </div>
-                        <div class="mb-4">
-                            <input type="checkbox" id="save-info" name="save-info">
-                            <label for="save-info" class="text-gray-700 text-sm">Simpan nama, email, dan situs web saya pada peramban ini untuk komentar saya berikutnya.</label>
-                        </div>
-                        <button type="submit" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Post Comment
-                        </button>
-                    </form>
-                </div>
-
-                <div id="comments-section" class="mt-8">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-700">Comments</h3>
-                    <div id="comment-list">
-                        ${renderComments(comments)}
+                <aside class="md:w-1/3">
+                    <h3 class="text-xl font-semibold mb-4 text-green-700 border-b pb-3">Berita Terkait</h3>
+                    <div class="space-y-4">
+                        ${relatedBerita.map(rb => `
+                            <div class="flex gap-4">
+                                <img src="${rb.gambar}" alt="${rb.judul}" class="w-20 h-16 object-cover rounded-md" />
+                                <div>
+                                    <p class="text-sm text-gray-500 mb-1">
+                                        ${new Date(rb.tanggal || Date.now()).toLocaleDateString('id-ID', {
+                                            day: 'numeric', month: 'short', year: 'numeric'
+                                        })}
+                                    </p>
+                                    <h4 class="text-base font-semibold text-blue-800 line-clamp-2">${rb.judul}</h4>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
-                </div>
+                </aside>
+            </section>
 
-                <div class="mt-8">
-                    <button id="close-detail" class="px-5 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-lg font-semibold">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Kembali
-                    </button>
+            <section class="mb-12 md:w-2/3">
+                <h3 class="text-xl font-bold text-blue-700 mb-4">Tinggalkan Komentar</h3>
+                <form id="comment-form" class="space-y-4">
+                    <div>
+                        <label for="comment-name" class="block text-sm font-medium text-gray-700 mb-1">Nama *</label>
+                        <input type="text" id="comment-name" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label for="comment-email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" id="comment-email" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label for="comment-text" class="block text-sm font-medium text-gray-700 mb-1">Komentar *</label>
+                        <textarea id="comment-text" rows="4" class="w-full border rounded px-3 py-2" required></textarea>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="save-info">
+                        <label for="save-info" class="text-sm text-gray-700">Simpan info saya untuk komentar berikutnya</label>
+                    </div>
+                    
+                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-5 py-2 rounded">Kirim Komentar</button>
+                </form>
+            </section>
+
+            <section class="mb-16 md:w-2/3">
+                <h3 class="text-xl font-bold text-blue-700 mb-4">Komentar</h3>
+                <div id="comment-list">
+                    ${renderComments(comments)}
                 </div>
+            </section>
+
+            <div class="mb-12">
+                <a href="#/berita" class="text-blue-600 hover:underline text-lg font-medium inline-flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="w-5 h-5 mr-2" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12m7.5-7.5L8.25 12" />
+                    </svg>
+                    Previous Post
+                </a>
             </div>
-
-            <aside class="mt-8 md:mt-0" style="margin-left: -300px;">
-                <h3 class="text-xl font-semibold mb-4 text-green-700 border-b pb-3">Berita Terkait</h3>
-                <div class="space-y-4">
-                    ${relatedBerita.map(rb => `
-                        <div class="flex gap-4">
-                            <div class="aspect-w-4 aspect-h-3 w-20 h-15">
-                                <img src="${rb.gambar}" alt="${rb.judul}" class="w-full h-full object-cover rounded-md" />
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-blue-800 line-clamp-2">${rb.judul}</h4>
-                                <p class="text-sm text-gray-500">
-                                    ${new Date(rb.tanggal || Date.now()).toLocaleDateString('id-ID', {
-                                        day: 'numeric', month: 'short', year: 'numeric'
-                                    })}
-                                </p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </aside>
+        </main>
         `;
-    }
+    },
 
-    getTemplate() {
-        return this.template;
-    }
-
-    afterRender() {
+    async afterRender() {
         const commentForm = document.getElementById('comment-form');
         const commentListDiv = document.getElementById('comment-list');
-        let comments = JSON.parse(localStorage.getItem(`comments_berita_${this.currentIndex}`)) || [];
+        const hashSegments = window.location.hash.split('/');
+        const currentId = parseInt(hashSegments[hashSegments.length - 1]);
+        let comments = JSON.parse(localStorage.getItem(`comments_berita_${currentId}`)) || [];
+
         const renderComments = (comments) => {
             let commentHTML = '';
             comments.forEach(comment => {
                 commentHTML += `
-                    <div class="mb-4 p-4 border rounded-md shadow-sm" style="margin-left: -300px;">
+                    <div class="mb-4 p-4 border rounded-md shadow-sm">
                         <p class="font-semibold">${comment.name}</p>
                         <p class="text-sm text-gray-500">${comment.date}</p>
                         <p class="mt-2">${comment.text}</p>
                         <button class="text-blue-500 hover:underline mt-2 reply-button" data-comment-id="${comment.id}">Reply</button>
                         <div id="reply-form-${comment.id}" class="hidden mt-4">
-                            <textarea rows="2" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Balas komentar ini"></textarea>
-                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2 post-reply-button" data-parent-id="${comment.id}">Post Reply</button>
+                            <textarea rows="2" class="w-full border rounded p-2 text-sm mb-2" placeholder="Balas komentar ini"></textarea>
+                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded post-reply-button" data-parent-id="${comment.id}">Post Reply</button>
                         </div>
                         ${comment.replies && comment.replies.length > 0 ? `
-                            <div class="ml-6 mt-4">
+                            <div class="ml-6 mt-4 border-l pl-4">
                                 ${renderComments(comment.replies)}
                             </div>
                         ` : ''}
@@ -152,22 +159,24 @@ class DetailBerita {
         if (commentForm) {
             commentForm.addEventListener('submit', (event) => {
                 event.preventDefault();
-                const commentText = document.getElementById('comment-text').value;
                 const name = document.getElementById('comment-name').value;
                 const email = document.getElementById('comment-email').value;
+                const text = document.getElementById('comment-text').value;
 
                 const newComment = {
                     id: Date.now(),
-                    parent: null,
-                    name: name,
-                    email: email,
-                    text: commentText,
-                    date: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' }),
+                    name,
+                    email,
+                    text,
+                    date: new Date().toLocaleDateString('id-ID', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: 'numeric', minute: 'numeric'
+                    }),
                     replies: []
                 };
 
                 comments.push(newComment);
-                localStorage.setItem(`comments_berita_${this.currentIndex}`, JSON.stringify(comments));
+                localStorage.setItem(`comments_berita_${currentId}`, JSON.stringify(comments));
                 commentListDiv.innerHTML = renderComments(comments);
                 commentForm.reset();
             });
@@ -180,49 +189,46 @@ class DetailBerita {
                     const replyForm = document.getElementById(`reply-form-${commentId}`);
                     replyForm.classList.toggle('hidden');
                 } else if (event.target.classList.contains('post-reply-button')) {
-                    const parentId = event.target.getAttribute('data-parent-id');
+                    const parentId = parseInt(event.target.getAttribute('data-parent-id'));
                     const replyTextarea = event.target.previousElementSibling;
                     const replyText = replyTextarea.value;
-                    const replyName = document.getElementById('comment-name').value;
-                    const replyEmail = document.getElementById('comment-email').value;
+                    const name = document.getElementById('comment-name').value;
+                    const email = document.getElementById('comment-email').value;
 
                     if (replyText.trim()) {
                         const newReply = {
                             id: Date.now(),
                             parent: parentId,
-                            name: replyName,
-                            email: replyEmail,
+                            name,
+                            email,
                             text: replyText,
-                            date: new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' }),
+                            date: new Date().toLocaleDateString('id-ID', {
+                                year: 'numeric', month: 'long', day: 'numeric',
+                                hour: 'numeric', minute: 'numeric'
+                            }),
                             replies: []
                         };
 
-                        const findAndAddReply = (commentArray) => {
-                            for (const comment of commentArray) {
-                                if (comment.id === parseInt(parentId)) {
+                        const addReply = (arr) => {
+                            for (const comment of arr) {
+                                if (comment.id === parentId) {
                                     comment.replies = comment.replies || [];
                                     comment.replies.push(newReply);
                                     return true;
                                 }
-                                if (comment.replies && comment.replies.length > 0) {
-                                    if (findAndAddReply(comment.replies)) {
-                                        return true;
-                                    }
-                                }
+                                if (comment.replies && addReply(comment.replies)) return true;
                             }
                             return false;
                         };
 
-                        findAndAddReply(comments);
-                        localStorage.setItem(`comments_berita_${this.currentIndex}`, JSON.stringify(comments));
+                        addReply(comments);
+                        localStorage.setItem(`comments_berita_${currentId}`, JSON.stringify(comments));
                         commentListDiv.innerHTML = renderComments(comments);
-                        document.getElementById(`reply-form-${parentId}`).classList.add('hidden');
-                        replyTextarea.value = '';
                     }
                 }
             });
         }
     }
-}
+};
 
-export default () => new DetailBerita();
+export default DetailBerita;
