@@ -1,12 +1,30 @@
-// Back-End/app.js
+// Back-End/Admin/app.js
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const uploadBeritaRoutes = require('./route/uploadBeritaRoute');
+app.use(express.json()); 
 
-const db = require('./models');
+//----------------Admin------------------------------------
+//Berite
+const uploadBeritaRoutes = require('./Admin/route/UploadBeritaRoute');
+const uploadPrestasiRoutes = require('./Admin/route/UploadPrestasiRoute');
+
+//MasterData
+const DataGuruRoutes = require('./Admin/route/DataGuruRoute');
+const DataGuruSiswaRoutes = require('./Admin/route/DataSiswaRoute');
+const DataWaliKelasRoutes = require('./Admin/route/DataWaliKelasRoute');
+
+//Akademik
+const TahunAkademikRoutes = require('./Admin/route/TahunAkademikRoute');
+const DataKelasRoutes = require('./Admin/route/DataKelasRoute');
+const DataMataPelajaranRoutes = require('./Admin/route/DataMataPelajaranRoute');
+
+//Absensi
+const AbsensiRoutes = require('./Admin/route/AbsensiRoute');
+
+const db = require('./Admin/models');
 
 app.use(cors({ origin: 'http://localhost:8080' })); // ganti origin sesuai frontend kamu
 app.use(express.json());
@@ -22,6 +40,16 @@ db.mongoose.connect(process.env.DATABASE_URL)
   });
 
 app.use('/api', uploadBeritaRoutes);
+app.use('/api', uploadPrestasiRoutes);
+app.use('/api', DataGuruRoutes);
+app.use('/api', DataGuruSiswaRoutes);
+app.use('/api', DataWaliKelasRoutes);
+app.use('/api', TahunAkademikRoutes);
+app.use('/api', DataKelasRoutes);
+app.use('/api', DataMataPelajaranRoutes);
+app.use('/api', AbsensiRoutes);
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

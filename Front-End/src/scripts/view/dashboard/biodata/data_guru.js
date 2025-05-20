@@ -1,4 +1,4 @@
-import MenuDashboard from '../../menu/menu_dashboard';
+import MenuDashboard from "../../menu/menu_dashboard";
 
 const DataGuru = {
     async render() {
@@ -47,7 +47,7 @@ const DataGuru = {
                                     </tr>
                                 </thead>
                                 <tbody id="dataGuruTable" class="text-gray-700">
-                                    ${this.loadData()}
+                                    <tr><td colspan="8" class="text-center py-4">Loading data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -59,48 +59,88 @@ const DataGuru = {
     async afterRender() {
         MenuDashboard.afterRender();
 
-        document.getElementById('tambahGuruBtn').addEventListener('click', function () {
-            showModal('Tambah Data Guru');
+        const dataGuruTable = document.getElementById('dataGuruTable');
+        const tambahGuruBtn = document.getElementById('tambahGuruBtn');
+        const searchGuruInput = document.getElementById('searchGuru');
+        const filterKelasSelect = document.getElementById('filterKelas');
+
+        tambahGuruBtn.addEventListener('click', () => showModal('Tambah Data Guru'));
+
+        searchGuruInput.addEventListener('input', () => {
+            renderTable(searchGuruInput.value, filterKelasSelect.value);
         });
 
-        document.getElementById('searchGuru').addEventListener('input', function () {
-            renderTable(this.value, document.getElementById('filterKelas').value);
+        filterKelasSelect.addEventListener('change', () => {
+            renderTable(searchGuruInput.value, filterKelasSelect.value);
         });
 
-        document.getElementById('filterKelas').addEventListener('change', function () {
-            renderTable(document.getElementById('searchGuru').value, this.value);
+        // Event delegation for Edit and Delete buttons
+        dataGuruTable.addEventListener('click', async (event) => {
+            const target = event.target;
+
+            if (target.classList.contains('edit-btn')) {
+                const id = target.dataset.id;
+                try {
+                    const response = await fetch(`http://localhost:5000/api/dataguru/${id}`);
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil data guru untuk diedit');
+                    }
+                    const guruData = await response.json();
+                    showModal('Edit Data Guru', guruData);
+                } catch (error) {
+                    console.error("Error fetching guru data:", error);
+                    alert(`Gagal mengambil data untuk diedit: ${error.message}`);
+                }
+            }
+
+            if (target.classList.contains('delete-btn')) {
+                const id = target.dataset.id;
+                // Confirm dialog appears only once
+                if (confirm('Apakah Anda yakin ingin menghapus data guru ini?')) {
+                    try {
+                        const response = await fetch(`http://localhost:5000/api/dataguru/${id}`, {
+                            method: 'DELETE',
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.message || 'Gagal menghapus guru');
+                        }
+                        alert('Data guru berhasil dihapus!');
+                        renderTable(searchGuruInput.value, filterKelasSelect.value); // Refresh table after successful deletion
+                    } catch (error) {
+                        console.error("Error deleting guru:", error);
+                        alert(`Gagal menghapus data: ${error.message}`);
+                    }
+                }
+            }
         });
 
-        function showModal(title, data = {}) {
+        // Function to show/create the modal
+        async function showModal(title, data = {}) {
             const modalHtml = `
-                <div id="modalGuru" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
+                <div id="modalGuru" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
+                    <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl p-8 relative">
                         <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
-
                         <div class="grid grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Nama</label>
-                                <input type="text" id="namaGuru" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Nama" value="${data.nama || ''}">
+                                <input type="text" id="namaGuru" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Nama" value="${data.nama || ''}" required>
                             </div>
-
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Mata Pelajaran</label>
-                                <input type="text" id="mapelGuru" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Mata Pelajaran" value="${data.mapel || ''}">
+                                <input type="text" id="mapelGuru" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Mata Pelajaran" value="${data.mapel || ''}" required>
                             </div>
-
                             <div>
                                 <label class="block text-lg font-semibold mb-2">NIP</label>
-                                <input type="text" id="nipGuru" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan NIP" value="${data.nip || ''}">
+                                <input type="text" id="nipGuru" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan NIP" value="${data.nip || ''}" required>
                             </div>
-
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Telepon</label>
-                                <input type="text" id="teleponGuru" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Telepon" value="${data.telepon || ''}">
+                                <input type="text" id="teleponGuru" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Telepon" value="${data.telepon || ''}" required>
                             </div>
-
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Kelas</label>
-                                <select id="kelasGuru" class="w-full border p-3 rounded-lg text-lg">
+                                <select id="kelasGuru" class="w-full border border-gray-300 p-3 rounded-lg text-lg" required>
                                     <option value="1" ${data.kelas === '1' ? 'selected' : ''}>Kelas 1</option>
                                     <option value="2" ${data.kelas === '2' ? 'selected' : ''}>Kelas 2</option>
                                     <option value="3" ${data.kelas === '3' ? 'selected' : ''}>Kelas 3</option>
@@ -109,177 +149,159 @@ const DataGuru = {
                                     <option value="6" ${data.kelas === '6' ? 'selected' : ''}>Kelas 6</option>
                                 </select>
                             </div>
-
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Status</label>
-                                <select id="statusGuru" class="w-full border p-3 rounded-lg text-lg">
+                                <select id="statusGuru" class="w-full border border-gray-300 p-3 rounded-lg text-lg" required>
                                     <option value="Aktif" ${data.status === 'Aktif' ? 'selected' : ''}>Aktif</option>
                                     <option value="Tidak Aktif" ${data.status === 'Tidak Aktif' ? 'selected' : ''}>Tidak Aktif</option>
                                 </select>
                             </div>
                         </div>
-
-                        <div class="flex justify-end space-x-4 mt-6">
-                            <button id="batalGuru" class="bg-gray-500 text-white px-6 py-3 rounded-lg text-lg">Batal</button>
-                            <button id="simpanGuru" class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">Simpan</button>
+                        <div class="flex justify-end space-x-4 mt-8">
+                            <button id="batalGuru" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg transition">Batal</button>
+                            <button id="simpanGuru" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg transition">Simpan</button>
                         </div>
+                        <button id="closeModal" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
                     </div>
                 </div>
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-            document.getElementById('batalGuru').addEventListener('click', function () {
-                document.getElementById('modalGuru').remove();
+            const modalGuru = document.getElementById('modalGuru');
+            const batalBtn = document.getElementById('batalGuru');
+            const closeModalBtn = document.getElementById('closeModal');
+            const simpanBtn = document.getElementById('simpanGuru');
+
+            batalBtn.addEventListener('click', () => modalGuru.remove());
+            closeModalBtn.addEventListener('click', () => modalGuru.remove());
+
+            simpanBtn.addEventListener('click', async () => {
+                const guru = {
+                    nama: document.getElementById('namaGuru').value,
+                    mapel: document.getElementById('mapelGuru').value,
+                    nip: document.getElementById('nipGuru').value,
+                    telepon: document.getElementById('teleponGuru').value,
+                    kelas: document.getElementById('kelasGuru').value,
+                    status: document.getElementById('statusGuru').value
+                };
+
+                // Basic client-side validation
+                for (const key in guru) {
+                    if (!guru[key]) {
+                        alert(`Harap isi semua kolom, terutama ${key.charAt(0).toUpperCase() + key.slice(1)}.`);
+                        return;
+                    }
+                }
+
+                let url = 'http://localhost:5000/api/dataguru';
+                let method = 'POST';
+
+                if (data._id) {
+                    // If editing, include the ID in the URL and set method to PUT
+                    url = `http://localhost:5000/api/dataguru/${data._id}`;
+                    method = 'PUT';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(guru)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: 'Terjadi kesalahan tidak dikenal.' }));
+                        alert(`Gagal menyimpan data guru: ${errorData.message}`);
+                        return; // Stop execution if there's an error
+                    }
+
+                    modalGuru.remove(); // Close modal on success
+                    alert('Data guru berhasil disimpan!'); // Success alert
+                    renderTable(searchGuruInput.value, filterKelasSelect.value); // Refresh table
+                } catch (error) {
+                    console.error("Error saving guru data:", error);
+                    alert(`Terjadi kesalahan jaringan atau server: ${error.message}`);
+                }
             });
+        }
 
-            document.getElementById('simpanGuru').addEventListener('click', function () {
-                const nama = document.getElementById('namaGuru').value;
-                const mapel = document.getElementById('mapelGuru').value;
-                const nip = document.getElementById('nipGuru').value;
-                const telepon = document.getElementById('teleponGuru').value;
-                const kelas = document.getElementById('kelasGuru').value;
-                const status = document.getElementById('statusGuru').value;
+        // Function to fetch and render the table
+        async function renderTable(search = '', filter = '') {
+            try {
+                const response = await fetch('http://localhost:5000/api/dataguru');
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data guru dari server');
+                }
+                const guruData = await response.json();
 
-                if (!nama || !mapel || !nip || !telepon || !kelas || !status) {
-                    alert('Harap isi semua data!');
+                const filteredData = guruData.filter(guru =>
+                    guru.nama.toLowerCase().includes(search.toLowerCase()) &&
+                    (filter === '' || guru.kelas === filter)
+                );
+
+                const tableBody = document.getElementById('dataGuruTable');
+                if (!tableBody) return; // Ensure tableBody exists
+
+                if (filteredData.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">Tidak ada data guru yang ditemukan.</td></tr>`;
                     return;
                 }
 
-                const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
-                if (data.index !== undefined) {
-                    const oldNama = guruData[data.index].nama;
-                    const oldMapel = guruData[data.index].mapel;
-                    const oldKelas = guruData[data.index].kelas;
-                    guruData[data.index] = { nama, mapel, nip, telepon, kelas, status };
-                    updateDataMapelEdit(oldNama, oldMapel, oldKelas, nama, mapel, kelas);
-                } else {
-                    guruData.push({ nama, mapel, nip, telepon, kelas, status });
-                    updateDataMapelAdd(nama, mapel, kelas);
+                tableBody.innerHTML = filteredData.map((guru, index) => `
+                    <tr class="border-t">
+                        <td class="py-4 px-6">${index + 1}</td>
+                        <td class="py-4 px-6">${guru.nama}</td>
+                        <td class="py-4 px-6">${guru.mapel}</td>
+                        <td class="py-4 px-6">${guru.nip}</td>
+                        <td class="py-4 px-6">${guru.telepon}</td>
+                        <td class="py-4 px-6">${guru.kelas}</td>
+                        <td class="py-4 px-6">
+                            <span class="bg-${guru.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${guru.status}</span>
+                        </td>
+                        <td class="py-4 px-6 flex space-x-4">
+                            <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${guru._id}">Edit</button>
+                            <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-id="${guru._id}">Hapus</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error rendering table:', error);
+                const tableBody = document.getElementById('dataGuruTable');
+                if (tableBody) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
                 }
-                localStorage.setItem('dataGuru', JSON.stringify(guruData));
-
-                document.getElementById('modalGuru').remove();
-                renderTable();
-            });
-        }
-
-        function updateDataMapelAdd(nama, mapel, kelas) {
-            const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-            const newMapel = {
-                guru: nama,
-                mapel: mapel,
-                kelas: kelas
-            };
-
-            mapelData.push(newMapel);
-            localStorage.setItem('dataMapel', JSON.stringify(mapelData));
-        }
-
-        function updateDataMapelEdit(oldNama, oldMapel, oldKelas, newNama, newMapel, newKelas) {
-            const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-
-            mapelData.forEach(item => {
-                if (item.guru === oldNama && item.mapel === oldMapel && item.kelas === oldKelas) {
-                    item.guru = newNama;
-                    item.mapel = newMapel;
-                    item.kelas = newKelas;
-                }
-            });
-
-            localStorage.setItem('dataMapel', JSON.stringify(mapelData));
-        }
-
-        function renderTable(searchQuery = '', filterKelas = '') {
-            const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
-            let filteredGuru = guruData;
-
-            if (searchQuery) {
-                filteredGuru = filteredGuru.filter(guru => guru.nama.toLowerCase().includes(searchQuery.toLowerCase()));
             }
+        }
 
-            if (filterKelas) {
-                filteredGuru = filteredGuru.filter(guru => guru.kelas === filterKelas);
-            }
+        // Initial render of the table
+        renderTable();
+    },
 
-            const tableBody = document.getElementById('dataGuruTable');
-            tableBody.innerHTML = filteredGuru.map((guru, index) => `
-                <tr class="border-t">
+    // loadData is no longer directly used by render(), but kept if needed elsewhere.
+    async loadData() {
+        try {
+            const response = await fetch('http://localhost:5000/api/dataguru');
+            const data = await response.json();
+            return data.map((guru, index) => `
+                <tr>
                     <td class="py-4 px-6">${index + 1}</td>
                     <td class="py-4 px-6">${guru.nama}</td>
                     <td class="py-4 px-6">${guru.mapel}</td>
                     <td class="py-4 px-6">${guru.nip}</td>
                     <td class="py-4 px-6">${guru.telepon}</td>
                     <td class="py-4 px-6">${guru.kelas}</td>
+                    <td class="py-4 px-6">${guru.status}</td>
                     <td class="py-4 px-6">
-                        <span class="bg-${guru.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${guru.status}</span>
-                    </td>
-                    <td class="py-4 px-6 flex space-x-4">
-                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${guru._id}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-id="${guru._id}">Hapus</button>
                     </td>
                 </tr>
             `).join('');
-
-            attachRowEventListeners();
+        } catch (error) {
+            console.error('Gagal memuat data guru (in loadData):', error);
+            return `<tr><td colspan="8" class="text-center py-4">Gagal memuat data</td></tr>`;
         }
-
-        function attachRowEventListeners() {
-            document.querySelectorAll('.edit-btn').forEach((btn) => {
-                btn.addEventListener('click', function () {
-                    const index = btn.getAttribute('data-index');
-                    const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
-                    const data = { ...guruData[index], index };
-                    showModal('Edit Data Guru', data);
-                });
-            });
-
-            document.querySelectorAll('.delete-btn').forEach((btn) => {
-                btn.addEventListener('click', function () {
-                    if (confirm('Apakah Anda yakin ingin menghapus data guru ini?')) {
-                        const index = btn.getAttribute('data-index');
-                        const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
-                        const deleteNama = guruData[index].nama;
-                        const deleteMapel = guruData[index].mapel;
-                        const deleteKelas = guruData[index].kelas;
-
-                        guruData.splice(index, 1);
-                        localStorage.setItem('dataGuru', JSON.stringify(guruData));
-                        updateDataMapelDelete(deleteNama, deleteMapel, deleteKelas);
-                        renderTable();
-                    }
-                });
-            });
-        }
-
-        function updateDataMapelDelete(deleteNama, deleteMapel, deleteKelas) {
-            const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-            const filteredMapel = mapelData.filter(mapel => !(mapel.guru === deleteNama && mapel.mapel === deleteMapel && mapel.kelas === deleteKelas));
-            localStorage.setItem('dataMapel', JSON.stringify(filteredMapel));
-        }
-
-        renderTable();
-    },
-
-    loadData() {
-        const guruData = JSON.parse(localStorage.getItem('dataGuru')) || [];
-        return guruData.map((guru, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${guru.nama}</td>
-                <td class="py-4 px-6">${guru.mapel}</td>
-                <td class="py-4 px-6">${guru.nip}</td>
-                <td class="py-4 px-6">${guru.telepon}</td>
-                <td class="py-4 px-6">${guru.kelas}</td>
-                <td class="py-4 px-6">
-                    <span class="bg-${guru.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${guru.status}</span>
-                </td>
-                <td class="py-4 px-6 flex space-x-4">
-                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                    <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
-                </td>
-            </tr>
-        `).join('');
     }
 };
 

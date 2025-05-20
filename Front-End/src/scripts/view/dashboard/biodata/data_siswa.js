@@ -48,7 +48,7 @@ const DataSiswa = {
                                 </tr>
                             </thead>
                             <tbody id="dataTable" class="text-gray-700">
-                                ${this.loadData()}
+                                    <tr><td colspan="9" class="text-center py-4">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -60,41 +60,64 @@ const DataSiswa = {
     async afterRender() {
         MenuDashboard.afterRender();
 
-        document.getElementById('tambahSiswaBtn').addEventListener('click', function () {
-            showModal('Tambah Data Siswa');
-        });
+        const dataTable = document.getElementById('dataTable');
+        const tambahSiswaBtn = document.getElementById('tambahSiswaBtn');
+        const filterKelas = document.getElementById('filterKelas');
+        const searchNamaInput = document.getElementById('searchNama');
 
-        document.getElementById('filterKelas').addEventListener('change', function () {
-            const selectedKelas = this.value;
-            const rows = document.querySelectorAll('#dataTable tr');
-            rows.forEach(row => {
-                const kelasCell = row.querySelector('td:nth-child(3)');
-                if (selectedKelas === '' || kelasCell.textContent === selectedKelas) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+        tambahSiswaBtn.addEventListener('click', () => showModal('Tambah Data Siswa'));
+        filterKelas.addEventListener('change', handleFilter);
+        searchNamaInput.addEventListener('input', handleSearch);
+
+        // --- Fungsi-fungsi Utama ---
+        async function fetchDataSiswa() {
+            try {
+                const response = await fetch('http://localhost:5000/api/datasiswa');
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data siswa');
                 }
-            });
-        });
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Gagal memuat data siswa:', error);
+                throw error;
+            }
+        }
 
-        document.getElementById('searchNama').addEventListener('input', function () {
-            const searchValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#dataTable tr');
-            rows.forEach(row => {
-                const namaCell = row.querySelector('td:nth-child(2)');
-                if (namaCell.textContent.toLowerCase().includes(searchValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
+        function renderTable(dataSiswa) {
+            const tableBody = document.getElementById('dataTable');
+            if (!tableBody) return;
 
-        function showModal(title, data = {}) {
+            if (dataSiswa.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">Tidak ada data siswa.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = dataSiswa.map((siswa, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${siswa.nama}</td>
+                    <td class="py-4 px-6">${siswa.kelas}</td>
+                    <td class="py-4 px-6">${siswa.nis}</td>
+                    <td class="py-4 px-6">${siswa.nisn}</td>
+                    <td class="py-4 px-6">${siswa.jenisKelamin}</td>
+                    <td class="py-4 px-6">${siswa.telepon}</td>
+                    <td class="py-4 px-6">
+                        <span class="bg-${siswa.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${siswa.status}</span>
+                    </td>
+                    <td class="py-4 px-6 flex space-x-4">
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${siswa._id}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-id="${siswa._id}">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+            // No need to call attachRowEventListeners here anymore
+        }
+
+        async function showModal(title, data = {}) {
             const modalHtml = `
-                <div id="modalSiswa" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-                    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2">
-                        <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
+                <div id="modalSiswa" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+                    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2 relative"> <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
 
                         <div class="grid grid-cols-2 gap-6">
                             <div>
@@ -136,120 +159,190 @@ const DataSiswa = {
                                 <label class="block text-lg font-semibold mb-2">Telepon</label>
                                 <input type="text" id="teleponSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Telepon" value="${data.telepon || ''}">
                             </div>
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">Status</label>
+                                <select id="statusSiswa" class="w-full border p-3 rounded-lg text-lg">
+                                    <option value="Aktif" ${data.status === 'Aktif' ? 'selected' : ''}>Aktif</option>
+                                    <option value="Tidak Aktif" ${data.status === 'Tidak Aktif' ? 'selected' : ''}>Tidak Aktif</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="flex justify-end space-x-4 mt-6">
                             <button id="batalSiswa" class="bg-gray-500 text-white px-6 py-3 rounded-lg text-lg">Batal</button>
                             <button id="simpanSiswa" class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">Simpan</button>
                         </div>
+                        <button id="closeModal" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
                     </div>
                 </div>
             `;
 
             document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-            document.getElementById('batalSiswa').addEventListener('click', function () {
-                document.getElementById('modalSiswa').remove();
-            });
+            const modal = document.getElementById('modalSiswa');
+            const batalBtn = document.getElementById('batalSiswa');
+            const simpanBtn = document.getElementById('simpanSiswa');
+            const closeBtn = document.getElementById('closeModal');
 
-            document.getElementById('simpanSiswa').addEventListener('click', function () {
+            batalBtn.addEventListener('click', () => modal.remove());
+            closeBtn.addEventListener('click', () => modal.remove());
+            simpanBtn.addEventListener('click', async () => {
                 const nama = document.getElementById('namaSiswa').value;
                 const kelas = document.getElementById('kelasSiswa').value;
                 const nis = document.getElementById('nisSiswa').value;
                 const nisn = document.getElementById('nisnSiswa').value;
                 const jenisKelamin = document.getElementById('jenisKelaminSiswa').value;
                 const telepon = document.getElementById('teleponSiswa').value;
+                const status = document.getElementById('statusSiswa').value;
 
-                if (!nama || !kelas || !nis || !nisn || !jenisKelamin || !telepon) {
+                if (!nama || !kelas || !nis || !nisn || !jenisKelamin || !telepon || !status) {
                     alert('Harap isi semua data!');
                     return;
                 }
 
-                const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-                if (data.index !== undefined) {
-                    siswaData[data.index] = { nama, kelas, nis, nisn, jenisKelamin, telepon };
-                } else {
-                    siswaData.push({ nama, kelas, nis, nisn, jenisKelamin, telepon });
-                }
-                localStorage.setItem('dataSiswa', JSON.stringify(siswaData));
+                const siswaData = {
+                    nama: nama,
+                    kelas: kelas,
+                    nis: nis,
+                    nisn: nisn,
+                    jenisKelamin: jenisKelamin,
+                    telepon: telepon,
+                    status: status
+                };
 
-                document.getElementById('modalSiswa').remove();
-                renderTable();
-            });
-        }
+                console.log("Data yang akan dikirim:", siswaData);
 
-        function renderTable() {
-            const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-            const tableBody = document.getElementById('dataTable');
-            tableBody.innerHTML = siswaData.map((siswa, index) => `
-                <tr class="border-t">
-                    <td class="py-4 px-6">${index + 1}</td>
-                    <td class="py-4 px-6">${siswa.nama}</td>
-                    <td class="py-4 px-6">${siswa.kelas}</td>
-                    <td class="py-4 px-6">${siswa.nis}</td>
-                    <td class="py-4 px-6">${siswa.nisn}</td>
-                    <td class="py-4 px-6">${siswa.jenisKelamin}</td>
-                    <td class="py-4 px-6">${siswa.telepon}</td>
-                    <td class="py-4 px-6">
-                        <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
-                    </td>
-                    <td class="py-4 px-6 flex space-x-4">
-                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
-                    </td>
-                </tr>
-            `).join('');
+                const method = data._id ? 'PUT' : 'POST';
+                const url = data._id ? `http://localhost:5000/api/datasiswa/${data._id}` : 'http://localhost:5000/api/datasiswa';
 
-            attachRowEventListeners();
-        }
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(siswaData),
+                    });
 
-        function attachRowEventListeners() {
-            document.querySelectorAll('.edit-btn').forEach((btn) => {
-                btn.addEventListener('click', function () {
-                    const index = btn.getAttribute('data-index');
-                    const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-                    const data = { ...siswaData[index], index };
-                    showModal('Edit Data Siswa', data);
-                });
-            });
-
-            document.querySelectorAll('.delete-btn').forEach((btn) => {
-                btn.addEventListener('click', function () {
-                    if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
-                        const index = btn.getAttribute('data-index');
-                        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-                        siswaData.splice(index, 1);
-                        localStorage.setItem('dataSiswa', JSON.stringify(siswaData));
-                        renderTable();
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        
+                        if (errorData.message && errorData.message.includes('E11000 duplicate key error')) {
+                            let duplicateField = '';
+                            if (errorData.message.includes('index: nis_1')) {
+                                duplicateField = 'NIS';
+                            } else if (errorData.message.includes('index: nisn_1')) {
+                                duplicateField = 'NISN';
+                            }
+                            alert(`Gagal menyimpan data: ${duplicateField} yang Anda masukkan sudah terdaftar. Mohon gunakan ${duplicateField} yang berbeda.`);
+                        } else {
+                            alert(`Gagal menyimpan data: ${errorData.message || `HTTP error ${response.status}`}`);
+                        }
+                        return;
                     }
-                });
+
+                    modal.remove();
+                    await fetchDataSiswa().then(renderTable);
+                    alert('Data siswa berhasil disimpan!');
+                } catch (error) {
+                    console.error("Error creating/updating data:", error);
+                    alert(`Terjadi kesalahan tak terduga saat menyimpan data: ${error.message}`);
+                }
+            });
+        }
+        
+        // Refactor attachRowEventListeners to use event delegation
+        function attachTableEventListeners() {
+            const dataTable = document.getElementById('dataTable');
+            if (!dataTable) return;
+
+            // Only attach this listener once
+            dataTable.removeEventListener('click', handleTableClick); // Prevent duplicate listeners
+            dataTable.addEventListener('click', handleTableClick);
+        }
+
+        async function handleTableClick(event) {
+            const target = event.target;
+
+            if (target.classList.contains('edit-btn')) {
+                const id = target.dataset.id;
+                try {
+                    const response = await fetch(`http://localhost:5000/api/datasiswa/${id}`);
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil data siswa untuk diedit');
+                    }
+                    const siswaData = await response.json();
+                    await showModal('Edit Data Siswa', siswaData);
+                } catch (error) {
+                    console.error("Error fetching siswa data:", error);
+                    alert(`Gagal mengambil data untuk diedit: ${error.message}`);
+                }
+            }
+
+            if (target.classList.contains('delete-btn')) {
+                const id = target.dataset.id;
+                if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+                    try {
+                        const response = await fetch(`http://localhost:5000/api/datasiswa/${id}`, {
+                            method: 'DELETE',
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.message || 'Gagal menghapus siswa');
+                        }
+                        alert('Siswa berhasil dihapus!');
+                        await fetchDataSiswa().then(renderTable);
+                    } catch (error) {
+                        console.error("Error deleting siswa:", error);
+                        alert(`Gagal menghapus data: ${error.message}`);
+                    }
+                }
+            }
+        }
+
+        // --- Inisialisasi Data ---
+        try {
+            const dataSiswa = await fetchDataSiswa();
+            renderTable(dataSiswa);
+            attachTableEventListeners(); // Attach the delegated listener here
+        } catch (error) {
+            console.error("Failed to load initial data:", error);
+            dataTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-500">Gagal memuat data</td></tr>`;
+        }
+
+        // --- Fungsi Filter dan Search ---
+        function handleFilter() {
+            const selectedKelas = this.value;
+            const rows = dataTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const kelasCell = row.querySelector('td:nth-child(3)');
+                if (kelasCell) {
+                    const rowKelas = kelasCell.textContent.trim();
+                    if (selectedKelas === '' || rowKelas === selectedKelas) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
             });
         }
 
-        renderTable();
-    },
-
-    loadData() {
-        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        return siswaData.map((siswa, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${siswa.nama}</td>
-                <td class="py-4 px-6">${siswa.kelas}</td>
-                <td class="py-4 px-6">${siswa.nis}</td>
-                <td class="py-4 px-6">${siswa.nisn}</td>
-                <td class="py-4 px-6">${siswa.jenisKelamin}</td>
-                <td class="py-4 px-6">${siswa.telepon}</td>
-                <td class="py-4 px-6">
-                    <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
-                </td>
-                <td class="py-4 px-6 flex space-x-4">
-                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                    <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
-                </td>
-            </tr>
-        `).join('');
-    }
+        function handleSearch() {
+            const searchValue = this.value.toLowerCase();
+            const rows = dataTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const namaCell = row.querySelector('td:nth-child(2)');
+                if (namaCell) {
+                    const rowNama = namaCell.textContent.toLowerCase().trim();
+                    if (rowNama.includes(searchValue)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+    } // Akhir afterRender
 };
 
 export default DataSiswa;

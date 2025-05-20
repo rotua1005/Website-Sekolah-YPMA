@@ -22,11 +22,10 @@ const DataMataPelajaran = {
                                         <th class="py-4 px-6">Mata Pelajaran</th>
                                         <th class="py-4 px-6">Guru Pengajar</th>
                                         <th class="py-4 px-6">Kelas</th>
-                                        <th class="py-4 px-6">Aksi</th>
-                                    </tr>
+                                        </tr>
                                 </thead>
                                 <tbody id="dataMapelTable" class="text-gray-700">
-                                    ${this.loadData()}
+                                    <tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -37,51 +36,45 @@ const DataMataPelajaran = {
 
     async afterRender() {
         MenuDashboard.afterRender();
-        this.renderTable(); // Call renderTable here to initially populate the table
-        this.attachRowEventListeners();
+        this.renderTable(); // Call renderTable to populate the table initially
     },
 
-    renderTable() {
-        const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
+    async renderTable() {
         const tableBody = document.getElementById('dataMapelTable');
-        tableBody.innerHTML = mapelData.map((mapel, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${mapel.mapel}</td>
-                <td class="py-4 px-6">${mapel.guru}</td>
-                <td class="py-4 px-6">${mapel.kelas}</td>
-                <td class="py-4 px-6">
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded detail-btn" data-index="${index}">Detail</button>
-                </td>
-            </tr>
-        `).join('');
+        if (!tableBody) return;
+
+        try {
+            const response = await fetch('http://localhost:5000/api/datamatapelajaran');
+            if (!response.ok) {
+                throw new Error('Gagal mengambil data Mata Pelajaran dari server.');
+            }
+            const mapelData = await response.json();
+
+            if (mapelData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Tidak ada data Mata Pelajaran yang ditemukan. Pastikan ada data Guru yang terinput.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = mapelData.map((mapel, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${mapel.mapel || 'N/A'}</td>
+                    <td class="py-4 px-6">${mapel.guru || 'N/A'}</td>
+                    <td class="py-4 px-6">${mapel.kelas || 'N/A'}</td>
+                </tr>
+            `).join('');
+
+        } catch (error) {
+            console.error('Error rendering Data Mata Pelajaran table:', error);
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+        }
     },
 
-    attachRowEventListeners() {
-        document.querySelectorAll('.detail-btn').forEach((btn) => {
-            btn.addEventListener('click', function () {
-                const index = btn.getAttribute('data-index');
-                const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-                const data = mapelData[index];
-                alert(`Detail Mata Pelajaran:\nNama: ${data.mapel}\nGuru: ${data.guru}\nKelas: ${data.kelas}`);
-            });
-        });
-    },
-
-    loadData() {
-        const mapelData = JSON.parse(localStorage.getItem('dataMapel')) || [];
-        return mapelData.map((mapel, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${mapel.mapel}</td>
-                <td class="py-4 px-6">${mapel.guru}</td>
-                <td class="py-4 px-6">${mapel.kelas}</td>
-                <td class="py-4 px-6">
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded detail-btn" data-index="${index}">Detail</button>
-                </td>
-            </tr>
-        `).join('');
-    }
+    // The loadData and attachRowEventListeners functions are no longer needed
+    // as the table is rendered dynamically from the API and has no user interaction.
+    // You can safely remove them from your DataMataPelajaran.js file.
+    // attachRowEventListeners() {},
+    // loadData() {}
 };
 
 export default DataMataPelajaran;
