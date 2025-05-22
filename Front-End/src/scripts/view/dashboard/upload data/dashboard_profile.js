@@ -27,6 +27,7 @@ const Dashboard_Profile = {
                         </div>
                     </div>
                     <div id="profile-list" class="row g-3">
+                        <p class="text-center text-muted w-100">Memuat profile...</p>
                     </div>
                 </main>
             </div>
@@ -38,9 +39,25 @@ const Dashboard_Profile = {
         MenuDashboard.afterRender();
         const addProfileBtn = document.getElementById("add-profile-btn");
         const searchInput = document.getElementById("search");
-        let profileList = JSON.parse(localStorage.getItem("profile")) || [];
+        const profileListContainer = document.getElementById("profile-list");
+        let profileList = []; // Will store data fetched from API
+
+        async function ambilProfileDariServer() {
+            try {
+                const response = await fetch('http://localhost:5000/api/dashboardProfile');
+                if (!response.ok) throw new Error("Gagal fetch data profile");
+                const data = await response.json();
+                profileList = data;
+                tampilkanProfile();
+            } catch (error) {
+                console.error("Gagal mengambil data profile:", error);
+                profileListContainer.innerHTML = `<p class="text-center text-danger w-100">Gagal mengambil data profile.</p>`;
+            }
+        }
 
         addProfileBtn.addEventListener("click", () => {
+            // Clear any lingering edit data when navigating to add new
+            localStorage.removeItem('editProfile');
             window.location.hash = '#/upload_profile';
         });
 
@@ -50,26 +67,33 @@ const Dashboard_Profile = {
                 profile.jabatan.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (profile.mata_pelajaran && profile.mata_pelajaran.toLowerCase().includes(searchTerm.toLowerCase()))
             );
-            const profileListContainer = document.getElementById("profile-list");
-            profileListContainer.innerHTML = filteredProfile.map((profile, index) => {
+
+            if (filteredProfile.length === 0) {
+                profileListContainer.innerHTML = `<p class="text-center text-muted w-100">Tidak ada profile yang ditemukan.</p>`;
+                return;
+            }
+
+            profileListContainer.innerHTML = filteredProfile.map(profile => {
                 let detailTambahan = '';
-                if (profile.mata_pelajaran) {
+                if (profile.jabatan === "Guru" && profile.mata_pelajaran) {
                     detailTambahan = `<p class="text-muted small">Mata Pelajaran: ${profile.mata_pelajaran}</p>`;
                 }
+                const fotoSrc = profile.foto ? `http://localhost:5000${profile.foto}` : 'path/to/default-profile-image.jpg'; // Adjust default image path
+
                 return `
                     <div class="col-md-4">
                         <div class="card h-100">
-                            <img src="${profile.foto}" class="card-img-top" alt="${profile.nama}">
+                            <img src="${fotoSrc}" class="card-img-top object-fit-cover" style="height: 200px;" alt="${profile.nama}">
                             <div class="card-body">
                                 <h5 class="card-title">${profile.jabatan}</h5>
-                                <p class="card-text">${profile.nama}</p>
+                                <p class="card-text"><strong>${profile.nama}</strong></p>
                                 ${detailTambahan}
                             </div>
                             <div class="card-footer d-flex justify-content-between">
-                                <button class="btn btn-primary edit-btn" data-index="${index}">
+                                <button class="btn btn-primary edit-btn" data-id="${profile._id}">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </button>
-                                <button class="btn btn-danger hapus-btn" data-index="${index}">
+                                <button class="btn btn-danger hapus-btn" data-id="${profile._id}" data-jabatan="${profile.jabatan}">
                                     <i class="bi bi-trash"></i> Hapus
                                 </button>
                             </div>
@@ -78,61 +102,83 @@ const Dashboard_Profile = {
                 `;
             }).join("");
 
-            if (filteredProfile.length === 0) {
-                profileListContainer.innerHTML = `<p class="text-center text-muted">Tidak ada profile yang ditemukan.</p>`;
-            }
+            tambahkanEventListener();
+        }
 
+        function tambahkanEventListener() {
             document.querySelectorAll(".edit-btn").forEach(button => {
-                button.addEventListener("click", function() {
-                    const index = this.getAttribute("data-index");
-                    const profileToEdit = profileList[index];
-                    localStorage.setItem('editProfile', JSON.stringify(profileToEdit));
-                    localStorage.setItem('editIndexProfile', index);
-                    window.location.hash = '#/upload_profile';
+                button.addEventListener("click", async () => {
+                    const id = button.getAttribute("data-id");
+                    if (!confirm("Apakah Anda yakin ingin mengedit profile ini?")) return;
+
+                    try {
+                        const response = await fetch(`http://localhost:5000/api/dashboardProfile/${id}`);
+                        if (!response.ok) throw new Error("Gagal mengambil data profile untuk diedit.");
+                        const profileToEdit = await response.json();
+
+                        localStorage.setItem('editProfile', JSON.stringify(profileToEdit));
+                        window.location.hash = '#/upload_profile';
+                    } catch (error) {
+                        console.error(error);
+                        showAlert("Gagal mengambil data profile untuk diedit.", "danger");
+                    }
                 });
             });
 
             document.querySelectorAll(".hapus-btn").forEach(button => {
-                button.addEventListener("click", function() {
-                    const index = this.getAttribute("data-index");
-                    const profileToDelete = profileList[index];
-                    const isKepalaSekolah = profileToDelete.jabatan === "Kepala Sekolah";
-                    const jumlahKepalaSekolah = profileList.filter(p => p.jabatan === "Kepala Sekolah").length;
+                button.addEventListener("click", async () => {
+                    const id = button.getAttribute("data-id");
+                    const jabatan = button.getAttribute("data-jabatan");
 
-                    if (isKepalaSekolah && jumlahKepalaSekolah === 1) {
-                        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus profile Kepala Sekolah? Ini adalah satu-satunya profile dengan jabatan ini.");
-                        if (confirmDelete) {
-                            profileList.splice(index, 1);
-                            localStorage.setItem("profile", JSON.stringify(profileList));
-                            tampilkanProfile();
-                            showAlert('Profile Kepala Sekolah berhasil dihapus.', 'danger');
+                    if (jabatan === "Kepala Sekolah") {
+                        const kepalaSekolahCount = profileList.filter(p => p.jabatan === "Kepala Sekolah").length;
+                        if (kepalaSekolahCount === 1) {
+                            if (!confirm("Ini adalah satu-satunya profile Kepala Sekolah. Apakah Anda yakin ingin menghapusnya?")) {
+                                return;
+                            }
                         }
-                    } else {
-                        profileList.splice(index, 1);
-                        localStorage.setItem("profile", JSON.stringify(profileList));
-                        tampilkanProfile();
-                        showAlert('Profile berhasil dihapus.', 'danger');
+                    }
+
+                    if (!confirm("Apakah Anda yakin ingin menghapus profile ini?")) return;
+
+                    try {
+                        const response = await fetch(`http://localhost:5000/api/dashboardProfile/${id}`, {
+                            method: 'DELETE',
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.message || "Gagal menghapus profile");
+
+                        showAlert(data.message || 'Profile berhasil dihapus.', 'success');
+                        await ambilProfileDariServer(); // Re-fetch and display after deletion
+                    } catch (err) {
+                        console.error(err);
+                        showAlert(err.message || 'Terjadi kesalahan saat menghapus profile.', 'danger');
                     }
                 });
             });
         }
 
         function showAlert(message, type) {
+            document.querySelectorAll(".small-alert").forEach(el => el.remove());
+
             const alertBox = document.createElement("div");
             alertBox.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3 small-alert`;
             alertBox.role = "alert";
+            alertBox.style.zIndex = "1050";
+            alertBox.style.top = "60px";
             alertBox.innerHTML = `${message}`;
             document.body.appendChild(alertBox);
+
             setTimeout(() => {
                 alertBox.classList.remove("show");
-                setTimeout(() => alertBox.remove(), 150);
-            }, 1000);
+                setTimeout(() => alertBox.remove(), 200);
+            }, 2000);
         }
 
-        tampilkanProfile();
+        await ambilProfileDariServer(); // Initial data fetch
 
-        searchInput.addEventListener("input", function() {
-            tampilkanProfile(this.value);
+        searchInput.addEventListener("input", () => {
+            tampilkanProfile(searchInput.value);
         });
     }
 };

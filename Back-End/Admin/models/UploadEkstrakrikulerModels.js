@@ -1,27 +1,22 @@
 const mongoose = require('mongoose');
 
-const PrestasiSchema = new mongoose.Schema({
+const EkstrakurikulerSchema = new mongoose.Schema({
     gambar: {
         type: String, // Path to the uploaded image file
         required: true
     },
-    nama_ekstra: { // Name of the extracurricular activity associated with the achievement
+    nama: {
         type: String,
         required: true,
-        trim: true
+        trim: true // Remove whitespace from both ends of a string
     },
-    judul: { // Title of the achievement
-        type: String,
-        required: true,
-        trim: true
-    },
-    deskripsi: { // Description of the achievement
+    deskripsi: {
         type: String,
         required: true
     },
     tanggal: {
         type: Date,
-        default: Date.now // Automatically set current date when a new achievement is created
+        default: Date.now // Automatically set current date when a new ekstrakurikuler is created
     },
     createdAt: {
         type: Date,
@@ -34,9 +29,9 @@ const PrestasiSchema = new mongoose.Schema({
 });
 
 // Update `updatedAt` field on save
-PrestasiSchema.pre('save', function(next) {
+EkstrakurikulerSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
     next();
 });
 
-module.exports = mongoose.model('Prestasi', PrestasiSchema);
+module.exports = mongoose.model('Ekstrakurikuler', EkstrakurikulerSchema);

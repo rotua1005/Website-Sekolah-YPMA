@@ -1,38 +1,22 @@
+//absensi route
 const express = require('express');
 const router = express.Router();
-const DataWaliKelas = require('../models/DataWaliKelasModel'); // To get wali kelas and class names
-const DataSiswa = require('../models/DataSiswaModel'); // To count students per class
-const TahunAkademik = require('../models/TahunAkademikModel'); // To get the current academic year
+const absensiController = require('../controllers/AbsensiController');
 
-router.get('/absensi-summary', async (req, res) => {
-    try {
-        // 1. Get all Wali Kelas (each represents a class with a homeroom teacher)
-        const waliKelasList = await DataWaliKelas.find({});
+// Get all attendance records (consider if really needed or too much data)
+router.get('/', absensiController.getAllAbsensi);
 
-        // 2. Get the latest academic year (assuming it's sorted or you pick the last one)
-        const tahunAkademik = await TahunAkademik.findOne().sort({ tahun: -1, semester: -1 }); // Get the latest academic year
+// Get attendance for a specific class on a specific date (useful for reports)
+router.get('/by-kelas-date', absensiController.getAbsensiByKelasAndDate);
 
-        const absensiSummaryData = await Promise.all(waliKelasList.map(async (wali) => {
-            // Count students for this class
-            const jumlahSiswa = await DataSiswa.countDocuments({ kelas: wali.kelas });
+// Get all students for a specific class with their attendance status for a given date
+router.get('/:id_kelas/students', absensiController.getStudentsWithAttendanceForClass);
 
-            return {
-                waliKelas: wali.nama,      // Wali Kelas's name
-                kelas: wali.kelas,         // Class name
-                jumlahSiswa: jumlahSiswa,
-                tahunAkademik: tahunAkademik ? tahunAkademik.tahun : 'N/A',
-                semester: tahunAkademik ? tahunAkademik.semester : 'N/A'
-            };
-        }));
 
-        res.json(absensiSummaryData);
-    } catch (error) {
-        console.error('Error getting automatic Absensi Summary:', error);
-        res.status(500).json({ message: 'Gagal mengambil data Absensi: ' + error.message });
-    }
-});
+// Record or update attendance for a student
+router.post('/record', absensiController.recordAbsensi);
 
-// Remove any POST, PUT, DELETE routes related to absensi
-// As this is purely for displaying auto-generated summary data.
+// Delete an attendance record
+router.delete('/:id', absensiController.deleteAbsensi);
 
 module.exports = router;

@@ -12,7 +12,7 @@ const Upload_Profile = {
                 </header>
 
                 <main class="bg-white shadow-lg rounded-lg p-6">
-                    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Upload Profile</h1>
+                    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6" id="form-title">Upload Profile</h1>
                     <form id="upload-form" class="space-y-6">
                         <div class="space-y-2">
                             <label for="foto" class="block text-sm font-semibold text-gray-700">Upload Foto</label>
@@ -36,7 +36,7 @@ const Upload_Profile = {
                         </div>
                         <div id="mata-pelajaran-container" class="hidden space-y-2">
                             <label for="mata_pelajaran" class="block text-sm font-semibold text-gray-700">Mata Pelajaran</label>
-                            <input type="text" id="mata_pelajaran" class="w-2/3 px-4 py-2 border border-black rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:outline-none">
+                            <input type="text" id="mata_pelajaran" class="w-2/3 px-4 py-2 border border-black rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:outline-none" placeholder="Masukkan mata pelajaran">
                         </div>
                         <div class="space-y-2">
                             <label for="nama" class="block text-sm font-semibold text-gray-700">Nama</label>
@@ -60,6 +60,7 @@ const Upload_Profile = {
     async afterRender() {
         MenuDashboard.afterRender();
         const form = document.getElementById("upload-form");
+        const formTitle = document.getElementById("form-title");
         const jabatanSelect = document.getElementById("jabatan");
         const mataPelajaranContainer = document.getElementById("mata-pelajaran-container");
         const mataPelajaranInput = document.getElementById("mata_pelajaran");
@@ -70,26 +71,45 @@ const Upload_Profile = {
         const submitButton = document.getElementById("submit-button");
         const cancelEditButton = document.getElementById("cancel-edit");
 
-        let profileList = JSON.parse(localStorage.getItem("profile")) || [];
-        let editIndex = localStorage.getItem('editIndexProfile');
-        let editData = localStorage.getItem('editProfile');
+        let currentEditData = null;
+        const storedEditData = localStorage.getItem('editProfile');
 
-        if (editData) {
-            editData = JSON.parse(editData);
-            jabatanSelect.value = editData.jabatan;
-            namaInput.value = editData.nama;
-            preview.src = editData.foto;
+        // Check if there's data for editing
+        if (storedEditData) {
+            currentEditData = JSON.parse(storedEditData);
+            formTitle.textContent = "Edit Profile"; // Change title for edit mode
+            jabatanSelect.value = currentEditData.jabatan;
+            namaInput.value = currentEditData.nama;
+            // Prepend base URL for preview
+            preview.src = `http://localhost:5000${currentEditData.foto}`;
             preview.classList.remove("hidden");
             fileNameDisplay.textContent = 'Gambar sebelumnya';
-            if (editData.jabatan === "Guru" && editData.mata_pelajaran) {
+            if (currentEditData.jabatan === "Guru") {
                 mataPelajaranContainer.classList.remove("hidden");
-                mataPelajaranInput.value = editData.mata_pelajaran;
+                mataPelajaranInput.value = currentEditData.mata_pelajaran || '';
             }
             submitButton.textContent = "Simpan Perubahan";
             cancelEditButton.classList.remove("hidden");
-            localStorage.removeItem('editProfile');
+            // Do NOT remove from localStorage here. We need it in the submit handler.
+        } else {
+            formTitle.textContent = "Upload Profile"; // Default title for new upload
+            submitButton.textContent = "Tambah";
+            cancelEditButton.classList.add("hidden"); // Ensure hidden for new upload
         }
 
+        // Show/hide mata pelajaran input based on jabatan
+        jabatanSelect.addEventListener("change", function () {
+            if (this.value === "Guru") {
+                mataPelajaranContainer.classList.remove("hidden");
+                mataPelajaranInput.setAttribute("required", "");
+            } else {
+                mataPelajaranContainer.classList.add("hidden");
+                mataPelajaranInput.removeAttribute("required");
+                mataPelajaranInput.value = ""; // Clear value if not Guru
+            }
+        });
+
+        // Handle file selection and display file name
         fotoInput.addEventListener("change", function () {
             const file = this.files[0];
             if (file) {
@@ -106,76 +126,77 @@ const Upload_Profile = {
             }
         });
 
-        jabatanSelect.addEventListener("change", function () {
-            if (this.value === "Guru") {
-                mataPelajaranContainer.classList.remove("hidden");
-                mataPelajaranInput.setAttribute("required", "");
-            } else {
-                mataPelajaranContainer.classList.add("hidden");
-                mataPelajaranInput.removeAttribute("required");
-                mataPelajaranInput.value = "";
-            }
-        });
-
-        form.addEventListener("submit", function (event) {
+        form.addEventListener("submit", async function (event) {
             event.preventDefault();
             const jabatan = jabatanSelect.value;
             const nama = namaInput.value.trim();
             const fotoFile = fotoInput.files[0];
             const mataPelajaran = mataPelajaranInput.value.trim();
-            let fotoSrc = preview.src;
 
-            if (!jabatan || !nama || (!fotoFile && !fotoSrc)) {
-                showAlert('Semua field wajib diisi.', 'warning');
-                return;
+            let formData = new FormData();
+            formData.append('jabatan', jabatan);
+            formData.append('nama', nama);
+            if (jabatan === "Guru") {
+                formData.append('mata_pelajaran', mataPelajaran);
             }
 
+            // Conditional logic for image handling
             if (fotoFile) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    fotoSrc = e.target.result;
-                    simpanProfile(jabatan, nama, fotoSrc, mataPelajaran);
-                };
-                reader.readAsDataURL(fotoFile);
+                // New image selected
+                formData.append('foto', fotoFile);
+            } else if (currentEditData && currentEditData.foto) {
+                // No new image, but there was an old image (in edit mode)
+                // Send the path of the old image so backend knows to keep it
+                formData.append('fotoLama', currentEditData.foto);
             } else {
-                simpanProfile(jabatan, nama, fotoSrc, mataPelajaran);
+                // If in edit mode and no new image, and no old image was there,
+                // or if it's a new post and no image is uploaded.
+                // Backend validation should catch missing required image.
+            }
+
+            try {
+                const baseUrl = 'http://localhost:5000';
+                const url = currentEditData && currentEditData._id
+                    ? `${baseUrl}/api/dashboardProfile/${currentEditData._id}`
+                    : `${baseUrl}/api/dashboardProfile`;
+                const method = currentEditData && currentEditData._id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(data.message || `Profile berhasil ${method === 'PUT' ? 'diperbarui' : 'diupload'}.`, 'success');
+                    form.reset();
+                    fileNameDisplay.textContent = "No file chosen";
+                    preview.classList.add("hidden");
+                    mataPelajaranContainer.classList.add("hidden");
+                    mataPelajaranInput.value = ""; // Clear input for next use
+
+                    // Clear localStorage and reset state only AFTER successful submission
+                    localStorage.removeItem('editProfile');
+                    currentEditData = null; // Reset edit state
+                    formTitle.textContent = "Upload Profile"; // Reset title
+                    submitButton.textContent = "Tambah";
+                    cancelEditButton.classList.add("hidden");
+                    window.location.hash = '#/dashboard_profile'; // Redirect to dashboard
+                } else {
+                    showAlert(data.message || 'Terjadi kesalahan saat mengupload profile.', 'danger');
+                }
+            } catch (error) {
+                console.error("Error uploading data:", error);
+                showAlert('Terjadi kesalahan jaringan.', 'danger');
             }
         });
 
-        function simpanProfile(jabatan, nama, fotoSrc, mataPelajaran) {
-            const newProfile = { jabatan, nama, foto: fotoSrc };
-            if (jabatan === "Guru") {
-                newProfile.mata_pelajaran = mataPelajaran;
-            }
-
-            if (editIndex !== null && editIndex !== undefined) {
-                profileList[parseInt(editIndex)] = newProfile;
-                localStorage.setItem("profile", JSON.stringify(profileList));
-                showAlert(`Profile ${jabatan} berhasil diperbarui.`, 'success');
-                localStorage.removeItem('editIndexProfile');
-                editIndex = null;
-                submitButton.textContent = "Tambah";
-                cancelEditButton.classList.add("hidden");
-            } else {
-                if (jabatan === "Kepala Sekolah" && profileList.some(p => p.jabatan === "Kepala Sekolah")) {
-                    showAlert('Profile Kepala Sekolah sudah ada.', 'warning');
-                    return;
-                }
-                profileList.push(newProfile);
-                localStorage.setItem("profile", JSON.stringify(profileList));
-                showAlert(`Profile ${jabatan} berhasil diupload.`, 'success');
-            }
-            form.reset();
-            fileNameDisplay.textContent = "No file chosen";
-            preview.classList.add("hidden");
-            mataPelajaranContainer.classList.add("hidden");
-            mataPelajaranInput.value = "";
-            window.location.hash = '#/dashboard_profile';
-        }
-
         cancelEditButton.addEventListener("click", function () {
-            localStorage.removeItem('editIndexProfile');
-            editIndex = null;
+            // Clear localStorage and reset state on cancellation
+            localStorage.removeItem('editProfile');
+            currentEditData = null; // Reset edit state
+            formTitle.textContent = "Upload Profile"; // Reset title
             submitButton.textContent = "Tambah";
             cancelEditButton.classList.add("hidden");
             form.reset();
@@ -187,15 +208,20 @@ const Upload_Profile = {
         });
 
         function showAlert(message, type) {
+            document.querySelectorAll(".small-alert").forEach(el => el.remove());
+
             const alertBox = document.createElement("div");
             alertBox.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3 small-alert`;
             alertBox.role = "alert";
+            alertBox.style.zIndex = "1050";
+            alertBox.style.top = "60px";
             alertBox.innerHTML = `${message}`;
             document.body.appendChild(alertBox);
+
             setTimeout(() => {
                 alertBox.classList.remove("show");
-                setTimeout(() => alertBox.remove(), 150);
-            }, 1000);
+                setTimeout(() => alertBox.remove(), 200); // Allow time for fade out
+            }, 2000); // Display for 2 seconds
         }
     }
 };

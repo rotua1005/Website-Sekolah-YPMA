@@ -12,7 +12,7 @@ const UploadPrestasi = {
                 </header>
 
                 <main class="bg-white shadow-lg rounded-lg p-6">
-                    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Upload Prestasi Baru</h1>
+                    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6" id="form-title">Upload Prestasi Baru</h1>
                     <form id="upload-form" class="space-y-6">
                         <div class="space-y-2">
                             <label for="gambar" class="block text-sm font-semibold text-gray-700">Tambah Foto</label>
@@ -55,32 +55,37 @@ const UploadPrestasi = {
     async afterRender() {
         MenuDashboard.afterRender();
         const form = document.getElementById("upload-form");
+        const formTitle = document.getElementById("form-title");
         const namaEkstraInput = document.getElementById("nama_ekstra");
         const judulInput = document.getElementById("judul");
         const deskripsiInput = document.getElementById("deskripsi");
         const gambarInput = document.getElementById("gambar");
-        const gambarLabel = document.querySelector('label[for="gambar"]');
         const fileNameDisplay = document.getElementById("file-name");
         const preview = document.getElementById("preview");
         const submitButton = document.getElementById("submit-button");
         const cancelEditButton = document.getElementById("cancel-edit");
 
-        let prestasiList = JSON.parse(localStorage.getItem("prestasi")) || [];
-        let editIndexPrestasi = localStorage.getItem('editIndexPrestasi');
-        let editDataPrestasi = localStorage.getItem('editPrestasi');
+        let currentEditData = null;
+        const storedEditData = localStorage.getItem('editPrestasi');
 
-        // Cek apakah ada data untuk diedit
-        if (editDataPrestasi) {
-            editDataPrestasi = JSON.parse(editDataPrestasi);
-            namaEkstraInput.value = editDataPrestasi.nama_ekstra;
-            judulInput.value = editDataPrestasi.judul;
-            deskripsiInput.value = editDataPrestasi.deskripsi;
-            preview.src = editDataPrestasi.gambar;
+        // Check if there's data for editing
+        if (storedEditData) {
+            currentEditData = JSON.parse(storedEditData);
+            formTitle.textContent = "Edit Prestasi"; // Change title for edit mode
+            namaEkstraInput.value = currentEditData.nama_ekstra;
+            judulInput.value = currentEditData.judul;
+            deskripsiInput.value = currentEditData.deskripsi;
+            // Prepend base URL for preview
+            preview.src = `http://localhost:5000${currentEditData.gambar}`;
             preview.classList.remove("hidden");
             fileNameDisplay.textContent = 'Gambar sebelumnya';
             submitButton.textContent = "Simpan Perubahan";
             cancelEditButton.classList.remove("hidden");
-            localStorage.removeItem('editPrestasi'); // Hapus data edit setelah digunakan
+            // Do NOT remove from localStorage here. We need it in the submit handler.
+        } else {
+            formTitle.textContent = "Upload Prestasi Baru"; // Default title for new upload
+            submitButton.textContent = "Tambah";
+            cancelEditButton.classList.add("hidden"); // Ensure hidden for new upload
         }
 
         // Function to handle file selection and display file name
@@ -97,103 +102,103 @@ const UploadPrestasi = {
             } else {
                 fileNameDisplay.textContent = "No file chosen";
                 preview.classList.add("hidden");
+                // If user clears the file selection during edit, and there was an old image,
+                // you might want to re-display the old image in preview. For simplicity,
+                // we just hide the preview here if no new file is chosen.
             }
         });
 
-        form.addEventListener("submit", function (event) {
+        form.addEventListener("submit", async function (event) {
             event.preventDefault();
             const nama_ekstra = namaEkstraInput.value.trim();
             const judul = judulInput.value.trim();
             const deskripsi = deskripsiInput.value.trim();
-            const tanggal = new Date().toLocaleDateString();
             const gambarFile = gambarInput.files[0];
-            let gambarSrc = preview.src; // Gunakan gambar yang sudah ada jika tidak ada file baru
 
-            if (!nama_ekstra) {
-                showAlert('Nama ekstrakurikuler wajib diisi.', 'warning');
-                return;
-            }
+            let formData = new FormData();
+            formData.append('nama_ekstra', nama_ekstra);
+            formData.append('judul', judul);
+            formData.append('deskripsi', deskripsi);
 
-            if (!judul) {
-                showAlert('Judul prestasi wajib diisi.', 'warning');
-                return;
-            }
-
-            if (!deskripsi) {
-                showAlert('Deskripsi prestasi wajib diisi.', 'warning');
-                return;
-            }
-
+            // Conditional logic for image handling
             if (gambarFile) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    gambarSrc = e.target.result;
-                    prosesSimpan(nama_ekstra, judul, deskripsi, tanggal, gambarSrc);
-                };
-                reader.readAsDataURL(gambarFile);
+                // New image selected
+                formData.append('gambar', gambarFile);
+            } else if (currentEditData && currentEditData.gambar) {
+                // No new image, but there was an old image (in edit mode)
+                // Send the path of the old image so backend knows to keep it
+                formData.append('gambarLama', currentEditData.gambar);
             } else {
-                prosesSimpan(nama_ekstra, judul, deskripsi, tanggal, gambarSrc);
+                // For a new post, if no image is uploaded, it will be caught by backend validation.
+                // For an update, if no new image and no old image path was there, the image field
+                // in the database would be set to null or a default based on backend logic.
             }
-        });
 
-        function prosesSimpan(nama_ekstra, judul, deskripsi, tanggal, gambarSrc) {
-            if (editIndexPrestasi !== null && editIndexPrestasi !== undefined) {
-                prestasiList[parseInt(editIndexPrestasi)] = { nama_ekstra, judul, deskripsi, tanggal, gambar: gambarSrc };
-                localStorage.setItem("prestasi", JSON.stringify(prestasiList));
-                showAlert('Prestasi berhasil diperbarui.', 'success');
-                localStorage.removeItem('editIndexPrestasi');
-                editIndexPrestasi = null;
-                submitButton.textContent = "Tambah";
-                cancelEditButton.classList.add("hidden");
-                form.reset();
-                fileNameDisplay.textContent = "No file chosen";
-                preview.classList.add("hidden");
-                window.location.hash = '#/dashboard_prestasi';
-            } else {
-                if (prestasiList.some(prestasi => prestasi.judul.toLowerCase() === judul.toLowerCase())) {
-                    showAlert('Judul prestasi sudah ada. Gunakan judul yang berbeda.', 'warning');
-                } else if (!nama_ekstra || !judul || !deskripsi) {
-                    showAlert('Semua field wajib diisi.', 'warning');
-                } else {
-                    const newPrestasi = { nama_ekstra, judul, deskripsi, tanggal, gambar: gambarSrc };
-                    prestasiList.push(newPrestasi);
-                    try {
-                        localStorage.setItem("prestasi", JSON.stringify(prestasiList));
-                    } catch (e) {
-                        if (e.name === 'QuotaExceededError') {
-                            showAlert('Storage limit exceeded. Please delete some items.', 'danger');
-                        }
-                    }
+            try {
+                const baseUrl = 'http://localhost:5000';
+                // Determine URL and Method based on whether we are editing (currentEditData._id exists)
+                const url = currentEditData && currentEditData._id
+                    ? `${baseUrl}/api/dashboardPrestasi/${currentEditData._id}`
+                    : `${baseUrl}/api/dashboardPrestasi`;
+                const method = currentEditData && currentEditData._id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(data.message || `Prestasi berhasil ${method === 'PUT' ? 'diperbarui' : 'diupload'}.`, 'success');
                     form.reset();
                     fileNameDisplay.textContent = "No file chosen";
                     preview.classList.add("hidden");
-                    showAlert('Prestasi berhasil diupload.', 'success');
-                    window.location.hash = '#/dashboard_prestasi';
+
+                    // Clear localStorage and reset state only AFTER successful submission
+                    localStorage.removeItem('editPrestasi');
+                    currentEditData = null; // Reset edit state
+                    formTitle.textContent = "Upload Prestasi Baru"; // Reset title
+                    submitButton.textContent = "Tambah";
+                    cancelEditButton.classList.add("hidden");
+                    window.location.hash = '#/dashboard_prestasi'; // Redirect to dashboard
+                } else {
+                    showAlert(data.message || 'Terjadi kesalahan saat mengupload prestasi.', 'danger');
                 }
+            } catch (error) {
+                console.error("Error uploading data:", error);
+                showAlert('Terjadi kesalahan jaringan.', 'danger');
             }
-        }
+        });
 
         cancelEditButton.addEventListener("click", function () {
-            localStorage.removeItem('editIndexPrestasi');
-            editIndexPrestasi = null;
+            // Clear localStorage and reset state on cancellation
+            localStorage.removeItem('editPrestasi');
+            currentEditData = null; // Reset edit state
+            formTitle.textContent = "Upload Prestasi Baru"; // Reset title
             submitButton.textContent = "Tambah";
             cancelEditButton.classList.add("hidden");
             form.reset();
             fileNameDisplay.textContent = "No file chosen";
             preview.classList.add("hidden");
-            window.location.hash = '#/dashboard_prestasi';
+            window.location.hash = '#/dashboard_prestasi'; // Redirect to dashboard
         });
 
         function showAlert(message, type) {
+            document.querySelectorAll(".small-alert").forEach(el => el.remove());
+
             const alertBox = document.createElement("div");
             alertBox.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3 small-alert`;
             alertBox.role = "alert";
+            alertBox.style.zIndex = "1050";
+            alertBox.style.top = "60px";
             alertBox.innerHTML = `${message}`;
             document.body.appendChild(alertBox);
+
             setTimeout(() => {
                 alertBox.classList.remove("show");
-                setTimeout(() => alertBox.remove(), 150);
-            }, 1000);
+                setTimeout(() => alertBox.remove(), 200); // Allow time for fade out
+            }, 2000); // Display for 2 seconds
         }
     }
 };
