@@ -13,8 +13,8 @@ db.dataSiswa = require("./DataSiswaModel");
 db.dataWaliKelasSiswa = require("./DataWaliKelasModel");
 db.TahunAkademik = require("./TahunAkademikModel");
 db.absensi = require("./AbsensiModel");
+db.akun = require("./AkunModel");
 
-//login
-db.user = require("/../Backend/Sekolah YPMA/Back-End/Login/models/User");
+
 
 module.exports = db;

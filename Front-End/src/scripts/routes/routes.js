@@ -72,6 +72,15 @@ import ProfileGuru from '../view/pages/profileGuru';
 import Prestasi from '../view/pages/prestasi';
 import DetailPrestasi from '../view/pages/detail/prestasi';
 import Galery from '../view/pages/galery';
+import DataAkun from '../view/dashboard/biodata/data_akun';
+import MenuWaliKelas from '../../waliKelas/menu/menu_walikelas';
+import DashboardWaliKelas from '../../waliKelas/dashboard/dashboard_walikelas';
+import DataSiswaWaliKelas from '../../waliKelas/biodata/dataSiswa';
+import KelolaAbsensiWaliKelas from '../../waliKelas/absensi/kelolaAbsensi';
+import KehadiranWaliKelas from '../../waliKelas/absensi/kehadiran';
+import RekapAbsensiWaliKelas from '../../waliKelas/absensi/rekapAbensi';
+import DashboardAkun_WaliKelas from '../../waliKelas/profil/akun';
+import InputAbsensiWaliKelas from '../../waliKelas/absensi/inputAbsensi';
 
 
 const routes = {
@@ -100,6 +109,7 @@ const routes = {
   '/data_kelas':DataKelas,
   '/data_mapel':DataMataPelajaran,
   '/data_sekolah':DataSekolah,
+  '/data_akun' : DataAkun,
   '/tahun_akademik':TahunAkademik,
   '/absensi1':Absensi1,
   '/input_nilai': InputNilai,
@@ -125,6 +135,7 @@ const routes = {
   '/profilguru' : ProfileGuru,
   '/prestasi':Prestasi,
   '/galery': Galery, 
+
 
   // Kepala Sekolah
   '/menu_kepsek' : MenuKepsek,
@@ -156,6 +167,17 @@ const routes = {
 
   '/feedback_kepsek' : FeedbackKepsek,
 
+
+     // New: Wali Kelas routes
+     '/menu_walikelas': MenuWaliKelas,
+     '/dashboard_walikelas': DashboardWaliKelas,
+     '/data_siswa_walikelas': DataSiswaWaliKelas,
+     '/absensi_walikelas': InputAbsensiWaliKelas,
+     '/kelola_absensi_walikelas': KelolaAbsensiWaliKelas,
+     '/kehadiran_walikelas': KehadiranWaliKelas,
+     '/rekap_absensi_walikelas': RekapAbsensiWaliKelas,
+     '/dashboard_akun_walikelas': DashboardAkun_WaliKelas, 
+     
 
 };
 

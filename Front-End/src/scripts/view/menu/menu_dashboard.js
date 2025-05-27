@@ -27,6 +27,7 @@ const MenuDashboard = {
                                 <a href="#/data_guru" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Guru</a>
                                 <a href="#/data_siswa" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Siswa</a>
                                 <a href="#/data_walikelas" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Wali Kelas</a>
+                                <a href="#/data_akun" class="dashboard-submenu-link block py-1.5 px-6 rounded hover:bg-indigo-500 transition duration-200 ease-in-out text-sm">Data Akun</a>
                             </div>
                         </div>
                     </div>
