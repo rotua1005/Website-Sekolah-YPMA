@@ -22,10 +22,10 @@ const DataKelas = {
                                         <th class="py-4 px-6">Wali Kelas</th>
                                         <th class="py-4 px-6">Kelas</th>
                                         <th class="py-4 px-6">Jumlah Siswa</th>
-                                        </tr>
+                                        <th class="py-4 px-6">Tahun Akademik</th> </tr>
                                 </thead>
                                 <tbody id="dataKelasTable" class="text-gray-700">
-                                    <tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>
+                                    <tr><td colspan="5" class="text-center py-4">Loading data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -36,7 +36,6 @@ const DataKelas = {
 
     async afterRender() {
         MenuDashboard.afterRender();
-        // No event listeners for CRUD operations needed for static data
         this.renderTable(); // Initial rendering of the table
     },
 
@@ -52,7 +51,7 @@ const DataKelas = {
             const kelasData = await response.json();
 
             if (kelasData.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Tidak ada data Kelas yang ditemukan. Pastikan ada data Wali Kelas dan Siswa.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">Tidak ada data Kelas yang ditemukan. Pastikan ada data Wali Kelas dan Siswa.</td></tr>`;
                 return;
             }
 
@@ -62,12 +61,12 @@ const DataKelas = {
                     <td class="py-4 px-6">${kelas.waliKelas ? kelas.waliKelas.nama : 'Tidak Ada Wali Kelas'}</td>
                     <td class="py-4 px-6">${kelas.kelas}</td>
                     <td class="py-4 px-6">${kelas.jumlahSiswa !== undefined ? kelas.jumlahSiswa : '0'}</td>
-                    </tr>
+                    <td class="py-4 px-6">${kelas.tahunAkademik || 'N/A'}</td> </tr>
             `).join('');
 
         } catch (error) {
             console.error('Error rendering Data Kelas table:', error);
-            tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
         }
     },
 
@@ -75,7 +74,7 @@ const DataKelas = {
     // It was used for initial string generation, but renderTable handles async fetching.
     // Keeping it here for clarity for now, but in production, you'd delete it.
     async loadData() {
-        return `<tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>`; // Placeholder
+        return `<tr><td colspan="5" class="text-center py-4">Loading data...</td></tr>`; // Placeholder
     }
 };
 

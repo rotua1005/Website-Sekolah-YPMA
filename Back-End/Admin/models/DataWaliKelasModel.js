@@ -8,12 +8,12 @@ const dataWaliKelasSchema = new mongoose.Schema({
     kelas: {
         type: String,
         required: true,
-        unique: true, // Keep this one
+        unique: true, // Ensures one class has only one Wali Kelas
     },
     nip: {
         type: String,
         required: true,
-        unique: true,
+        unique: true, // Ensures NIP is unique
     },
     telepon: {
         type: String,
@@ -23,9 +23,10 @@ const dataWaliKelasSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    tahunAkademik: { // Added tahunAkademik field
+        type: String,
+        required: true,
+    },
 });
-
-// REMOVE or comment out this line:
-// dataWaliKelasSchema.index({ kelas: 1 }, { unique: true });
 
 module.exports = mongoose.models.DataWaliKelas || mongoose.model('DataWaliKelas', dataWaliKelasSchema);

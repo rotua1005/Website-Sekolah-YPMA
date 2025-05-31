@@ -1,12 +1,20 @@
-// File: controllers/DataSiswaController.js
 const DataSiswa = require("../models/DataSiswaModel");
+const TahunAkademik = require("../models/TahunAkademikModel");
 
-// 1. Mendapatkan semua data siswa
+// 1. Mendapatkan semua data siswa (dengan filter kelas opsional)
 exports.getAllDataSiswa = async (req, res) => {
     try {
-        const data = await DataSiswa.find();
+        const { kelas } = req.query; // Ambil parameter query 'kelas'
+        let query = {}; // Inisialisasi objek query kosong
+
+        if (kelas) {
+            query.kelas = kelas; // Jika 'kelas' disediakan, tambahkan ke query
+        }
+
+        const data = await DataSiswa.find(query); // Cari data berdasarkan query
         res.json(data);
     } catch (error) {
+        console.error("Error fetching all student data:", error); // Log kesalahan untuk debugging
         res.status(500).json({ message: error.message });
     }
 };
@@ -15,17 +23,38 @@ exports.getAllDataSiswa = async (req, res) => {
 exports.createDataSiswa = async (req, res) => {
     console.log("Data yang diterima untuk dibuat:", req.body);
     try {
-        const data = await DataSiswa.create(req.body);
+        // Ambil tahun akademik aktif
+        const activeTahunAkademik = await TahunAkademik.findOne().sort({ tahun: -1, semester: -1 });
+
+        console.log("activeTahunAkademik yang ditemukan:", activeTahunAkademik);
+        if (activeTahunAkademik) {
+            console.log("activeTahunAkademik.tahun:", activeTahunAkademik.tahun);
+            console.log("Tipe activeTahunAkademik.tahun:", typeof activeTahunAkademik.tahun);
+            console.log("activeTahunAkademik.semester:", activeTahunAkademik.semester);
+        }
+
+        if (!activeTahunAkademik) {
+            return res.status(404).json({ message: "Tidak ada tahun akademik aktif yang ditemukan. Harap tambahkan tahun akademik terlebih dahulu." });
+        }
+
+        // Gunakan field 'tahun' dan 'semester' yang sudah ada di dokumen TahunAkademik
+        const tahunAkademikOtomatis = `${activeTahunAkademik.tahun} ${activeTahunAkademik.semester}`;
+
+        const dataSiswaToCreate = {
+            ...req.body,
+            tahunAkademik: tahunAkademikOtomatis
+        };
+
+        const data = await DataSiswa.create(dataSiswaToCreate);
         res.status(201).json(data);
     } catch (error) {
         console.error("Error saat membuat data siswa:", error);
         // Tangani error duplikat key (E11000)
         if (error.code === 11000) {
-            const field = Object.keys(error.keyValue)[0]; // Ambil nama field yang duplikat
-            const value = error.keyValue[field]; // Ambil nilai yang duplikat
+            const field = Object.keys(error.keyValue)[0];
+            const value = error.keyValue[field];
             let message = `Data dengan ${field} '${value}' sudah terdaftar. Mohon gunakan ${field} yang berbeda.`;
-            
-            // Tambahkan pesan yang lebih spesifik jika Anda punya banyak unique index
+
             if (field === 'nis') {
                 message = "NIS yang Anda masukkan sudah terdaftar. Mohon gunakan NIS yang berbeda.";
             } else if (field === 'nisn') {
@@ -57,8 +86,6 @@ exports.getDataSiswaById = async (req, res) => {
 exports.updateDataSiswa = async (req, res) => {
     console.log(`Memperbarui siswa dengan ID: ${req.params.id}`, req.body);
     try {
-        // Find by ID and update, { new: true } mengembalikan dokumen yang sudah diperbarui
-        // { runValidators: true } menjalankan validasi skema Mongoose pada update
         const data = await DataSiswa.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!data) return res.status(404).json({ message: "Data siswa tidak ditemukan" });
         res.json(data);
@@ -91,7 +118,7 @@ exports.deleteDataSiswa = async (req, res) => {
         if (!data) return res.status(404).json({ message: "Data siswa tidak ditemukan" });
         res.json({ message: "Data siswa berhasil dihapus" });
     } catch (error) {
-        console.error("Error saat menghapus data siswa:", error);
-        res.status(500).json({ message: error.message });
-    }
-};
+            console.error("Error saat menghapus data siswa:", error);
+            res.status(500).json({ message: error.message });
+        }
+    };

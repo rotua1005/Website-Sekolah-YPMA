@@ -19,6 +19,9 @@ const DataGuru = {
                                 Tambah Guru
                             </button>
                             <div class="flex space-x-4">
+                                <select id="filterTahunAkademikGuru" class="border p-3 rounded-lg text-lg">
+                                    <option value="">Semua Tahun Akademik</option>
+                                </select>
                                 <input type="text" id="searchGuru" class="border p-3 rounded-lg text-lg" placeholder="Cari Nama Guru">
                                 <select id="filterKelas" class="border p-3 rounded-lg text-lg">
                                     <option value="">Semua Kelas</option>
@@ -42,12 +45,13 @@ const DataGuru = {
                                         <th class="py-4 px-6">NIP</th>
                                         <th class="py-4 px-6">Telepon</th>
                                         <th class="py-4 px-6">Kelas</th>
+                                        <th class="py-4 px-6">Tahun Akademik</th>
                                         <th class="py-4 px-6">Status</th>
                                         <th class="py-4 px-6">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dataGuruTable" class="text-gray-700">
-                                    <tr><td colspan="8" class="text-center py-4">Loading data...</td></tr>
+                                    <tr><td colspan="9" class="text-center py-4">Loading data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -63,15 +67,43 @@ const DataGuru = {
         const tambahGuruBtn = document.getElementById('tambahGuruBtn');
         const searchGuruInput = document.getElementById('searchGuru');
         const filterKelasSelect = document.getElementById('filterKelas');
+        const filterTahunAkademikGuruSelect = document.getElementById('filterTahunAkademikGuru'); // New filter select
+
+        // Function to fetch and populate Tahun Akademik filter
+        async function populateTahunAkademikFilter() {
+            try {
+                const response = await fetch('http://localhost:5000/api/tahunakademik'); // Assuming this endpoint exists
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Tahun Akademik data');
+                }
+                const tahunAkademikData = await response.json();
+
+                filterTahunAkademikGuruSelect.innerHTML = '<option value="">Semua Tahun Akademik</option>';
+                tahunAkademikData.forEach(ta => {
+                    const option = document.createElement('option');
+                    option.value = `${ta.tahun} ${ta.semester}`;
+                    option.textContent = `${ta.tahun} ${ta.semester}`;
+                    filterTahunAkademikGuruSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error populating Tahun Akademik filter for Guru:", error);
+            }
+        }
+
+        populateTahunAkademikFilter(); // Call to populate the filter on load
 
         tambahGuruBtn.addEventListener('click', () => showModal('Tambah Data Guru'));
 
         searchGuruInput.addEventListener('input', () => {
-            renderTable(searchGuruInput.value, filterKelasSelect.value);
+            renderTable(searchGuruInput.value, filterKelasSelect.value, filterTahunAkademikGuruSelect.value);
         });
 
         filterKelasSelect.addEventListener('change', () => {
-            renderTable(searchGuruInput.value, filterKelasSelect.value);
+            renderTable(searchGuruInput.value, filterKelasSelect.value, filterTahunAkademikGuruSelect.value);
+        });
+
+        filterTahunAkademikGuruSelect.addEventListener('change', () => {
+            renderTable(searchGuruInput.value, filterKelasSelect.value, filterTahunAkademikGuruSelect.value);
         });
 
         // Event delegation for Edit and Delete buttons
@@ -83,7 +115,8 @@ const DataGuru = {
                 try {
                     const response = await fetch(`http://localhost:5000/api/dataguru/${id}`);
                     if (!response.ok) {
-                        throw new Error('Gagal mengambil data guru untuk diedit');
+                        const errorData = await response.json().catch(() => ({ message: 'Gagal mengambil data guru untuk diedit.' }));
+                        throw new Error(errorData.message);
                     }
                     const guruData = await response.json();
                     showModal('Edit Data Guru', guruData);
@@ -95,7 +128,6 @@ const DataGuru = {
 
             if (target.classList.contains('delete-btn')) {
                 const id = target.dataset.id;
-                // Confirm dialog appears only once
                 if (confirm('Apakah Anda yakin ingin menghapus data guru ini?')) {
                     try {
                         const response = await fetch(`http://localhost:5000/api/dataguru/${id}`, {
@@ -106,7 +138,7 @@ const DataGuru = {
                             throw new Error(errorData.message || 'Gagal menghapus guru');
                         }
                         alert('Data guru berhasil dihapus!');
-                        renderTable(searchGuruInput.value, filterKelasSelect.value); // Refresh table after successful deletion
+                        renderTable(searchGuruInput.value, filterKelasSelect.value, filterTahunAkademikGuruSelect.value); // Refresh table after successful deletion
                     } catch (error) {
                         console.error("Error deleting guru:", error);
                         alert(`Gagal menghapus data: ${error.message}`);
@@ -218,7 +250,7 @@ const DataGuru = {
 
                     modalGuru.remove(); // Close modal on success
                     alert('Data guru berhasil disimpan!'); // Success alert
-                    renderTable(searchGuruInput.value, filterKelasSelect.value); // Refresh table
+                    renderTable(searchGuruInput.value, filterKelasSelect.value, filterTahunAkademikGuruSelect.value); // Refresh table
                 } catch (error) {
                     console.error("Error saving guru data:", error);
                     alert(`Terjadi kesalahan jaringan atau server: ${error.message}`);
@@ -227,7 +259,7 @@ const DataGuru = {
         }
 
         // Function to fetch and render the table
-        async function renderTable(search = '', filter = '') {
+        async function renderTable(search = '', filterKelas = '', filterTahunAkademik = '') {
             try {
                 const response = await fetch('http://localhost:5000/api/dataguru');
                 if (!response.ok) {
@@ -237,14 +269,15 @@ const DataGuru = {
 
                 const filteredData = guruData.filter(guru =>
                     guru.nama.toLowerCase().includes(search.toLowerCase()) &&
-                    (filter === '' || guru.kelas === filter)
+                    (filterKelas === '' || guru.kelas === filterKelas) &&
+                    (filterTahunAkademik === '' || guru.tahunAkademik === filterTahunAkademik) // Filter by tahunAkademik
                 );
 
                 const tableBody = document.getElementById('dataGuruTable');
                 if (!tableBody) return; // Ensure tableBody exists
 
                 if (filteredData.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">Tidak ada data guru yang ditemukan.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">Tidak ada data guru yang ditemukan.</td></tr>`;
                     return;
                 }
 
@@ -256,7 +289,7 @@ const DataGuru = {
                         <td class="py-4 px-6">${guru.nip}</td>
                         <td class="py-4 px-6">${guru.telepon}</td>
                         <td class="py-4 px-6">${guru.kelas}</td>
-                        <td class="py-4 px-6">
+                        <td class="py-4 px-6">${guru.tahunAkademik || '-'}</td> <td class="py-4 px-6">
                             <span class="bg-${guru.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${guru.status}</span>
                         </td>
                         <td class="py-4 px-6 flex space-x-4">
@@ -269,7 +302,7 @@ const DataGuru = {
                 console.error('Error rendering table:', error);
                 const tableBody = document.getElementById('dataGuruTable');
                 if (tableBody) {
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
                 }
             }
         }
@@ -291,6 +324,7 @@ const DataGuru = {
                     <td class="py-4 px-6">${guru.nip}</td>
                     <td class="py-4 px-6">${guru.telepon}</td>
                     <td class="py-4 px-6">${guru.kelas}</td>
+                    <td class="py-4 px-6">${guru.tahunAkademik || '-'}</td>
                     <td class="py-4 px-6">${guru.status}</td>
                     <td class="py-4 px-6">
                         <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${guru._id}">Edit</button>
@@ -300,7 +334,7 @@ const DataGuru = {
             `).join('');
         } catch (error) {
             console.error('Gagal memuat data guru (in loadData):', error);
-            return `<tr><td colspan="8" class="text-center py-4">Gagal memuat data</td></tr>`;
+            return `<tr><td colspan="9" class="text-center py-4">Gagal memuat data</td></tr>`;
         }
     }
 };

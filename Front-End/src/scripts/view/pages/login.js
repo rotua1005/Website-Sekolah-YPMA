@@ -46,51 +46,58 @@ const Login = {
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
 
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Mencegah halaman reload
+        loginForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent page reload
 
             const email = emailInput.value;
             const password = passwordInput.value;
 
-            // Ambil data akun dari localStorage
-            const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
 
-            // Cari akun yang cocok dengan email dan password
-            const matchedAccount = akunData.find(account =>
-                account.email === email && account.password === password
-            );
+                const data = await response.json();
 
-            if (matchedAccount) {
-                // alert(`Login berhasil sebagai ${matchedAccount.role.replace(/_/g, ' ').toUpperCase()}!`); // Alert ini bisa dihapus karena akan ada alert di dashboard
-                localStorage.setItem("isLoggedIn", "true");
-                localStorage.setItem("userRole", matchedAccount.role); // Simpan role dari data akun
-                localStorage.setItem("username", matchedAccount.nama); // Simpan nama dari data akun
-                localStorage.setItem("email", matchedAccount.email);
-                localStorage.setItem("justLoggedIn", "true"); // Flag untuk menampilkan alert di dashboard
+                if (response.ok) {
+                    // Login successful
+                    localStorage.setItem("isLoggedIn", "true");
+                    localStorage.setItem("userRole", data.user.role);
+                    localStorage.setItem("username", data.user.nama);
+                    localStorage.setItem("email", data.user.email);
+                    localStorage.setItem("justLoggedIn", "true"); // Flag for dashboard alert
 
-                // Redirect berdasarkan role
-                switch (matchedAccount.role) {
-                    case "admin":
-                        window.location.href = "/#/dashboard";
-                        break;
-                    case "kepala_sekolah":
-                        window.location.href = "/#/dashboard_kepsek";
-                        break;
-                    case "wali_kelas_1":
-                    case "wali_kelas_2":
-                    case "wali_kelas_3":
-                    case "wali_kelas_4":
-                    case "wali_kelas_5":
-                    case "wali_kelas_6":
-                        window.location.href = "/#/dashboard_walikelas"; // Semua wali kelas ke dashboard yang sama
-                        break;
-                    default:
-                        // Handle case where role is not recognized or no specific dashboard
-                        window.location.href = "/#/dashboard";
-                        break;
+                    // Redirect based on role
+                    switch (data.user.role) {
+                        case "admin":
+                            window.location.href = "/#/dashboard";
+                            break;
+                        case "kepala_sekolah":
+                            window.location.href = "/#/dashboard_kepsek";
+                            break;
+                        case "wali_kelas_1":
+                        case "wali_kelas_2":
+                        case "wali_kelas_3":
+                        case "wali_kelas_4":
+                        case "wali_kelas_5":
+                        case "wali_kelas_6":
+                            window.location.href = "/#/dashboard_walikelas";
+                            break;
+                        default:
+                            window.location.href = "/#/dashboard";
+                            break;
+                    }
+                } else {
+                    // Login failed
+                    alert(data.message || "Login failed. Please check your credentials.");
                 }
-            } else {
-                alert("Email atau Password salah!");
+            } catch (error) {
+                console.error('Error during login:', error);
+                alert("An error occurred during login. Please try again.");
             }
         });
     }

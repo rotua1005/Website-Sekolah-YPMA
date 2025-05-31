@@ -19,6 +19,9 @@ const DataWaliKelas = {
                                 Tambah Wali Kelas
                             </button>
                             <div class="flex space-x-4">
+                                <select id="filterTahunAkademikWaliKelas" class="border p-3 rounded-lg text-lg">
+                                    <option value="">Semua Tahun Akademik</option>
+                                    </select>
                                 <select id="filterKelas" class="border p-3 rounded-lg text-lg">
                                     <option value="">Semua Kelas</option>
                                     <option value="1">Kelas 1</option>
@@ -42,12 +45,13 @@ const DataWaliKelas = {
                                         <th class="py-4 px-6">NIP</th>
                                         <th class="py-4 px-6">Telepon</th>
                                         <th class="py-4 px-6">Jumlah Siswa</th>
+                                        <th class="py-4 px-6">Tahun Akademik</th>
                                         <th class="py-4 px-6">Status</th>
                                         <th class="py-4 px-6">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dataTableWaliKelas" class="text-gray-700">
-                                    <tr><td colspan="8" class="text-center py-4">Loading data...</td></tr>
+                                    <tr><td colspan="9" class="text-center py-4">Loading data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -63,15 +67,43 @@ const DataWaliKelas = {
         const tambahWaliKelasBtn = document.getElementById('tambahWaliKelasBtn');
         const searchNamaWaliInput = document.getElementById('searchNamaWali');
         const filterKelasSelect = document.getElementById('filterKelas');
+        const filterTahunAkademikWaliKelasSelect = document.getElementById('filterTahunAkademikWaliKelas');
+
+        // Fetch and populate Tahun Akademik filter
+        async function populateTahunAkademikFilter() {
+            try {
+                const response = await fetch('http://localhost:5000/api/tahunakademik'); // Assuming you have an API endpoint for Tahun Akademik
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Tahun Akademik data');
+                }
+                const tahunAkademikData = await response.json();
+                
+                filterTahunAkademikWaliKelasSelect.innerHTML = '<option value="">Semua Tahun Akademik</option>';
+                tahunAkademikData.forEach(ta => {
+                    const option = document.createElement('option');
+                    option.value = `${ta.tahun} ${ta.semester}`;
+                    option.textContent = `${ta.tahun} ${ta.semester}`;
+                    filterTahunAkademikWaliKelasSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error populating Tahun Akademik filter:", error);
+            }
+        }
+
+        populateTahunAkademikFilter();
 
         tambahWaliKelasBtn.addEventListener('click', () => showModal('Tambah Data Wali Kelas'));
 
         searchNamaWaliInput.addEventListener('input', () => {
-            renderTable(searchNamaWaliInput.value, filterKelasSelect.value);
+            renderTable(searchNamaWaliInput.value, filterKelasSelect.value, filterTahunAkademikWaliKelasSelect.value);
         });
 
         filterKelasSelect.addEventListener('change', () => {
-            renderTable(searchNamaWaliInput.value, filterKelasSelect.value);
+            renderTable(searchNamaWaliInput.value, filterKelasSelect.value, filterTahunAkademikWaliKelasSelect.value);
+        });
+
+        filterTahunAkademikWaliKelasSelect.addEventListener('change', () => {
+            renderTable(searchNamaWaliInput.value, filterKelasSelect.value, filterTahunAkademikWaliKelasSelect.value);
         });
 
         // Event delegation for Edit and Delete buttons
@@ -96,7 +128,6 @@ const DataWaliKelas = {
 
             if (target.classList.contains('delete-btn')) {
                 const id = target.dataset.id;
-                // Confirm dialog appears only once
                 if (confirm('Apakah Anda yakin ingin menghapus data Wali Kelas ini?')) {
                     try {
                         const response = await fetch(`http://localhost:5000/api/datawalikelas/${id}`, {
@@ -107,7 +138,7 @@ const DataWaliKelas = {
                             throw new Error(errorData.message || 'Gagal menghapus Wali Kelas.');
                         }
                         alert('Data Wali Kelas berhasil dihapus!');
-                        renderTable(searchNamaWaliInput.value, filterKelasSelect.value); // Refresh table after successful deletion
+                        renderTable(searchNamaWaliInput.value, filterKelasSelect.value, filterTahunAkademikWaliKelasSelect.value); // Refresh table
                     } catch (error) {
                         console.error("Error deleting Wali Kelas:", error);
                         alert(`Gagal menghapus data: ${error.message}`);
@@ -154,7 +185,7 @@ const DataWaliKelas = {
 
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Jumlah Siswa</label>
-                                <input type="number" id="jumlahSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Jumlah Siswa" value="${data.jumlahSiswa || ''}" min="0" required>
+                                <input type="number" id="jumlahSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg bg-gray-200" placeholder="Jumlah Siswa Otomatis" value="${data.jumlahSiswa || ''}" min="0" readonly>
                             </div>
                         </div>
 
@@ -173,6 +204,36 @@ const DataWaliKelas = {
             const batalBtn = document.getElementById('batalWaliKelas');
             const closeModalBtn = document.getElementById('closeModal');
             const simpanBtn = document.getElementById('simpanWaliKelas');
+            const kelasWaliKelasSelect = document.getElementById('kelasWaliKelas');
+            const jumlahSiswaInput = document.getElementById('jumlahSiswa');
+
+            // Function to fetch student count for a given class
+            async function getStudentCountByClass(kelas) {
+                if (!kelas) return 0;
+                try {
+                    const response = await fetch(`http://localhost:5000/api/datasiswa?kelas=${kelas}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch student data for count.');
+                    }
+                    const students = await response.json();
+                    return students.length;
+                } catch (error) {
+                    console.error("Error fetching student count:", error);
+                    return 0;
+                }
+            }
+
+            // Initial population of jumlahSiswa if editing or a class is pre-selected
+            if (data.kelas) {
+                jumlahSiswaInput.value = await getStudentCountByClass(data.kelas);
+            }
+
+            // Event listener for class selection change
+            kelasWaliKelasSelect.addEventListener('change', async () => {
+                const selectedClass = kelasWaliKelasSelect.value;
+                jumlahSiswaInput.value = await getStudentCountByClass(selectedClass);
+            });
+
 
             batalBtn.addEventListener('click', () => modalWaliKelas.remove());
             closeModalBtn.addEventListener('click', () => modalWaliKelas.remove());
@@ -183,7 +244,9 @@ const DataWaliKelas = {
                     kelas: document.getElementById('kelasWaliKelas').value,
                     nip: document.getElementById('nipWaliKelas').value,
                     telepon: document.getElementById('teleponWaliKelas').value,
-                    jumlahSiswa: parseInt(document.getElementById('jumlahSiswa').value, 10), // Ensure it's a number
+                    // jumlahSiswa is now automatically populated and should not be sent directly from input if readonly.
+                    // Instead, we derive it again from the selected class.
+                    jumlahSiswa: parseInt(jumlahSiswaInput.value, 10), 
                 };
 
                 // Basic client-side validation
@@ -218,7 +281,7 @@ const DataWaliKelas = {
 
                     modalWaliKelas.remove(); // Close modal on success
                     alert('Data Wali Kelas berhasil disimpan!'); // Success alert
-                    renderTable(searchNamaWaliInput.value, filterKelasSelect.value); // Refresh table
+                    renderTable(searchNamaWaliInput.value, filterKelasSelect.value, filterTahunAkademikWaliKelasSelect.value); // Refresh table
                 } catch (error) {
                     console.error("Error saving Wali Kelas data:", error);
                     alert(`Terjadi kesalahan jaringan atau server: ${error.message}`);
@@ -227,7 +290,7 @@ const DataWaliKelas = {
         }
 
         // Function to fetch and render the table
-        async function renderTable(search = '', filter = '') {
+        async function renderTable(search = '', filterKelas = '', filterTahunAkademik = '') {
             try {
                 const response = await fetch('http://localhost:5000/api/datawalikelas');
                 if (!response.ok) {
@@ -237,14 +300,15 @@ const DataWaliKelas = {
 
                 const filteredData = waliKelasData.filter(wali =>
                     wali.nama.toLowerCase().includes(search.toLowerCase()) &&
-                    (filter === '' || wali.kelas === filter)
+                    (filterKelas === '' || wali.kelas === filterKelas) &&
+                    (filterTahunAkademik === '' || wali.tahunAkademik === filterTahunAkademik)
                 );
 
                 const tableBody = document.getElementById('dataTableWaliKelas');
                 if (!tableBody) return; // Ensure tableBody exists
 
                 if (filteredData.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">Tidak ada data Wali Kelas yang ditemukan.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">Tidak ada data Wali Kelas yang ditemukan.</td></tr>`;
                     return;
                 }
 
@@ -256,6 +320,7 @@ const DataWaliKelas = {
                         <td class="py-4 px-6">${wali.nip}</td>
                         <td class="py-4 px-6">${wali.telepon}</td>
                         <td class="py-4 px-6">${wali.jumlahSiswa}</td>
+                        <td class="py-4 px-6">${wali.tahunAkademik}</td>
                         <td class="py-4 px-6">
                             <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
                         </td>
@@ -269,7 +334,7 @@ const DataWaliKelas = {
                 console.error('Error rendering Wali Kelas table:', error);
                 const tableBody = document.getElementById('dataTableWaliKelas');
                 if (tableBody) {
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
                 }
             }
         }
@@ -295,6 +360,7 @@ const DataWaliKelas = {
                     <td class="py-4 px-6">${wali.nip}</td>
                     <td class="py-4 px-6">${wali.telepon}</td>
                     <td class="py-4 px-6">${wali.jumlahSiswa}</td>
+                    <td class="py-4 px-6">${wali.tahunAkademik}</td>
                     <td class="py-4 px-6">
                         <span class="bg-green-500 text-white px-3 py-1 rounded">Aktif</span>
                     </td>
@@ -306,7 +372,7 @@ const DataWaliKelas = {
             `).join('');
         } catch (error) {
             console.error('Gagal memuat data Wali Kelas (in loadData):', error);
-            return `<tr><td colspan="8" class="text-center py-4">Gagal memuat data</td></tr>`;
+            return `<tr><td colspan="9" class="text-center py-4">Gagal memuat data</td></tr>`;
         }
     }
 };

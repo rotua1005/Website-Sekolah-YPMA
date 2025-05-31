@@ -1,4 +1,5 @@
 const DataWaliKelas = require('../models/DataWaliKelasModel');
+const TahunAkademik = require("../models/TahunAkademikModel"); // Import TahunAkademik model
 
 // Get all Wali Kelas
 exports.getAllDataWaliKelas = async (req, res) => {
@@ -31,7 +32,21 @@ exports.getDataWaliKelasById = async (req, res) => {
 // Create new Wali Kelas
 exports.createDataWaliKelas = async (req, res) => {
     try {
-        const newWaliKelas = new DataWaliKelas(req.body);
+        // Get the active academic year
+        const activeTahunAkademik = await TahunAkademik.findOne().sort({ tahun: -1, semester: -1 });
+
+        if (!activeTahunAkademik) {
+            return res.status(404).json({ message: "Tidak ada tahun akademik aktif yang ditemukan. Harap tambahkan tahun akademik terlebih dahulu." });
+        }
+
+        const tahunAkademikOtomatis = `${activeTahunAkademik.tahun} ${activeTahunAkademik.semester}`;
+
+        const newWaliKelasData = {
+            ...req.body,
+            tahunAkademik: tahunAkademikOtomatis // Add the automatic academic year
+        };
+
+        const newWaliKelas = new DataWaliKelas(newWaliKelasData);
         await newWaliKelas.save();
         res.status(201).json(newWaliKelas);
     } catch (error) {
@@ -44,6 +59,11 @@ exports.createDataWaliKelas = async (req, res) => {
             if (error.keyPattern && error.keyPattern.kelas) {
                 return res.status(409).json({ message: `Kelas ${req.body.kelas} sudah memiliki Wali Kelas. Satu kelas hanya bisa memiliki satu Wali Kelas.` });
             }
+        }
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({ message: `Validasi gagal: ${messages.join(', ')}` });
         }
         res.status(400).json({ message: error.message });
     }
@@ -74,6 +94,11 @@ exports.updateDataWaliKelas = async (req, res) => {
             if (error.keyPattern && error.keyPattern.kelas) {
                 return res.status(409).json({ message: `Kelas ${req.body.kelas} sudah memiliki Wali Kelas. Satu kelas hanya bisa memiliki satu Wali Kelas.` });
             }
+        }
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({ message: `Validasi gagal: ${messages.join(', ')}` });
         }
         res.status(400).json({ message: error.message });
     }

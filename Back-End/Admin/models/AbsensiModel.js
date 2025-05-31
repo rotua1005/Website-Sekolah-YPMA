@@ -1,32 +1,29 @@
-// AbsensiModel.js
+// Admin/models/AbsensiModel.js
 const mongoose = require('mongoose');
 
-const AbsensiSchema = new mongoose.Schema({
-    id_siswa: {
+const absensiSchema = new mongoose.Schema({
+    siswaId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'DataSiswa', // Reference to your DataSiswa (Student Data) model
+        ref: 'DataSiswa',
         required: true,
     },
-    id_kelas: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'DataWaliKelas', // Reference to your DataWaliKelas (Class Data) model
+    nis: {
+        type: String,
+        required: true,
+    },
+    nama: {
+        type: String,
+        required: true,
+    },
+    kelas: {
+        type: String,
         required: true,
     },
     tanggal: {
         type: Date,
         required: true,
-        default: Date.now,
     },
-    status: {
-        type: String,
-        enum: ['Hadir', 'Sakit', 'Izin', 'Alpha'],
-        required: true,
-    },
-    keterangan: {
-        type: String,
-        default: '',
-    },
-    tahun_ajaran: {
+    tahunAkademik: {
         type: String,
         required: true,
     },
@@ -34,11 +31,14 @@ const AbsensiSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-}, {
-    timestamps: true // Adds createdAt and updatedAt fields
-});
+    keterangan: {
+        type: String,
+        required: true,
+        enum: ['Hadir', 'Sakit', 'Izin', 'Alpa'],
+    },
+}, { timestamps: true });
 
-// Optional: Add a unique compound index to prevent duplicate attendance for the same student on the same day
-AbsensiSchema.index({ id_siswa: 1, id_kelas: 1, tanggal: 1 }, { unique: true });
+// Add a unique index to prevent duplicate attendance records for the same student on the same day
+absensiSchema.index({ siswaId: 1, tanggal: 1 }, { unique: true });
 
-module.exports = mongoose.model('Absensi', AbsensiSchema);
+module.exports = mongoose.models.Absensi || mongoose.model('Absensi', absensiSchema);

@@ -16,23 +16,27 @@ const InputAbsensi = {
             console.warn("User role does not specify a clear class assignment.");
         }
 
-        // Ambil data siswa dari localStorage berdasarkan kelas yang diampu
-        const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        const siswaSesuaiKelas = dataSiswa.filter(siswa => String(siswa.kelas) === String(this.assignedClass));
+        // Fetch academic year data from localStorage
+        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+        // Assuming the last entry is the active academic year
+        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-', semester: '-' };
+
+        // Fetch student data from the backend based on the assigned class
+        let siswaSesuaiKelas = [];
+        try {
+            const response = await fetch(`http://localhost:5000/api/datasiswa?kelas=${encodeURIComponent(this.assignedClass)}`);
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(`Failed to fetch student data: ${errorBody.message || response.statusText}`);
+            }
+            const dataSiswa = await response.json();
+            siswaSesuaiKelas = dataSiswa;
+        } catch (error) {
+            console.error("Error fetching student data:", error);
+            alert(`Gagal mengambil data siswa untuk kelas ${this.assignedClass}. Mohon coba lagi atau hubungi administrator. Detail: ${error.message}`);
+        }
 
         const tableRows = siswaSesuaiKelas.map((s, index) => {
-            const now = new Date();
-            const tanggalHariIniFormatted = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const [day, month, year] = tanggalHariIniFormatted.split('/');
-            const namaBulan = this.getNamaBulan(parseInt(month) - 1);
-            const formattedTanggalKey = `${day}-${namaBulan}-${year}`;
-            const absensiHarianKey = `absensi_${this.assignedClass}_${formattedTanggalKey}`;
-            const existingAbsensi = JSON.parse(localStorage.getItem(absensiHarianKey)) || [];
-            
-            // Find if there's an existing attendance record for this student and date
-            const studentAttendance = existingAbsensi.find(abs => abs.nis === s.nis);
-            const selectedStatus = studentAttendance ? studentAttendance.keterangan : 'Hadir'; // Default to 'Hadir' or existing
-
             return `
                 <tr class="border-b">
                     <td class="py-3 px-4">${index + 1}</td>
@@ -40,11 +44,11 @@ const InputAbsensi = {
                     <td class="py-3 px-4">${s.nama}</td>
                     <td class="py-3 px-4">${s.jenisKelamin === 'Laki-laki' ? 'L' : 'P'}</td>
                     <td class="py-3 px-4">
-                        <select class="border rounded py-1 px-2" data-nis="${s.nis}">
-                            <option value="Hadir" ${selectedStatus === 'Hadir' ? 'selected' : ''}>Hadir</option>
-                            <option value="Sakit" ${selectedStatus === 'Sakit' ? 'selected' : ''}>Sakit</option>
-                            <option value="Izin" ${selectedStatus === 'Izin' ? 'selected' : ''}>Izin</option>
-                            <option value="Alpa" ${selectedStatus === 'Alpa' ? 'selected' : ''}>Alpa</option>
+                        <select class="border rounded py-1 px-2" data-nis="${s.nis}" data-nama="${s.nama}">
+                            <option value="Hadir">Hadir</option>
+                            <option value="Sakit">Sakit</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Alpa">Alpa</option>
                         </select>
                     </td>
                 </tr>
@@ -52,12 +56,7 @@ const InputAbsensi = {
         }).join('');
 
         const now = new Date();
-        const tanggalHariIni = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-        // Ambil data tahun akademik dan semester dari localStorage
-        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        // Assuming the last entry is the active academic year
-        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-', semester: '-' };
+        const tanggalHariIniFormatted = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
@@ -74,7 +73,7 @@ const InputAbsensi = {
                         <div class="bg-gray-100 p-6 rounded-md mb-6">
                             <div class="space-y-2">
                                 <div class="text-lg flex">
-                                    <strong class="w-32">Tanggal</strong>: ${tanggalHariIni}
+                                    <strong class="w-32">Tanggal</strong>: ${tanggalHariIniFormatted}
                                 </div>
                                 <div class="text-lg flex">
                                     <strong class="w-32">Kelas</strong>: ${this.assignedClass}
@@ -130,49 +129,112 @@ const InputAbsensi = {
 
         const simpanButton = document.getElementById('simpanAbsensiBtn');
         if (simpanButton) {
-            simpanButton.addEventListener('click', () => {
-                this.simpanDataAbsensi();
+            simpanButton.addEventListener('click', async () => {
+                await this.simpanDataAbsensi();
             });
         }
+
+        // Add a check to see if absensi for today and this class already exists
+        await this.checkExistingAbsensi();
+    },
+
+    async checkExistingAbsensi() {
+        const namaKelas = this.assignedClass;
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        if (!namaKelas) {
+            console.warn("Class name not found. Cannot check for existing attendance.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/absensi?kelas=${encodeURIComponent(namaKelas)}&tanggal=${encodeURIComponent(today)}`);
+            if (response.status === 200) {
+                const existingAbsensi = await response.json();
+                if (existingAbsensi && Array.isArray(existingAbsensi.absensiSiswa) && existingAbsensi.absensiSiswa.length > 0) {
+                    this.populateAbsensiSelections(existingAbsensi.absensiSiswa);
+                    alert('Absensi untuk kelas ini pada tanggal ini sudah ada. Data absensi yang ada telah dimuat.');
+                } else if (existingAbsensi && Array.isArray(existingAbsensi.absensiSiswa) && existingAbsensi.absensiSiswa.length === 0) {
+                    console.warn('Existing attendance record found for this class and date, but absensiSiswa array is empty.');
+                    alert('Absensi untuk kelas ini pada tanggal ini sudah ada, tetapi tidak ada data kehadiran siswa yang tercatat. Silakan isi absensi.');
+                } else {
+                    console.warn('Existing attendance found but absensiSiswa data is missing or has an invalid structure.', existingAbsensi);
+                    alert('Absensi untuk kelas ini pada tanggal ini sudah ada, tetapi data kehadiran siswa tidak lengkap atau tidak valid.');
+                }
+            } else if (response.status === 404) {
+                console.log('No existing attendance found for this class and date.');
+            } else {
+                const errorData = await response.json();
+                console.error('Error checking existing attendance:', errorData.message);
+                alert(`Gagal memeriksa absensi yang sudah ada: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error('Network error checking existing attendance:', error);
+            alert('Terjadi kesalahan jaringan saat memeriksa absensi. Silakan coba lagi.');
+        }
+    },
+
+    populateAbsensiSelections(absensiSiswa) {
+        absensiSiswa.forEach(absensiRecord => {
+            const selectElement = document.querySelector(`select[data-nis="${absensiRecord.nis}"]`);
+            if (selectElement) {
+                selectElement.value = absensiRecord.keterangan;
+            }
+        });
     },
 
     async simpanDataAbsensi() {
         const table = document.querySelector('table');
         const rows = table.querySelectorAll('tbody tr');
         const now = new Date();
-        const tanggalHariIni = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const [day, month, year] = tanggalHariIni.split('/');
-        const namaBulan = this.getNamaBulan(parseInt(month) - 1);
-        const formattedTanggal = `${day}-${namaBulan}-${year}`;
-        const dataAbsensiHarian = [];
+        const tanggalISO = now.toISOString();
 
+        // Get academic year from localStorage (already fetched in render)
+        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-' };
+
+        const absensiSiswa = [];
         rows.forEach(row => {
             const nis = row.querySelector('td:nth-child(2)').textContent;
             const nama = row.querySelector('td:nth-child(3)').textContent;
             const selectElement = row.querySelector('select');
             const keterangan = selectElement.value;
-            dataAbsensiHarian.push({ nis, nama, keterangan });
+            absensiSiswa.push({ nis, nama, keterangan });
         });
 
-        // Simpan data absensi berdasarkan kelas dan tanggal yang diformat
-        const absensiHarianKey = `absensi_${this.assignedClass}_${formattedTanggal}`;
-        localStorage.setItem(absensiHarianKey, JSON.stringify(dataAbsensiHarian));
+        const payload = {
+            tanggal: tanggalISO,
+            kelas: this.assignedClass,
+            tahunAkademik: tahunAkademikAktif.tahun,
+            absensiSiswa: absensiSiswa,
+        };
 
-        alert(`Data absensi untuk tanggal ${this.formatTanggalIndonesia(now)} berhasil disimpan untuk kelas ${this.assignedClass}!`);
-        window.location.hash = '#/kelola_absensi_walikelas'; // Redirect to a homeroom teacher specific attendance management page
+        try {
+            const response = await fetch('http://localhost:5000/api/absensi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                window.location.hash = '#/kelola_absensi_walikelas'; // Redirect to Wali Kelas attendance management page
+            } else {
+                alert(`Gagal menyimpan absensi: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error saving absensi:', error);
+            alert('Terjadi kesalahan saat menyimpan absensi. Silakan coba lagi.');
+        }
     },
 
     formatTanggalIndonesia(date) {
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('id-ID', options);
-    },
-
-    getNamaBulan(bulan) {
-        const namaBulan = [
-            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-        ];
-        return namaBulan[bulan];
     },
 };
 

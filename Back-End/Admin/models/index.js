@@ -14,6 +14,8 @@ db.dataWaliKelasSiswa = require("./DataWaliKelasModel");
 db.TahunAkademik = require("./TahunAkademikModel");
 db.absensi = require("./AbsensiModel");
 db.akun = require("./AkunModel");
+db.absensi = require("./AbsensiModel");
+db.nilai = require("./NilaiModel");
 
 
 

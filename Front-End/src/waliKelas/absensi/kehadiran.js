@@ -1,35 +1,29 @@
-// src/waliKelas/components/kehadiran_walikelas.js
+// src/components/kehadiran_walikelas.js
+
 import MenuWaliKelas from '../menu/menu_walikelas'; // Assuming a separate menu for Wali Kelas
 
 const KehadiranWaliKelas = {
-    // Property to store the assigned class for the homeroom teacher
     assignedClass: '',
 
     async render() {
-        // Retrieve the user's role to determine the assigned class
         const userRole = localStorage.getItem("userRole");
         if (userRole && userRole.startsWith("wali_kelas_")) {
             this.assignedClass = userRole.split("_")[2]; // e.g., "1", "2", etc.
         } else {
-            // This component should only be accessible by wali kelas roles
-            console.warn("User role does not specify a clear class assignment for wali kelas.");
-            // Optionally, redirect to a different page or show an error
-            window.location.hash = '/'; // Example: redirect to home
-            return ''; // Return empty string to prevent rendering content
+            console.warn("User role does not specify a clear class assignment for wali kelas. Redirecting to home.");
+            window.location.hash = '/'; // Redirect to home
+            return ''; // Prevent rendering content
         }
 
-        // Ambil data detail absensi yang disimpan dari KelolaAbsensiWaliKelas
         const absensiDetail = JSON.parse(localStorage.getItem('absensiWaliKelasDetail')) || {};
-        
-        // Ensure the class in absensiDetail matches the assignedClass for the current user
-        // This is a safety check to prevent a wali kelas from viewing another class's data
         const selectedClass = absensiDetail.kelas === this.assignedClass ? absensiDetail.kelas : this.assignedClass;
-        
         const selectedMonthName = absensiDetail.bulan || this.getMonthName(new Date().getMonth());
         const selectedMonthIndex = absensiDetail.bulanIndex !== undefined ? parseInt(absensiDetail.bulanIndex) : new Date().getMonth();
         const selectedYear = absensiDetail.tahun || new Date().getFullYear();
 
-        // Ambil data wali kelas dari localStorage untuk mendapatkan nama wali kelas
+        // Get the monthly attendance data from localStorage
+        const monthlyAbsensiRecords = JSON.parse(localStorage.getItem('currentMonthlyAbsensi')) || [];
+
         const dataWaliKelas = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
         const waliKelasInfo = dataWaliKelas.find(wali => String(wali.kelas) === String(this.assignedClass));
         const namaWaliKelas = waliKelasInfo ? waliKelasInfo.nama : 'Wali Kelas Tidak Ditemukan';
@@ -38,69 +32,59 @@ const KehadiranWaliKelas = {
         const days = Array.from({ length: daysInMonth(selectedYear, selectedMonthIndex) }, (_, i) => String(i + 1).padStart(2, '0'));
 
         const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        // Filter students by the assigned class
         const siswaSesuaiKelas = dataSiswa.filter(siswa => String(siswa.kelas) === String(this.assignedClass));
 
         const tableRows = siswaSesuaiKelas.map((siswa, index) => {
-            const kehadiranDays = days.map(day => {
-                const formattedDate = `${String(day).padStart(2, '0')}-${selectedMonthName}-${selectedYear}`;
-                // Key format: absensi_${kelas}_${tanggalFormatted}
-                const absensiHarian = JSON.parse(localStorage.getItem(`absensi_${selectedClass}_${formattedDate}`)) || [];
-                const siswaAbsensi = absensiHarian.find(a => a.nis === siswa.nis);
-                
-                let status = '?'; // Default status for days without attendance
-                let bgColor = 'bg-gray-300'; // Default background for days without attendance (lighter gray)
-
-                if (siswaAbsensi) {
-                    status = siswaAbsensi.keterangan.charAt(0).toUpperCase();
-                    switch (status) {
-                        case 'H':
-                            bgColor = 'bg-green-200';
-                            break;
-                        case 'S':
-                            bgColor = 'bg-red-200';
-                            break;
-                        case 'I':
-                            bgColor = 'bg-yellow-200';
-                            break;
-                        case 'A':
-                            bgColor = 'bg-gray-400'; // Darker gray for 'Alpa'
-                            break;
-                        default: // Fallback for unexpected status, treat as unrecorded
-                            status = '?';
-                            bgColor = 'bg-gray-300';
-                            break;
-                    }
-                }
-                return `<td class="py-2 px-1 text-center ${bgColor}">${status}</td>`;
-            }).join('');
-
             let jumlahH = 0;
             let jumlahS = 0;
             let jumlahI = 0;
             let jumlahA = 0;
 
-            for (const day of days) {
-                const formattedDate = `${String(day).padStart(2, '0')}-${selectedMonthName}-${selectedYear}`;
-                const absensiHarian = JSON.parse(localStorage.getItem(`absensi_${selectedClass}_${formattedDate}`)) || [];
-                const siswaAbsensi = absensiHarian.find(a => a.nis === siswa.nis);
-                if (siswaAbsensi) {
-                    switch (siswaAbsensi.keterangan.charAt(0).toUpperCase()) {
-                        case 'H':
-                            jumlahH++;
-                            break;
-                        case 'S':
-                            jumlahS++;
-                            break;
-                        case 'I':
-                            jumlahI++;
-                            break;
-                        case 'A':
-                            jumlahA++;
-                            break;
+            const kehadiranDays = days.map(day => {
+                // Construct the target date string for comparison (YYYY-MM-DD format)
+                const targetDate = new Date(selectedYear, selectedMonthIndex, parseInt(day)).toISOString().split('T')[0];
+
+                // Find the attendance record for this specific date and class from the monthly data
+                const absensiForDay = monthlyAbsensiRecords.find(record => {
+                    // Ensure record.tanggal is treated as a Date object for comparison
+                    const recordDate = new Date(record.tanggal);
+                    return record.kelas === selectedClass &&
+                           recordDate.toISOString().split('T')[0] === targetDate;
+                });
+
+                let status = '?'; // Default status for days without attendance
+                let bgColor = 'bg-gray-300'; // Default background for days without attendance
+
+                if (absensiForDay) {
+                    const siswaAbsensiEntry = absensiForDay.absensiSiswa.find(s => s.nis === siswa.nis);
+                    if (siswaAbsensiEntry) {
+                        status = siswaAbsensiEntry.keterangan.charAt(0).toUpperCase();
+                        switch (status) {
+                            case 'H':
+                                bgColor = 'bg-green-200';
+                                jumlahH++;
+                                break;
+                            case 'S':
+                                bgColor = 'bg-red-200';
+                                jumlahS++;
+                                break;
+                            case 'I':
+                                bgColor = 'bg-yellow-200';
+                                jumlahI++;
+                                break;
+                            case 'A':
+                                bgColor = 'bg-gray-400'; // Darker gray for 'Alpa'
+                                jumlahA++;
+                                break;
+                            default:
+                                status = '?';
+                                bgColor = 'bg-gray-300';
+                                break;
+                        }
                     }
                 }
-            }
+                return `<td class="py-2 px-1 text-center ${bgColor}">${status}</td>`;
+            }).join('');
 
             return `
                 <tr class="border-b">
@@ -181,6 +165,8 @@ const KehadiranWaliKelas = {
                 localStorage.removeItem("username");
                 localStorage.removeItem("email");
                 localStorage.removeItem("justLoggedIn");
+                localStorage.removeItem('currentMonthlyAbsensi'); // Clear monthly data on logout
+                localStorage.removeItem('absensiWaliKelasDetail'); // Clear detail data on logout
                 window.location.hash = '/';
             });
         }

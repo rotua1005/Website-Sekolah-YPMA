@@ -26,6 +26,10 @@ const dataGuruSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    tahunAkademik: { // Added tahunAkademik field
+        type: String,
+        required: true,
+    },
 });
 
 module.exports = mongoose.models.DataGuru || mongoose.model('DataGuru', dataGuruSchema);

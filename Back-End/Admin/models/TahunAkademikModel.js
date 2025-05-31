@@ -1,4 +1,3 @@
-// File: Back-End/Admin/models/TahunAkademikModel.js
 const mongoose = require('mongoose');
 
 const tahunAkademikSchema = new mongoose.Schema({
@@ -9,6 +8,10 @@ const tahunAkademikSchema = new mongoose.Schema({
     semester: { // Example: "1" or "2"
         type: String, // Keep as String as per your frontend select options
         required: true,
+    },
+    isAktif: { // New field to mark the active academic year
+        type: Boolean,
+        default: false,
     },
 });
 

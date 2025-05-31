@@ -1,22 +1,15 @@
-//absensi route
+// Admin/route/AbsensiRoute.js (Updated)
 const express = require('express');
 const router = express.Router();
 const absensiController = require('../controllers/AbsensiController');
 
-// Get all attendance records (consider if really needed or too much data)
-router.get('/', absensiController.getAllAbsensi);
+// Existing routes (assuming these already exist)
+router.get('/absensi', absensiController.getAllAbsensi);
+router.get('/absensi/:id', absensiController.getAbsensiById);
+router.put('/absensi/:id', absensiController.updateAbsensi);
+router.delete('/absensi/:id', absensiController.deleteAbsensi);
 
-// Get attendance for a specific class on a specific date (useful for reports)
-router.get('/by-kelas-date', absensiController.getAbsensiByKelasAndDate);
-
-// Get all students for a specific class with their attendance status for a given date
-router.get('/:id_kelas/students', absensiController.getStudentsWithAttendanceForClass);
-
-
-// Record or update attendance for a student
-router.post('/record', absensiController.recordAbsensi);
-
-// Delete an attendance record
-router.delete('/:id', absensiController.deleteAbsensi);
+// New route for inputting/creating attendance
+router.post('/absensi', absensiController.createAbsensi);
 
 module.exports = router;

@@ -1,185 +1,146 @@
-// AbsensiController.js
-const Absensi = require('../models/AbsensiModel');
-const DataWaliKelas = require('../models/DataWaliKelasModel'); // To get class details
-const DataSiswa = require('../models/DataSiswaModel'); // To get student list for a class
+// Admin/controllers/AbsensiController.js (Updated to include createAbsensi)
 
-// Helper function to get the current academic year and semester
-// You might want to get this from a database setting or configuration
-async function getCurrentAcademicPeriod() {
-    // For demonstration, let's assume a fixed value or fetch from a config model if you have one
-    // In a real application, you might have a 'TahunAjaran' model
-    return {
-        tahun: '2024/2025', // Example
-        semester: 'Genap' // Example
-    };
-}
+const Absensi = require("../models/AbsensiModel");
+const DataSiswa = require("../models/DataSiswaModel"); // Ensure DataSiswaModel is imported
+const TahunAkademik = require("../models/TahunAkademikModel"); // Import TahunAkademik model
 
+// Existing getAllAbsensi, getAbsensiById, updateAbsensi, deleteAbsensi (unchanged)
+// ... (your existing code for these functions)
 
-// Get all attendance records (optional, might be too broad)
+// New: Create/Input Absensi Data
+exports.createAbsensi = async (req, res) => {
+    try {
+        const { tanggal, kelas, tahunAkademik, semester, absensiData } = req.body;
+
+        if (!tanggal || !kelas || !tahunAkademik || !semester || !Array.isArray(absensiData) || absensiData.length === 0) {
+            return res.status(400).json({ message: "Data absensi tidak lengkap atau tidak valid." });
+        }
+
+        const dateObj = new Date(tanggal);
+
+        const createdOrUpdatedRecords = [];
+
+        for (const entry of absensiData) {
+            const { nis, keterangan } = entry;
+
+            if (!nis || !keterangan) {
+                console.warn(`Skipping invalid entry in absensiData: ${JSON.stringify(entry)}`);
+                continue; // Skip invalid entries
+            }
+
+            // Find the student by NIS to get their _id and name
+            const student = await DataSiswa.findOne({ nis: nis, kelas: kelas });
+
+            if (!student) {
+                console.warn(`Siswa dengan NIS ${nis} tidak ditemukan di kelas ${kelas}.`);
+                continue; // Skip if student not found in this class
+            }
+
+            // Check if an attendance record already exists for this student on this date
+            let existingAbsensi = await Absensi.findOne({
+                siswaId: student._id,
+                tanggal: dateObj,
+                tahunAkademik: tahunAkademik,
+                semester: semester,
+            });
+
+            if (existingAbsensi) {
+                // If record exists, update it
+                existingAbsensi.keterangan = keterangan;
+                await existingAbsensi.save();
+                createdOrUpdatedRecords.push(existingAbsensi);
+            } else {
+                // If no record exists, create a new one
+                const newAbsensi = await Absensi.create({
+                    siswaId: student._id,
+                    nis: student.nis,
+                    nama: student.nama,
+                    kelas: student.kelas,
+                    tanggal: dateObj,
+                    tahunAkademik: tahunAkademik,
+                    semester: semester,
+                    keterangan: keterangan,
+                });
+                createdOrUpdatedRecords.push(newAbsensi);
+            }
+        }
+
+        if (createdOrUpdatedRecords.length === 0) {
+            return res.status(400).json({ message: "Tidak ada data absensi yang valid untuk disimpan atau diperbarui." });
+        }
+
+        res.status(200).json({
+            message: "Data absensi berhasil disimpan atau diperbarui.",
+            data: createdOrUpdatedRecords,
+        });
+
+    } catch (error) {
+        console.error("Error creating/updating absensi data:", error);
+        // Handle potential duplicate key errors (though the findOne and update/create logic should mitigate this)
+        if (error.code === 11000) {
+            return res.status(409).json({ message: "Duplikasi entri absensi terdeteksi. Beberapa data mungkin sudah ada." });
+        }
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Existing getAllAbsensi, getAbsensiById, updateAbsensi, deleteAbsensi would be here as well.
+// For example:
+
+// 1. Mendapatkan semua data absensi (dengan filter kelas dan tahun akademik opsional)
 exports.getAllAbsensi = async (req, res) => {
     try {
-        const absensi = await Absensi.find()
-            .populate('id_siswa', 'nama_lengkap nisn') // Populate student's name and NISN
-            .populate('id_kelas', 'kelas'); // Populate class name
-        res.json(absensi);
+        const { kelas, tahunAkademik, semester, tanggal } = req.query;
+        let query = {};
+
+        if (kelas) query.kelas = kelas;
+        if (tahunAkademik) query.tahunAkademik = tahunAkademik;
+        if (semester) query.semester = semester;
+        if (tanggal) query.tanggal = new Date(tanggal);
+
+        const data = await Absensi.find(query).populate('siswaId'); // Populate student details
+        res.json(data);
     } catch (error) {
-        console.error('Error getting all attendance records:', error);
+        console.error("Error fetching all absensi data:", error);
         res.status(500).json({ message: error.message });
     }
 };
 
-// Get attendance for a specific class on a specific date (most common use case)
-exports.getAbsensiByKelasAndDate = async (req, res) => {
+// 2. Mendapatkan data absensi berdasarkan ID
+exports.getAbsensiById = async (req, res) => {
     try {
-        const { id_kelas, tanggal } = req.query; // Expect id_kelas and tanggal as query parameters
-
-        if (!id_kelas || !tanggal) {
-            return res.status(400).json({ message: 'ID Kelas and Tanggal are required.' });
-        }
-
-        // Ensure the date is parsed correctly to cover the whole day
-        const startOfDay = new Date(tanggal);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(tanggal);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const absensi = await Absensi.find({
-                id_kelas: id_kelas,
-                tanggal: {
-                    $gte: startOfDay,
-                    $lte: endOfDay
-                }
-            })
-            .populate('id_siswa', 'nama_lengkap nisn')
-            .populate('id_kelas', 'kelas wali_kelas'); // Populate class and wali kelas info
-
-        res.json(absensi);
+        const data = await Absensi.findById(req.params.id).populate('siswaId');
+        if (!data) return res.status(404).json({ message: "Data absensi tidak ditemukan" });
+        res.json(data);
     } catch (error) {
-        console.error('Error getting attendance by class and date:', error);
         res.status(500).json({ message: error.message });
     }
 };
 
-// Get all students for a specific class along with their attendance status for a given date
-exports.getStudentsWithAttendanceForClass = async (req, res) => {
+// 3. Memperbarui data absensi
+exports.updateAbsensi = async (req, res) => {
     try {
-        const { id_kelas } = req.params; // Get class ID from URL parameter
-        const { tanggal } = req.query; // Get date from query parameter
-
-        if (!id_kelas) {
-            return res.status(400).json({ message: 'Class ID is required.' });
-        }
-        if (!tanggal) {
-             // If no date is provided, use today's date
-            req.query.tanggal = new Date().toISOString().split('T')[0];
-        }
-
-        const startOfDay = new Date(req.query.tanggal);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(req.query.tanggal);
-        endOfDay.setHours(23, 59, 59, 999);
-
-
-        // 1. Get all students belonging to this class
-        const studentsInClass = await DataSiswa.find({ id_kelas: id_kelas });
-
-        if (!studentsInClass || studentsInClass.length === 0) {
-            return res.status(404).json({ message: 'No students found for this class.' });
-        }
-
-        // 2. Get attendance records for these students for the given date
-        const attendanceRecords = await Absensi.find({
-            id_siswa: { $in: studentsInClass.map(s => s._id) },
-            id_kelas: id_kelas,
-            tanggal: {
-                $gte: startOfDay,
-                $lte: endOfDay
-            }
-        });
-
-        // 3. Combine student data with their attendance status
-        const studentsWithAttendance = studentsInClass.map(student => {
-            const attendance = attendanceRecords.find(record =>
-                record.id_siswa.equals(student._id)
-            );
-            return {
-                _id: student._id,
-                nama_lengkap: student.nama_lengkap,
-                nisn: student.nisn,
-                status: attendance ? attendance.status : 'Belum Diisi', // Default status if no record
-                keterangan: attendance ? attendance.keterangan : '',
-                absensiId: attendance ? attendance._id : null, // ID of the attendance record if it exists
-            };
-        });
-
-        res.json(studentsWithAttendance);
-
+        const data = await Absensi.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!data) return res.status(404).json({ message: "Data absensi tidak ditemukan" });
+        res.json(data);
     } catch (error) {
-        console.error('Error fetching students with attendance for class:', error);
-        res.status(500).json({ message: error.message });
+        console.error("Error updating absensi data:", error);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            return res.status(400).json({ message: `Validasi gagal: ${messages.join(', ')}` });
+        }
+        res.status(400).json({ message: error.message });
     }
 };
 
-
-// Record/Update attendance for a student
-exports.recordAbsensi = async (req, res) => {
-    try {
-        const { id_siswa, id_kelas, tanggal, status, keterangan } = req.body;
-
-        if (!id_siswa || !id_kelas || !tanggal || !status) {
-            return res.status(400).json({ message: 'ID Siswa, ID Kelas, Tanggal, and Status are required.' });
-        }
-
-        const currentPeriod = await getCurrentAcademicPeriod();
-
-        // Check if attendance already exists for this student on this date for this class
-        const existingAbsensi = await Absensi.findOne({
-            id_siswa: id_siswa,
-            id_kelas: id_kelas,
-            tanggal: {
-                $gte: new Date(tanggal).setHours(0, 0, 0, 0),
-                $lte: new Date(tanggal).setHours(23, 59, 59, 999)
-            }
-        });
-
-        let absensi;
-        if (existingAbsensi) {
-            // Update existing record
-            existingAbsensi.status = status;
-            existingAbsensi.keterangan = keterangan || '';
-            absensi = await existingAbsensi.save();
-            res.json({ message: 'Attendance updated successfully.', data: absensi });
-        } else {
-            // Create new record
-            const newAbsensi = new Absensi({
-                id_siswa,
-                id_kelas,
-                tanggal,
-                status,
-                keterangan: keterangan || '',
-                tahun_ajaran: currentPeriod.tahun,
-                semester: currentPeriod.semester,
-            });
-            absensi = await newAbsensi.save();
-            res.status(201).json({ message: 'Attendance recorded successfully.', data: absensi });
-        }
-    } catch (error) {
-        console.error('Error recording attendance:', error);
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// Delete an attendance record (optional)
+// 4. Menghapus data absensi
 exports.deleteAbsensi = async (req, res) => {
     try {
-        const { id } = req.params;
-        const result = await Absensi.findByIdAndDelete(id);
-        if (!result) {
-            return res.status(404).json({ message: 'Attendance record not found.' });
-        }
-        res.json({ message: 'Attendance record deleted successfully.' });
+        const data = await Absensi.findByIdAndDelete(req.params.id);
+        if (!data) return res.status(404).json({ message: "Data absensi tidak ditemukan" });
+        res.json({ message: "Data absensi berhasil dihapus" });
     } catch (error) {
-        console.error('Error deleting attendance record:', error);
+        console.error("Error deleting absensi data:", error);
         res.status(500).json({ message: error.message });
     }
 };

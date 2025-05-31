@@ -1,31 +1,31 @@
-// src/waliKelas/components/kelola_absensi_walikelas.js
+// src/components/kelola_absensi_walikelas.js (assuming your original 'kelolaAbsensi.js')
+
 import MenuWaliKelas from '../menu/menu_walikelas'; // Assuming a separate menu for Wali Kelas
 
 const KelolaAbsensiWaliKelas = {
-    // Property to store the assigned class for the homeroom teacher
     assignedClass: '',
 
     async render() {
-        // Retrieve the user's role to determine the assigned class
         const userRole = localStorage.getItem("userRole");
         if (userRole && userRole.startsWith("wali_kelas_")) {
             this.assignedClass = userRole.split("_")[2]; // e.g., "1", "2", etc.
         } else {
-            // This component should ideally only be accessible by wali kelas roles
-            // Handle gracefully if not (e.g., redirect or show error)
-            this.assignedClass = 'Tidak Diketahui';
-            console.warn("User role does not specify a clear class assignment for wali kelas.");
+            console.warn("User role does not specify a clear class assignment for wali kelas. Redirecting to home.");
+            window.location.hash = '/'; // Redirect to home if class is not assigned
+            return ''; // Prevent rendering content
         }
 
-        // Ambil data wali kelas dari localStorage untuk mendapatkan nama wali kelas
         const dataWaliKelas = JSON.parse(localStorage.getItem('dataWaliKelas')) || [];
         const waliKelasInfo = dataWaliKelas.find(wali => String(wali.kelas) === String(this.assignedClass));
         const namaWaliKelas = waliKelasInfo ? waliKelasInfo.nama : 'Wali Kelas Tidak Ditemukan';
 
-        // Ambil data siswa dari localStorage berdasarkan kelas yang diampu
         const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
         const siswaSesuaiKelas = dataSiswa.filter(siswa => String(siswa.kelas) === String(this.assignedClass));
         const jumlahSiswa = siswaSesuaiKelas.length;
+
+        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+        // Assuming the last entry in dataTahun is the active one
+        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: new Date().getFullYear().toString() + '/' + (new Date().getFullYear() + 1).toString(), semester: '-' };
 
         const currentYear = new Date().getFullYear();
 
@@ -66,6 +66,9 @@ const KelolaAbsensiWaliKelas = {
                                 </div>
                                 <div class="text-xl flex">
                                     <strong class="w-40">Jumlah Siswa</strong>: ${jumlahSiswa}
+                                </div>
+                                <div class="text-xl flex">
+                                    <strong class="w-40">Tahun Akademik</strong>: ${tahunAkademikAktif.tahun}
                                 </div>
                             </div>
                         </div>
@@ -110,26 +113,67 @@ const KelolaAbsensiWaliKelas = {
 
         const bulanLinks = document.querySelectorAll('.bulan-link');
         bulanLinks.forEach(link => {
-            link.addEventListener('click', (event) => {
+            link.addEventListener('click', async (event) => {
                 const bulanIndex = event.currentTarget.dataset.bulanIndex;
                 const currentYear = new Date().getFullYear();
+
+                const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+                const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: currentYear.toString() + '/' + (currentYear + 1).toString(), semester: '-' };
+
                 const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni",
                     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
                 ];
                 const selectedMonthName = monthNames[bulanIndex];
-                
-                // Store the selected month, year, and the assigned class
+
+                // Store selected month details
                 localStorage.setItem('absensiWaliKelasDetail', JSON.stringify({
-                    kelas: this.assignedClass, // Store the assigned class
+                    kelas: this.assignedClass,
                     bulan: selectedMonthName,
-                    bulanIndex: parseInt(bulanIndex),
-                    tahun: currentYear
+                    bulanIndex: parseInt(bulanIndex), // Store as number
+                    tahun: currentYear,
+                    tahunAkademik: tahunAkademikAktif.tahun
                 }));
-                
-                // Redirect to a specific attendance detail page for wali kelas
+
+                // Fetch attendance data for the selected month and store it
+                // Pass bulanIndex + 1 because backend expects 1-indexed month (1 to 12)
+                await this.fetchAttendanceData(this.assignedClass, parseInt(bulanIndex) + 1, currentYear, tahunAkademikAktif.tahun);
+
+                // Navigate to the attendance detail page
                 window.location.hash = '#/kehadiran_walikelas';
             });
         });
+    },
+
+    async fetchAttendanceData(kelas, bulan, tahun, tahunAkademik) {
+        try {
+            const response = await fetch(`http://localhost:5000/api/absensi/monthly-detail?kelas=${encodeURIComponent(kelas)}&bulan=${bulan}&tahun=${tahun}&tahunAkademik=${encodeURIComponent(tahunAkademik)}`);
+
+            // Check if the response is OK (status 200-299)
+            if (!response.ok) {
+                // Try to parse error message if available, otherwise use status text
+                const errorBody = await response.text(); // Read as text first to avoid JSON parse error
+                console.error('Server response not OK:', response.status, errorBody);
+                try {
+                    const errorJson = JSON.parse(errorBody);
+                    throw new Error(`Gagal mengambil data absensi bulanan: ${errorJson.message || response.statusText}`);
+                } catch (e) {
+                    // If parsing as JSON fails, it's likely an HTML error page or plain text
+                    throw new Error(`Gagal mengambil data absensi bulanan: Server merespons dengan status ${response.status}. Mungkin ada kesalahan di server atau rute tidak ditemukan. Respon: ${errorBody.substring(0, 100)}...`);
+                }
+            }
+
+            const absensiData = await response.json();
+            console.log('Data Absensi Bulanan:', absensiData);
+
+            // Store the entire monthly attendance data in localStorage
+            localStorage.setItem('currentMonthlyAbsensi', JSON.stringify(absensiData));
+
+        } catch (error) {
+            console.error('Error fetching attendance data:', error);
+            alert(`Terjadi kesalahan saat mengambil data absensi: ${error.message}`);
+            // Optionally, redirect or show a user-friendly error page
+            // window.location.hash = '/error';
+        }
     }
 };
 

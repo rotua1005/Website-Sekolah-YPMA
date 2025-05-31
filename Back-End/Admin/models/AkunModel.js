@@ -1,3 +1,4 @@
+//akunModel.js
 const mongoose = require('mongoose');
 
 const akunSchema = new mongoose.Schema({

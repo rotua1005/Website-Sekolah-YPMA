@@ -19,6 +19,9 @@ const DataSiswa = {
                             Tambah Siswa
                         </button>
                         <div class="flex space-x-4">
+                            <select id="filterTahunAkademik" class="border p-3 rounded-lg text-lg">
+                                <option value="">Semua Tahun Akademik</option>
+                                </select>
                             <select id="filterKelas" class="border p-3 rounded-lg text-lg">
                                 <option value="">Semua Kelas</option>
                                 <option value="1">Kelas 1</option>
@@ -44,11 +47,12 @@ const DataSiswa = {
                                     <th class="py-4 px-6">Jenis Kelamin</th>
                                     <th class="py-4 px-6">Telepon</th>
                                     <th class="py-4 px-6">Status</th>
+                                    <th class="py-4 px-6">Tahun Akademik</th>
                                     <th class="py-4 px-6">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="dataTable" class="text-gray-700">
-                                    <tr><td colspan="9" class="text-center py-4">Loading...</td></tr>
+                                    <tr><td colspan="10" class="text-center py-4">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -64,10 +68,14 @@ const DataSiswa = {
         const tambahSiswaBtn = document.getElementById('tambahSiswaBtn');
         const filterKelas = document.getElementById('filterKelas');
         const searchNamaInput = document.getElementById('searchNama');
+        const filterTahunAkademik = document.getElementById('filterTahunAkademik'); // New filter
 
         tambahSiswaBtn.addEventListener('click', () => showModal('Tambah Data Siswa'));
-        filterKelas.addEventListener('change', handleFilter);
-        searchNamaInput.addEventListener('input', handleSearch);
+        filterKelas.addEventListener('change', applyFilters); // Use applyFilters
+        searchNamaInput.addEventListener('input', applyFilters); // Use applyFilters
+        filterTahunAkademik.addEventListener('change', applyFilters); // New event listener
+
+        let allDataSiswa = []; // Store all fetched data to filter locally
 
         // --- Fungsi-fungsi Utama ---
         async function fetchDataSiswa() {
@@ -84,16 +92,57 @@ const DataSiswa = {
             }
         }
 
-        function renderTable(dataSiswa) {
+        async function fetchTahunAkademik() {
+            try {
+                const response = await fetch('http://localhost:5000/api/tahunakademik');
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data tahun akademik');
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Gagal memuat data tahun akademik:', error);
+                return [];
+            }
+        }
+
+        function populateTahunAkademikFilter(tahunAkademikData) {
+            const selectElement = document.getElementById('filterTahunAkademik');
+            selectElement.innerHTML = '<option value="">Semua Tahun Akademik</option>'; // Reset options
+
+            // Sort data by year (descending) then semester (Ganjil before Genap)
+            tahunAkademikData.sort((a, b) => {
+                const yearA = parseInt(a.tahun.split('/')[0]);
+                const yearB = parseInt(b.tahun.split('/')[0]);
+                if (yearA !== yearB) {
+                    return yearB - yearA; // Sort by year descending
+                }
+                // If years are the same, sort Ganjil before Genap
+                if (a.semester === 'Ganjil' && b.semester === 'Genap') return -1;
+                if (a.semester === 'Genap' && b.semester === 'Ganjil') return 1;
+                return 0;
+            });
+
+
+            tahunAkademikData.forEach(ta => {
+                const option = document.createElement('option');
+                option.value = `${ta.tahun} ${ta.semester}`;
+                option.textContent = `${ta.tahun} ${ta.semester}`;
+                selectElement.appendChild(option);
+            });
+        }
+
+
+        function renderTable(dataToDisplay) {
             const tableBody = document.getElementById('dataTable');
             if (!tableBody) return;
 
-            if (dataSiswa.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">Tidak ada data siswa.</td></tr>`;
+            if (dataToDisplay.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="10" class="text-center py-4">Tidak ada data siswa yang cocok dengan filter.</td></tr>`;
                 return;
             }
 
-            tableBody.innerHTML = dataSiswa.map((siswa, index) => `
+            tableBody.innerHTML = dataToDisplay.map((siswa, index) => `
                 <tr class="border-t">
                     <td class="py-4 px-6">${index + 1}</td>
                     <td class="py-4 px-6">${siswa.nama}</td>
@@ -105,19 +154,20 @@ const DataSiswa = {
                     <td class="py-4 px-6">
                         <span class="bg-${siswa.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${siswa.status}</span>
                     </td>
+                    <td class="py-4 px-6">${siswa.tahunAkademik || '-'}</td>
                     <td class="py-4 px-6 flex space-x-4">
                         <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${siswa._id}">Edit</button>
                         <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-id="${siswa._id}">Hapus</button>
                     </td>
                 </tr>
             `).join('');
-            // No need to call attachRowEventListeners here anymore
         }
 
         async function showModal(title, data = {}) {
             const modalHtml = `
                 <div id="modalSiswa" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
-                    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2 relative"> <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
+                    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2 relative">
+                        <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
 
                         <div class="grid grid-cols-2 gap-6">
                             <div>
@@ -208,6 +258,7 @@ const DataSiswa = {
                     jenisKelamin: jenisKelamin,
                     telepon: telepon,
                     status: status
+                    // tahunAkademik tidak perlu dikirim dari frontend
                 };
 
                 console.log("Data yang akan dikirim:", siswaData);
@@ -226,12 +277,12 @@ const DataSiswa = {
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        
+
                         if (errorData.message && errorData.message.includes('E11000 duplicate key error')) {
                             let duplicateField = '';
-                            if (errorData.message.includes('index: nis_1')) {
+                            if (errorData.message.includes('nis')) { // Lebih umum daripada 'index: nis_1'
                                 duplicateField = 'NIS';
-                            } else if (errorData.message.includes('index: nisn_1')) {
+                            } else if (errorData.message.includes('nisn')) { // Lebih umum daripada 'index: nisn_1'
                                 duplicateField = 'NISN';
                             }
                             alert(`Gagal menyimpan data: ${duplicateField} yang Anda masukkan sudah terdaftar. Mohon gunakan ${duplicateField} yang berbeda.`);
@@ -242,7 +293,8 @@ const DataSiswa = {
                     }
 
                     modal.remove();
-                    await fetchDataSiswa().then(renderTable);
+                    allDataSiswa = await fetchDataSiswa(); // Refresh all data
+                    applyFilters(); // Re-apply filters to show fresh data
                     alert('Data siswa berhasil disimpan!');
                 } catch (error) {
                     console.error("Error creating/updating data:", error);
@@ -250,7 +302,7 @@ const DataSiswa = {
                 }
             });
         }
-        
+
         // Refactor attachRowEventListeners to use event delegation
         function attachTableEventListeners() {
             const dataTable = document.getElementById('dataTable');
@@ -291,7 +343,8 @@ const DataSiswa = {
                             throw new Error(errorData.message || 'Gagal menghapus siswa');
                         }
                         alert('Siswa berhasil dihapus!');
-                        await fetchDataSiswa().then(renderTable);
+                        allDataSiswa = await fetchDataSiswa(); // Refresh all data
+                        applyFilters(); // Re-apply filters to show fresh data
                     } catch (error) {
                         console.error("Error deleting siswa:", error);
                         alert(`Gagal menghapus data: ${error.message}`);
@@ -300,47 +353,44 @@ const DataSiswa = {
             }
         }
 
+        // --- Fungsi Filter dan Search yang digabung ---
+        function applyFilters() {
+            const selectedKelas = filterKelas.value;
+            const searchNamaValue = searchNamaInput.value.toLowerCase().trim();
+            const selectedTahunAkademik = filterTahunAkademik.value; // Get selected academic year
+
+            let filteredData = allDataSiswa;
+
+            if (selectedKelas !== '') {
+                filteredData = filteredData.filter(siswa => siswa.kelas === selectedKelas);
+            }
+
+            if (searchNamaValue !== '') {
+                filteredData = filteredData.filter(siswa =>
+                    siswa.nama.toLowerCase().includes(searchNamaValue)
+                );
+            }
+
+            if (selectedTahunAkademik !== '') {
+                filteredData = filteredData.filter(siswa =>
+                    siswa.tahunAkademik === selectedTahunAkademik
+                );
+            }
+
+            renderTable(filteredData);
+        }
+
+
         // --- Inisialisasi Data ---
         try {
-            const dataSiswa = await fetchDataSiswa();
-            renderTable(dataSiswa);
+            allDataSiswa = await fetchDataSiswa(); // Load all data initially
+            const tahunAkademikData = await fetchTahunAkademik();
+            populateTahunAkademikFilter(tahunAkademikData);
+            applyFilters(); // Apply filters to show initial data
             attachTableEventListeners(); // Attach the delegated listener here
         } catch (error) {
             console.error("Failed to load initial data:", error);
-            dataTable.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-500">Gagal memuat data</td></tr>`;
-        }
-
-        // --- Fungsi Filter dan Search ---
-        function handleFilter() {
-            const selectedKelas = this.value;
-            const rows = dataTable.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const kelasCell = row.querySelector('td:nth-child(3)');
-                if (kelasCell) {
-                    const rowKelas = kelasCell.textContent.trim();
-                    if (selectedKelas === '' || rowKelas === selectedKelas) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            });
-        }
-
-        function handleSearch() {
-            const searchValue = this.value.toLowerCase();
-            const rows = dataTable.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                const namaCell = row.querySelector('td:nth-child(2)');
-                if (namaCell) {
-                    const rowNama = namaCell.textContent.toLowerCase().trim();
-                    if (rowNama.includes(searchValue)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            });
+            dataTable.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-red-500">Gagal memuat data</td></tr>`;
         }
     } // Akhir afterRender
 };

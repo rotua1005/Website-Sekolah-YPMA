@@ -48,7 +48,7 @@ const DataAkun = {
                                     </tr>
                                 </thead>
                                 <tbody id="dataAkunTable" class="text-gray-700">
-                                    ${this.loadData()}
+                                    <tr><td colspan="6" class="text-center py-4">Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -67,55 +67,122 @@ const DataAkun = {
                 localStorage.removeItem("userRole");
                 localStorage.removeItem("username");
                 localStorage.removeItem("email");
-                localStorage.removeItem("fotoProfil"); // Clear profile photo on logout
-                localStorage.removeItem("password"); // Clear password on logout
+                localStorage.removeItem("fotoProfil");
+                localStorage.removeItem("password");
                 window.location.hash = '/';
             });
         }
 
-        document.getElementById('tambahAkunBtn').addEventListener('click', function () {
-            showModal('Tambah Data Akun');
-        });
+        const dataAkunTable = document.getElementById('dataAkunTable');
+        const tambahAkunBtn = document.getElementById('tambahAkunBtn');
+        const searchAkunInput = document.getElementById('searchAkun');
+        const filterRoleSelect = document.getElementById('filterRole');
 
-        document.getElementById('searchAkun').addEventListener('input', function () {
-            renderTable(this.value, document.getElementById('filterRole').value);
-        });
+        tambahAkunBtn.addEventListener('click', () => showModal('Tambah Data Akun'));
+        searchAkunInput.addEventListener('input', handleFilterAndSearch);
+        filterRoleSelect.addEventListener('change', handleFilterAndSearch);
 
-        document.getElementById('filterRole').addEventListener('change', function () {
-            renderTable(document.getElementById('searchAkun').value, this.value);
-        });
-
-        document.getElementById('dataAkunTable').addEventListener('click', function (event) {
-            if (event.target.classList.contains('edit-btn')) {
-                const index = event.target.dataset.index;
-                const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
-                showModal('Edit Data Akun', { ...akunData[index], index });
-            }
-
-            if (event.target.classList.contains('delete-btn')) {
-                const index = event.target.dataset.index;
-                const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
-                if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                    const deletedAccount = akunData[index];
-                    akunData.splice(index, 1);
-                    localStorage.setItem('dataAkun', JSON.stringify(akunData));
-
-                    if (localStorage.getItem("email") === deletedAccount.email) {
-                        localStorage.removeItem("isLoggedIn");
-                        localStorage.removeItem("userRole");
-                        localStorage.removeItem("username");
-                        localStorage.removeItem("email");
-                        localStorage.removeItem("fotoProfil");
-                        localStorage.removeItem("password");
-                        window.location.hash = '/';
-                    } else {
-                        renderTable();
-                    }
+        // --- Core Functions ---
+        async function fetchDataAkun() {
+            try {
+                const response = await fetch('http://localhost:5000/api/akun');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch account data');
                 }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error loading account data:', error);
+                alert('Failed to load account data. Please try again later.');
+                return []; // Return empty array on error
             }
-        });
+        }
 
-        function showModal(title, data = {}) {
+        function renderTable(akunData) {
+            if (!dataAkunTable) return;
+
+            if (akunData.length === 0) {
+                dataAkunTable.innerHTML = `<tr><td colspan="6" class="text-center py-4">No account data found.</td></tr>`;
+                return;
+            }
+
+            dataAkunTable.innerHTML = akunData.map((akun, index) => `
+                <tr class="border-t">
+                    <td class="py-4 px-6">${index + 1}</td>
+                    <td class="py-4 px-6">${akun.nama}</td>
+                    <td class="py-4 px-6">${akun.email}</td>
+                    <td class="py-4 px-6">${akun.password}</td>
+                    <td class="py-4 px-6">${akun.role.replace(/_/g, ' ').toUpperCase()}</td>
+                    <td class="py-4 px-6 flex space-x-4">
+                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${akun._id}">Edit</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-id="${akun._id}">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            dataAkunTable.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const id = event.target.dataset.id;
+                    try {
+                        const response = await fetch(`http://localhost:5000/api/akun/${id}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch account data for editing');
+                        }
+                        const akunToEdit = await response.json();
+                        showModal('Edit Data Akun', akunToEdit);
+                    } catch (error) {
+                        console.error('Error fetching account for edit:', error);
+                        alert('Failed to load account data for editing.');
+                    }
+                });
+            });
+
+            dataAkunTable.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const id = event.target.dataset.id;
+                    if (confirm('Are you sure you want to delete this account?')) {
+                        try {
+                            const response = await fetch(`http://localhost:5000/api/akun/${id}`, {
+                                method: 'DELETE',
+                            });
+
+                            if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({}));
+                                throw new Error(errorData.message || 'Failed to delete account');
+                            }
+
+                            const result = await response.json();
+                            alert(result.message);
+
+                            // Check if the deleted account was the currently logged-in user
+                            const allAkun = await fetchDataAkun();
+                            const deletedAkun = allAkun.find(akun => akun._id === id); // Find the account *before* deletion
+                            if (deletedAkun && localStorage.getItem("email") === deletedAkun.email) {
+                                localStorage.removeItem("isLoggedIn");
+                                localStorage.removeItem("userRole");
+                                localStorage.removeItem("username");
+                                localStorage.removeItem("email");
+                                localStorage.removeItem("fotoProfil");
+                                localStorage.removeItem("password");
+                                window.location.hash = '/'; // Redirect to home/login
+                            } else {
+                                await initializeData(); // Re-render table if not the logged-in user
+                            }
+
+                        } catch (error) {
+                            console.error('Error deleting account:', error);
+                            alert(`Failed to delete account: ${error.message}`);
+                        }
+                    }
+                });
+            });
+        }
+
+        async function showModal(title, data = {}) {
             const modalHtml = `
                 <div id="modalAkun" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
                     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-8 relative">
@@ -158,93 +225,92 @@ const DataAkun = {
 
             document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-            document.getElementById('batalAkun').addEventListener('click', function () {
-                document.getElementById('modalAkun').remove();
-            });
+            const modal = document.getElementById('modalAkun');
+            document.getElementById('batalAkun').addEventListener('click', () => modal.remove());
+            document.getElementById('closeModal').addEventListener('click', () => modal.remove());
 
-            document.getElementById('closeModal').addEventListener('click', function () {
-                document.getElementById('modalAkun').remove();
-            });
-
-            document.getElementById('simpanAkun').addEventListener('click', function () {
+            document.getElementById('simpanAkun').addEventListener('click', async () => {
                 const nama = document.getElementById('namaAkun').value;
                 const email = document.getElementById('emailAkun').value;
                 const password = document.getElementById('passwordAkun').value;
                 const role = document.getElementById('roleAkun').value;
 
                 if (!nama || !email || !password || !role) {
-                    alert('Harap isi semua data!');
+                    alert('Please fill in all data!');
                     return;
                 }
 
-                const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
-                const isDuplicate = akunData.some(akun => akun.email === email && (data.index === undefined || akunData.indexOf(akun) !== data.index));
+                const akunData = { nama, email, password, role };
 
-                if (isDuplicate) {
-                    alert('Email sudah terdaftar!');
-                    return;
-                }
+                const method = data._id ? 'PUT' : 'POST';
+                const url = data._id ? `http://localhost:5000/api/akun/${data._id}` : 'http://localhost:5000/api/akun';
 
-                if (data.index !== undefined) {
-                    const currentLoggedInEmail = localStorage.getItem("email");
-                    if (akunData[data.index].email === currentLoggedInEmail) {
-                        localStorage.setItem("username", nama);
-                        localStorage.setItem("email", email);
-                        localStorage.setItem("password", password);
-                        localStorage.setItem("userRole", role);
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(akunData),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        if (errorData.message && errorData.message.includes('E11000 duplicate key error')) {
+                            alert(`Failed to save data: Email '${email}' is already registered. Please use a different email.`);
+                        } else {
+                            throw new Error(errorData.message || `HTTP error ${response.status}`);
+                        }
+                        return;
                     }
-                    akunData[data.index] = { nama, email, password, role };
-                } else {
-                    akunData.push({ nama, email, password, role });
-                }
 
-                localStorage.setItem('dataAkun', JSON.stringify(akunData));
-                document.getElementById('modalAkun').remove();
-                renderTable(); // Re-render the table after saving
+                    const savedAkun = await response.json();
+                    alert(`Account successfully ${data._id ? 'updated' : 'created'}!`);
+
+                    // If the updated account is the current logged-in user, update localStorage
+                    if (data._id && localStorage.getItem("email") === data.email) {
+                        localStorage.setItem("username", savedAkun.nama);
+                        localStorage.setItem("email", savedAkun.email);
+                        localStorage.setItem("password", savedAkun.password); // Assuming password is sent back and updated
+                        localStorage.setItem("userRole", savedAkun.role);
+                    } else if (data._id === undefined && localStorage.getItem("isLoggedIn") === "false") {
+                        // Optionally handle direct login if creating the first admin account and not logged in
+                        // This logic might be better handled in a dedicated login flow
+                    }
+
+                    modal.remove();
+                    await initializeData(); // Re-render table after saving
+                } catch (error) {
+                    console.error('Error saving account:', error);
+                    alert(`Failed to save account: ${error.message}`);
+                }
             });
         }
 
-        function renderTable(search = '', filter = '') {
-            const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
-            const filteredData = akunData.filter(akun =>
-                akun.nama.toLowerCase().includes(search.toLowerCase()) &&
+        async function handleFilterAndSearch() {
+            const search = searchAkunInput.value.toLowerCase();
+            const filter = filterRoleSelect.value;
+            const allAkun = await fetchDataAkun();
+
+            const filteredData = allAkun.filter(akun =>
+                akun.nama.toLowerCase().includes(search) &&
                 (filter === '' || akun.role === filter)
             );
-
-            const tableBody = document.getElementById('dataAkunTable');
-            tableBody.innerHTML = filteredData.map((akun, index) => `
-                <tr class="border-t">
-                    <td class="py-4 px-6">${index + 1}</td>
-                    <td class="py-4 px-6">${akun.nama}</td>
-                    <td class="py-4 px-6">${akun.email}</td>
-                    <td class="py-4 px-6">${akun.password}</td>
-                    <td class="py-4 px-6">${akun.role.replace(/_/g, ' ').toUpperCase()}</td>
-                    <td class="py-4 px-6 flex space-x-4">
-                        <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
-                    </td>
-                </tr>
-            `).join('');
+            renderTable(filteredData);
         }
 
-        renderTable();
+        async function initializeData() {
+            const allAkun = await fetchDataAkun();
+            renderTable(allAkun);
+        }
+
+        // Initial data load when the page is rendered
+        await initializeData();
     },
 
+    // loadData is no longer needed as data is fetched directly in afterRender
     loadData() {
-        const akunData = JSON.parse(localStorage.getItem('dataAkun')) || [];
-        return akunData.map((akun, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${akun.nama}</td>
-                <td class="py-4 px-6">${akun.email}</td>
-                <td class="py-4 px-6">${akun.password}</td>
-                <td class="py-4 px-6">${akun.role.replace(/_/g, ' ').toUpperCase()}</td>
-                <td class="py-4 px-6 flex space-x-4">
-                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                    <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-index="${index}">Hapus</button>
-                </td>
-            </tr>
-        `).join('') || '';
+        return `<tr><td colspan="6" class="text-center py-4">Loading data...</td></tr>`;
     }
 };
 

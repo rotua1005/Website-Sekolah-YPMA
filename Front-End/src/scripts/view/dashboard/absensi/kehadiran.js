@@ -14,7 +14,6 @@ const Kehadiran = {
         const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
         const days = Array.from({ length: daysInMonth(selectedYear, selectedMonthIndex) }, (_, i) => String(i + 1).padStart(2, '0'));
 
-        // Placeholder data siswa (ganti dengan data sebenarnya)
         const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
         const siswaSesuaiKelas = dataSiswa.filter(siswa => siswa.kelas === namaKelas);
 
@@ -23,8 +22,13 @@ const Kehadiran = {
                 const formattedDate = `${String(day).padStart(2, '0')}-${selectedMonthName}-${selectedYear}`;
                 const absensiHarian = JSON.parse(localStorage.getItem(`absensi_${namaKelas}_${formattedDate}`)) || [];
                 const siswaAbsensi = absensiHarian.find(a => a.nis === siswa.nis);
-                let status = '?';
-                let bgColor = 'bg-gray-300';
+                
+                let status = '?'; // Default status for days without attendance
+                let bgColor = 'bg-gray-300'; // Default background for days without attendance (lighter gray)
+
+                // No need to check for weekends explicitly here for bgColor unless you want a different color for them
+                // For this request, all days without recorded attendance (including weekends) will be bg-gray-300 with '?'
+                // The only exception is when the status is 'A' (Alpha), which will be bg-gray-400
 
                 if (siswaAbsensi) {
                     status = siswaAbsensi.keterangan.charAt(0).toUpperCase();
@@ -39,16 +43,27 @@ const Kehadiran = {
                             bgColor = 'bg-yellow-200';
                             break;
                         case 'A':
-                            bgColor = 'bg-gray-400';
+                            bgColor = 'bg-gray-400'; // Darker gray for 'Alpa'
+                            break;
+                        default: // Fallback for unexpected status, treat as unrecorded
+                            status = '?';
+                            bgColor = 'bg-gray-300';
                             break;
                     }
                 } else {
-                    const dateObj = new Date(`${selectedYear}-${selectedMonthIndex + 1}-${day}`);
-                    if (dateObj.getDay() === 0 || dateObj.getDay() === 6) {
-                        bgColor = 'bg-gray-400';
+                    // If no absensiHarian found for the student on this day,
+                    // it defaults to '?' and 'bg-gray-300' (lighter gray)
+                    // This handles both weekdays and weekends without explicit attendance data
+                    // If you want weekends to be *empty* and still bg-gray-300 when no data, uncomment the block below:
+                    /*
+                    const dateObj = new Date(selectedYear, selectedMonthIndex, parseInt(day));
+                    const isWeekend = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+                    if (isWeekend) {
                         status = '';
                     }
+                    */
                 }
+
                 return `<td class="py-2 px-1 text-center ${bgColor}">${status}</td>`;
             }).join('');
 

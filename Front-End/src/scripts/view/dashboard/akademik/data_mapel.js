@@ -22,11 +22,10 @@ const DataMataPelajaran = {
                                         <th class="py-4 px-6">Mata Pelajaran</th>
                                         <th class="py-4 px-6">Guru Pengajar</th>
                                         <th class="py-4 px-6">Kelas</th>
-                                        </tr>
+                                        <th class="py-4 px-6">Tahun Akademik</th> </tr>
                                 </thead>
                                 <tbody id="dataMapelTable" class="text-gray-700">
-                                    <tr><td colspan="4" class="text-center py-4">Loading data...</td></tr>
-                                </tbody>
+                                    <tr><td colspan="5" class="text-center py-4">Loading data...</td></tr> </tbody>
                             </table>
                         </div>
                     </div>
@@ -51,7 +50,8 @@ const DataMataPelajaran = {
             const mapelData = await response.json();
 
             if (mapelData.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Tidak ada data Mata Pelajaran yang ditemukan. Pastikan ada data Guru yang terinput.</td></tr>`;
+                // Updated colspan for no data message
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">Tidak ada data Mata Pelajaran yang ditemukan. Pastikan ada data Guru yang terinput.</td></tr>`;
                 return;
             }
 
@@ -61,12 +61,13 @@ const DataMataPelajaran = {
                     <td class="py-4 px-6">${mapel.mapel || 'N/A'}</td>
                     <td class="py-4 px-6">${mapel.guru || 'N/A'}</td>
                     <td class="py-4 px-6">${mapel.kelas || 'N/A'}</td>
-                </tr>
+                    <td class="py-4 px-6">${mapel.tahunAkademik || 'N/A'}</td> </tr>
             `).join('');
 
         } catch (error) {
             console.error('Error rendering Data Mata Pelajaran table:', error);
-            tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+            // Updated colspan for error message
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
         }
     },
 

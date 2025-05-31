@@ -1,9 +1,23 @@
-import MenuWaliKelas from '../menu/menu_walikelas'; // Assuming a separate menu for Wali Kelas
+import MenuWaliKelas from '../menu/menu_walikelas';
 
 const DataSiswaWaliKelas = {
-    assignedClass: '2', // Example: Homeroom teacher for Kelas 2
+    assignedClass: '', // Initialize as empty, will be set from localStorage
+
+    // Local storage for students specific to this class and all academic years
+    _allStudentsInAssignedClass: [],
+    _allTahunAkademik: [],
 
     async render() {
+        // Get the assigned class from localStorage
+        const userRole = localStorage.getItem("userRole");
+        if (userRole && userRole.startsWith("wali_kelas_")) {
+            this.assignedClass = userRole.split("_")[2];
+        } else {
+            // Fallback or handle cases where userRole is not set correctly
+            // You might want to redirect or show an error message here
+            this.assignedClass = 'Unknown'; // Or a default like '0' or 'N/A'
+        }
+
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
                 ${MenuWaliKelas.render()}
@@ -21,8 +35,7 @@ const DataSiswaWaliKelas = {
                                 <input type="text" id="searchSiswa" class="border p-3 rounded-lg text-lg" placeholder="Cari Nama Siswa">
                                 <select id="filterTahunAkademik" class="border p-3 rounded-lg text-lg">
                                     <option value="">Semua Tahun Akademik</option>
-                                    ${this.renderTahunAkademikOptionsForClass()}
-                                </select>
+                                    </select>
                             </div>
                         </div>
 
@@ -42,7 +55,7 @@ const DataSiswaWaliKelas = {
                                     </tr>
                                 </thead>
                                 <tbody id="dataSiswaTable" class="text-gray-700">
-                                    ${this.loadDataForClass()}
+                                    <tr><td colspan="9" class="text-center py-4">Memuat data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -52,184 +65,255 @@ const DataSiswaWaliKelas = {
     },
 
     async afterRender() {
-        MenuWaliKelas.afterRender(); // Corrected afterRender call
-        this.renderTableForClass();
+        MenuWaliKelas.afterRender();
 
-        document.getElementById('searchSiswa').addEventListener('input', (event) => {
-            this.renderTableForClass(event.target.value, document.getElementById('filterTahunAkademik').value);
-        });
+        const searchSiswaInput = document.getElementById('searchSiswa');
+        const filterTahunAkademikSelect = document.getElementById('filterTahunAkademik');
+        const dataSiswaTableBody = document.getElementById('dataSiswaTable');
 
-        document.getElementById('filterTahunAkademik').addEventListener('change', (event) => {
-            this.renderTableForClass(document.getElementById('searchSiswa').value, event.target.value);
-        });
+        // Initial data load
+        await this._loadInitialData();
 
-        document.getElementById('dataSiswaTable').addEventListener('click', (event) => {
-            if (event.target.classList.contains('edit-btn')) {
-                const index = event.target.dataset.index;
-                const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-                // Filter data to get only the student within the homeroom teacher's class
-                const studentsInClass = siswaData.filter(siswa => siswa.kelas === this.assignedClass);
-                this.showModal('Edit Data Siswa', { ...studentsInClass[index], originalIndex: siswaData.indexOf(studentsInClass[index]) });
+        // Attach event listeners for filters
+        searchSiswaInput.addEventListener('input', () => this._applyFilters());
+        filterTahunAkademikSelect.addEventListener('change', () => this._applyFilters());
+
+        // Attach event listener for edit buttons using event delegation
+        dataSiswaTableBody.addEventListener('click', (event) => this._handleTableClick(event));
+    },
+
+    async _loadInitialData() {
+        try {
+            // Fetch students for the assigned class using the 'kelas' query parameter
+            const studentsResponse = await fetch(`http://localhost:5000/api/datasiswa?kelas=${this.assignedClass}`);
+            if (!studentsResponse.ok) {
+                throw new Error('Gagal mengambil data siswa kelas');
             }
-        });
-    },
+            this._allStudentsInAssignedClass = await studentsResponse.json();
 
-    generateTahunAkademik() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1; // Month is 0-indexed
-        let tahunAkademik;
+            // Fetch all academic years
+            const tahunAkademikResponse = await fetch('http://localhost:5000/api/tahunakademik');
+            if (!tahunAkademikResponse.ok) {
+                throw new Error('Gagal mengambil data tahun akademik');
+            }
+            this._allTahunAkademik = await tahunAkademikResponse.json();
 
-        if (month >= 7) {
-            tahunAkademik = `${year}/${year + 1}`;
-        } else {
-            tahunAkademik = `${year - 1}/${year}`;
+            this._populateTahunAkademikFilter();
+            this._applyFilters(); // Render table with initial data and filters
+        } catch (error) {
+            console.error('Gagal memuat data awal untuk Wali Kelas:', error);
+            document.getElementById('dataSiswaTable').innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-500">Gagal memuat data siswa atau tahun akademik.</td></tr>`;
         }
-        return tahunAkademik;
     },
 
-    renderTahunAkademikOptionsForClass() {
-        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        const studentsInClass = siswaData.filter(siswa => siswa.kelas === this.assignedClass);
-        const uniqueTahunAkademik = [...new Set(studentsInClass.map(siswa => siswa.tahunAkademik))];
-        let optionsHtml = '';
-        uniqueTahunAkademik.forEach(tahun => {
-            optionsHtml += `<option value="${tahun}">${tahun}</option>`;
+    _populateTahunAkademikFilter() {
+        const selectElement = document.getElementById('filterTahunAkademik');
+        if (!selectElement) return; // Ensure element exists
+
+        selectElement.innerHTML = '<option value="">Semua Tahun Akademik</option>'; // Reset options
+
+        // Sort academic years (e.g., latest year first, then Ganjil/Genap)
+        const sortedTahunAkademik = [...this._allTahunAkademik].sort((a, b) => {
+            const yearA = parseInt(a.tahun.split('/')[0]);
+            const yearB = parseInt(b.tahun.split('/')[0]);
+            if (yearA !== yearB) {
+                return yearB - yearA; // Sort by year descending
+            }
+            // If years are the same, sort Ganjil before Genap
+            if (a.semester === 'Ganjil' && b.semester === 'Genap') return -1;
+            if (a.semester === 'Genap' && b.semester === 'Ganjil') return 1;
+            return 0;
         });
-        return optionsHtml;
+
+        sortedTahunAkademik.forEach(ta => {
+            const option = document.createElement('option');
+            option.value = `${ta.tahun} ${ta.semester}`;
+            option.textContent = `${ta.tahun} ${ta.semester}`;
+            selectElement.appendChild(option);
+        });
     },
 
-    showModal(title, data = {}) {
+    _applyFilters() {
+        const searchNamaValue = document.getElementById('searchSiswa').value.toLowerCase().trim();
+        const selectedTahunAkademik = document.getElementById('filterTahunAkademik').value;
+
+        let filteredData = this._allStudentsInAssignedClass;
+
+        if (searchNamaValue) {
+            filteredData = filteredData.filter(siswa =>
+                siswa.nama.toLowerCase().includes(searchNamaValue)
+            );
+        }
+
+        if (selectedTahunAkademik) {
+            filteredData = filteredData.filter(siswa =>
+                siswa.tahunAkademik === selectedTahunAkademik
+            );
+        }
+
+        this._renderTable(filteredData);
+    },
+
+    _renderTable(dataToDisplay) {
+        const tableBody = document.getElementById('dataSiswaTable');
+        if (!tableBody) return;
+
+        if (dataToDisplay.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">Tidak ada data siswa yang cocok dengan filter di kelas ini.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = dataToDisplay.map((siswa, index) => `
+            <tr class="border-t">
+                <td class="py-4 px-6">${index + 1}</td>
+                <td class="py-4 px-6">${siswa.nama}</td>
+                <td class="py-4 px-6">${siswa.nis}</td>
+                <td class="py-4 px-6">${siswa.nisn}</td>
+                <td class="py-4 px-6">${siswa.jenisKelamin}</td>
+                <td class="py-4 px-6">${siswa.telepon}</td>
+                <td class="py-4 px-6">${siswa.tahunAkademik || '-'}</td>
+                <td class="py-4 px-6">
+                    <span class="bg-${siswa.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${siswa.status}</span>
+                </td>
+                <td class="py-4 px-6">
+                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${siswa._id}">Edit</button>
+                    </td>
+            </tr>
+        `).join('');
+    },
+
+    async _handleTableClick(event) {
+        const target = event.target;
+
+        if (target.classList.contains('edit-btn')) {
+            const id = target.dataset.id;
+            try {
+                // Fetch specific student data for editing
+                const response = await fetch(`http://localhost:5000/api/datasiswa/${id}`);
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data siswa untuk diedit');
+                }
+                const siswaData = await response.json();
+
+                // Ensure the student belongs to the assigned class before showing modal
+                if (siswaData.kelas !== this.assignedClass) {
+                    alert('Anda tidak memiliki izin untuk mengedit data siswa di luar kelas Anda.');
+                    return;
+                }
+                await this._showModal('Edit Data Siswa', siswaData);
+            } catch (error) {
+                console.error("Error fetching siswa data for edit:", error);
+                alert(`Gagal mengambil data untuk diedit: ${error.message}`);
+            }
+        }
+    },
+
+    async _showModal(title, data = {}) {
         const modalHtml = `
-            <div id="modalSiswa" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
-                <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl p-8 relative">
+            <div id="modalSiswaWaliKelas" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
+                <div class="bg-white p-8 rounded-lg shadow-lg w-1/2 relative">
                     <h2 class="text-3xl font-bold mb-6 text-center">${title}</h2>
+
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <label class="block text-lg font-semibold mb-2">Nama</label>
-                            <input type="text" id="namaSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg bg-gray-200" value="${data.nama || ''}" readonly>
+                            <input type="text" id="namaSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Nama" value="${data.nama || ''}" disabled>
                         </div>
                         <div>
                             <label class="block text-lg font-semibold mb-2">Kelas</label>
-                            <input type="text" id="kelasSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg bg-gray-200" value="${data.kelas || ''}" readonly>
+                            <input type="text" id="kelasSiswa" class="w-full border p-3 rounded-lg text-lg" value="${data.kelas || ''}" disabled>
                         </div>
                         <div>
                             <label class="block text-lg font-semibold mb-2">NIS</label>
-                            <input type="text" id="nisSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg bg-gray-200" value="${data.nis || ''}" readonly>
+                            <input type="text" id="nisSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan NIS" value="${data.nis || ''}" disabled>
                         </div>
                         <div>
                             <label class="block text-lg font-semibold mb-2">NISN</label>
-                            <input type="text" id="nisnSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg bg-gray-200" value="${data.nisn || ''}" readonly>
+                            <input type="text" id="nisnSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan NISN" value="${data.nisn || ''}" disabled>
                         </div>
                         <div>
                             <label class="block text-lg font-semibold mb-2">Jenis Kelamin</label>
-                            <input type="text" id="jenisKelaminSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg bg-gray-200" value="${data.jenisKelamin || ''}" readonly>
+                            <select id="jenisKelaminSiswa" class="w-full border p-3 rounded-lg text-lg">
+                                <option value="Laki-laki" ${data.jenisKelamin === 'Laki-laki' ? 'selected' : ''}>Laki-laki</option>
+                                <option value="Perempuan" ${data.jenisKelamin === 'Perempuan' ? 'selected' : ''}>Perempuan</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-lg font-semibold mb-2">Telepon</label>
-                            <input type="text" id="teleponSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Telepon" value="${data.telepon || ''}">
+                            <input type="text" id="teleponSiswa" class="w-full border p-3 rounded-lg text-lg" placeholder="Masukkan Telepon" value="${data.telepon || ''}">
                         </div>
                         <div>
                             <label class="block text-lg font-semibold mb-2">Status</label>
-                            <select id="statusSiswa" class="w-full border border-gray-300 p-3 rounded-lg text-lg">
+                            <select id="statusSiswa" class="w-full border p-3 rounded-lg text-lg">
                                 <option value="Aktif" ${data.status === 'Aktif' ? 'selected' : ''}>Aktif</option>
                                 <option value="Tidak Aktif" ${data.status === 'Tidak Aktif' ? 'selected' : ''}>Tidak Aktif</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-lg font-semibold mb-2">Tahun Akademik</label>
+                            <input type="text" id="tahunAkademikSiswa" class="w-full border p-3 rounded-lg text-lg" value="${data.tahunAkademik || ''}" disabled>
+                        </div>
                     </div>
-                    <div class="flex justify-end space-x-4 mt-8">
-                        <button id="batalSiswa" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg text-lg transition">Batal</button>
-                        <button id="simpanSiswa" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg transition">Simpan</button>
+
+                    <div class="flex justify-end space-x-4 mt-6">
+                        <button id="batalSiswaWaliKelas" class="bg-gray-500 text-white px-6 py-3 rounded-lg text-lg">Batal</button>
+                        <button id="simpanSiswaWaliKelas" class="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg">Simpan</button>
                     </div>
-                    <button id="closeModal" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
+                    <button id="closeModalWaliKelas" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold">&times;</button>
                 </div>
             </div>
         `;
 
         document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-        document.getElementById('batalSiswa').addEventListener('click', () => {
-            document.getElementById('modalSiswa').remove();
-        });
+        const modal = document.getElementById('modalSiswaWaliKelas');
+        const batalBtn = document.getElementById('batalSiswaWaliKelas');
+        const simpanBtn = document.getElementById('simpanSiswaWaliKelas');
+        const closeBtn = document.getElementById('closeModalWaliKelas');
 
-        document.getElementById('closeModal').addEventListener('click', () => {
-            document.getElementById('modalSiswa').remove();
-        });
-
-        document.getElementById('simpanSiswa').addEventListener('click', () => {
+        batalBtn.addEventListener('click', () => modal.remove());
+        closeBtn.addEventListener('click', () => modal.remove());
+        simpanBtn.addEventListener('click', async () => {
+            const jenisKelamin = document.getElementById('jenisKelaminSiswa').value;
             const telepon = document.getElementById('teleponSiswa').value;
             const status = document.getElementById('statusSiswa').value;
 
-            if (!telepon || !status) {
-                alert('Harap isi semua data!');
+            // Wali kelas should not be able to change class, NIS, NISN, or Nama
+            const siswaDataToUpdate = {
+                jenisKelamin: jenisKelamin,
+                telepon: telepon,
+                status: status,
+                // Do NOT include nama, kelas, nis, nisn, tahunAkademik as they shouldn't be editable by wali kelas
+            };
+
+            if (!jenisKelamin || !telepon || !status) {
+                alert('Harap isi semua data yang diperlukan!');
                 return;
             }
 
-            const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-            if (data.originalIndex !== undefined) {
-                // Update only allowed fields for homeroom teacher
-                siswaData[data.originalIndex].telepon = telepon;
-                siswaData[data.originalIndex].status = status;
+            try {
+                const response = await fetch(`http://localhost:5000/api/datasiswa/${data._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(siswaDataToUpdate),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    alert(`Gagal memperbarui data: ${errorData.message || `HTTP error ${response.status}`}`);
+                    return;
+                }
+
+                modal.remove();
+                alert('Data siswa berhasil diperbarui!');
+                await this._loadInitialData(); // Reload and re-render the table
+            } catch (error) {
+                console.error("Error updating student data:", error);
+                alert(`Terjadi kesalahan tak terduga saat menyimpan data: ${error.message}`);
             }
-
-            localStorage.setItem('dataSiswa', JSON.stringify(siswaData));
-            document.getElementById('modalSiswa').remove();
-            this.renderTableForClass();
         });
-    },
-
-    renderTableForClass(search = '', filterTahunAkademik = '') {
-        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        // Filter students belonging to the assigned class
-        const studentsInClass = siswaData.filter(siswa => siswa.kelas === this.assignedClass);
-
-        const filteredData = studentsInClass.filter(siswa =>
-            siswa.nama.toLowerCase().includes(search.toLowerCase()) &&
-            (filterTahunAkademik === '' || siswa.tahunAkademik === filterTahunAkademik)
-        );
-
-        const tableBody = document.getElementById('dataSiswaTable');
-        tableBody.innerHTML = filteredData.map((siswa, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${siswa.nama}</td>
-                <td class="py-4 px-6">${siswa.nis}</td>
-                <td class="py-4 px-6">${siswa.nisn}</td>
-                <td class="py-4 px-6">${siswa.jenisKelamin}</td>
-                <td class="py-4 px-6">${siswa.telepon}</td>
-                <td class="py-4 px-6">${siswa.tahunAkademik}</td>
-                <td class="py-4 px-6">
-                    <span class="bg-${siswa.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${siswa.status}</span>
-                </td>
-                <td class="py-4 px-6 flex space-x-4">
-                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                </td>
-            </tr>
-        `).join('');
-    },
-
-    loadDataForClass() {
-        const siswaData = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        // Filter students belonging to the assigned class
-        const studentsInClass = siswaData.filter(siswa => siswa.kelas === this.assignedClass);
-
-        return studentsInClass.map((siswa, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${siswa.nama}</td>
-                <td class="py-4 px-6">${siswa.nis}</td>
-                <td class="py-4 px-6">${siswa.nisn}</td>
-                <td class="py-4 px-6">${siswa.jenisKelamin}</td>
-                <td class="py-4 px-6">${siswa.telepon}</td>
-                <td class="py-4 px-6">${siswa.tahunAkademik}</td>
-                <td class="py-4 px-6">
-                    <span class="bg-${siswa.status === 'Aktif' ? 'green' : 'red'}-500 text-white px-3 py-1 rounded">${siswa.status}</span>
-                </td>
-                <td class="py-4 px-6 flex space-x-4">
-                    <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-index="${index}">Edit</button>
-                </td>
-            </tr>
-        `).join('');
     }
 };
 

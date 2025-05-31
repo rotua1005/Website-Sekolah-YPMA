@@ -1,3 +1,4 @@
+// AkunController.js
 const Akun = require('../models/AkunModel');
 
 // Get all Akun entries
