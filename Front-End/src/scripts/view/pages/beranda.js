@@ -1,3 +1,4 @@
+// Beranda.js
 const Beranda = {
     async render() {
         return `
@@ -244,7 +245,7 @@ const Beranda = {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     if (entry.target.classList.contains('slide-left')) {
-                        entry.entry.target.classList.add('slide-in-left');
+                        entry.target.classList.add('slide-in-left');
                     } else if (entry.target.classList.contains('slide-right')) {
                         entry.target.classList.add('slide-in-right');
                     }
@@ -270,16 +271,14 @@ const Beranda = {
             });
             slides[index].classList.add('active');
 
-            // Animasikan teks pada slide yang aktif
+            // Animate text on the active slide
             const activeSlide = slides[index];
             const h1 = activeSlide.querySelector('h1#main');
             const p = activeSlide.querySelector('p');
 
             if (h1) {
-                // Hapus kelas animasi sebelumnya jika ada
                 h1.style.opacity = 0;
                 h1.style.transform = 'translateY(30px)';
-                // Setelah sedikit delay, tambahkan kembali agar animasi berjalan
                 setTimeout(() => {
                     h1.style.opacity = 1;
                     h1.style.transform = 'translateY(0)';
@@ -292,7 +291,7 @@ const Beranda = {
                 setTimeout(() => {
                     p.style.opacity = 1;
                     p.style.transform = 'translateY(0)';
-                }, 250); // Delay sedikit lebih lama untuk paragraf
+                }, 250); // Slightly longer delay for paragraph
             }
         }
 
@@ -317,33 +316,61 @@ const Beranda = {
         // Initial slide display
         showSlide(currentIndex);
 
-        // Bagian untuk menampilkan berita terbaru
+        // --- Fetch and Display Latest News ---
         const beritaTerbaruContainer = document.getElementById('berita-terbaru-container');
-        const beritaDepan = JSON.parse(localStorage.getItem('beritaDepan')) || [];
-
         if (beritaTerbaruContainer) {
-            beritaDepan.forEach(berita => {
-                const beritaCard = document.createElement('div');
-                beritaCard.className = 'bg-white rounded-lg shadow-md overflow-hidden';
-                beritaCard.innerHTML = `
-                    <img src="${berita.gambar || 'images/default-news.jpg'}" alt="${berita.judul}" class="w-full h-48 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2 text-gray-800">${berita.judul}</h3>
-                        <p class="text-gray-600 text-sm mb-4">${berita.tanggal} - No Comments</p>
-                        <p class="text-gray-700 leading-relaxed truncate">${berita.deskripsi}</p>
-                    </div>
-                `;
-                beritaTerbaruContainer.appendChild(beritaCard);
-            });
-        }
+            try {
+                const response = await fetch('http://localhost:5000/api/dashboardUploadBerita');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                let beritaList = await response.json();
+                beritaList = beritaList.reverse(); // Show newest first
 
-        // Bagian untuk mengirim pesan feedback
+                // Take only the first 3 news articles for the homepage
+                const latestThreeBerita = beritaList.slice(0, 3);
+
+                if (latestThreeBerita.length > 0) {
+                    beritaTerbaruContainer.innerHTML = latestThreeBerita.map(berita => {
+                        // Ensure the image URL is correct (prepended with localhost:5000)
+                        const imageUrl = `http://localhost:5000${berita.gambar || '/images/default-news.jpg'}`;
+                        const formattedDate = new Date(berita.tanggal || Date.now()).toLocaleDateString('id-ID', {
+                            day: 'numeric', month: 'long', year: 'numeric'
+                        });
+
+                        return `
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:scale-105">
+                                <img src="${imageUrl}" alt="${berita.judul}" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <h3 class="text-xl font-semibold mb-2 text-gray-800">${berita.judul}</h3>
+                                    <p class="text-gray-600 text-sm mb-4">${formattedDate} - No Comments</p>
+                                    <p class="text-gray-700 leading-relaxed truncate">${berita.deskripsi}</p>
+                                    <a href="#/detail_berita/${berita._id}" class="inline-block bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4 transition-transform transform hover:scale-105">
+                                        Read More
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    beritaTerbaruContainer.innerHTML = '<p class="text-center text-gray-500 text-lg">Belum ada berita terbaru yang diunggah.</p>';
+                }
+
+            } catch (error) {
+                console.error("Error fetching latest news for Beranda:", error);
+                beritaTerbaruContainer.innerHTML = '<p class="text-center text-red-500 text-lg">Gagal memuat berita terbaru. Silakan coba lagi nanti.</p>';
+            }
+        }
+        // --- End Fetch and Display Latest News ---
+
+
+        // Handle contact form submission
         const contactForm = document.getElementById('contactForm');
         const submitButton = document.getElementById('submitMessage');
 
         if (contactForm && submitButton) {
             contactForm.addEventListener('submit', function(event) {
-                event.preventDefault(); // Mencegah form submit biasa
+                event.preventDefault(); // Prevent default form submission
 
                 const nameInput = document.getElementById('name');
                 const emailInput = document.getElementById('email');
@@ -355,22 +382,22 @@ const Beranda = {
                     email: emailInput.value,
                     phone: phoneInput.value,
                     message: messageInput.value,
-                    timestamp: new Date().toISOString() // Tambahkan timestamp
+                    timestamp: new Date().toISOString() // Add timestamp
                 };
 
-                // Ambil data feedback yang sudah ada dari localStorage
+                // Retrieve existing feedback from localStorage
                 const existingFeedback = JSON.parse(localStorage.getItem('feedback')) || [];
 
-                // Tambahkan feedback baru ke array
+                // Add new feedback to the array
                 existingFeedback.push(feedback);
 
-                // Simpan kembali ke localStorage
+                // Save back to localStorage
                 localStorage.setItem('feedback', JSON.stringify(existingFeedback));
 
-                // Reset form setelah berhasil menyimpan
+                // Reset form after successful submission
                 contactForm.reset();
 
-                alert('Pesan Anda berhasil terkirim!'); // Berikan umpan balik kepada pengguna
+                alert('Pesan Anda berhasil terkirim!'); // Provide user feedback
             });
         }
     },

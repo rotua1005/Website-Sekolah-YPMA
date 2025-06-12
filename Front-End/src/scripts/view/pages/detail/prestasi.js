@@ -1,51 +1,142 @@
 const DetailPrestasi = {
   async render() {
-    const data = JSON.parse(localStorage.getItem("detail_prestasi"));
-    let comments = JSON.parse(localStorage.getItem("comments_prestasi")) || [];
+    const hashSegments = window.location.hash.split('/');
+    const id = hashSegments[hashSegments.length - 1];
 
-    const renderComments = (comments) => {
-      return comments.map(comment => `
-        <div class="mb-3 p-3 border rounded-md shadow-sm text-sm">
-          <p class="font-semibold">${comment.name}</p>
-          <p class="text-xs text-gray-500">${comment.date}</p>
-          <p class="mt-1">${comment.text}</p>
-        </div>
-      `).join('');
-    };
+    let data = null;
+    try {
+      const response = await fetch(`http://localhost:5000/api/dashboardPrestasi/${id}`);
+      if (!response.ok) throw new Error("Gagal fetch detail prestasi");
+      data = await response.json();
+      localStorage.setItem("detail_prestasi", JSON.stringify(data));
+    } catch (e) {
+      console.error("Error fetching detail prestasi:", e);
+      return `<div class="text-center mt-20 text-red-600 text-xl font-semibold">Gagal memuat data prestasi. Silakan coba lagi nanti.</div>`;
+    }
 
     if (!data) {
       return `<div class="text-center mt-20 text-red-600 text-xl font-semibold">Data tidak ditemukan.</div>`;
     }
 
+    // Fetch all prestasi for related list
+    let prestasiList = [];
+    try {
+      const allResponse = await fetch('http://localhost:5000/api/dashboardPrestasi');
+      if (allResponse.ok) {
+        prestasiList = await allResponse.json();
+      }
+    } catch (e) {
+      prestasiList = [];
+    }
+    // Filter out current and take 3 related
+    const relatedPrestasi = prestasiList.filter(item => (item._id || item.id) != id).slice(0, 3);
+
+    let comments = JSON.parse(localStorage.getItem(`comments_prestasi_${id}`)) || [];
+    const backendBaseUrl = 'http://localhost:5000';
+
+    const renderComments = (comments) => {
+      let commentHTML = '';
+      comments.forEach(comment => {
+        commentHTML += `
+          <div class="mb-4 p-4 border rounded-md shadow-sm">
+            <p class="font-semibold">${comment.name}</p>
+            <p class="text-sm text-gray-500">${comment.date}</p>
+            <p class="mt-2">${comment.text}</p>
+            <button class="text-blue-500 hover:underline mt-2 reply-button" data-comment-id="${comment.id}">Reply</button>
+            <div id="reply-form-${comment.id}" class="hidden mt-4">
+              <textarea rows="2" class="w-full border rounded p-2 text-sm mb-2" placeholder="Balas komentar ini"></textarea>
+              <button class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded post-reply-button" data-parent-id="${comment.id}">Post Reply</button>
+            </div>
+            ${comment.replies && comment.replies.length > 0 ? `
+              <div class="ml-6 mt-4 border-l pl-4">
+                ${renderComments(comment.replies)}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      return commentHTML;
+    };
+
     return `
-      <main id="detail-container" class="container mx-auto max-w-3xl px-4 py-6 transition-all duration-300 ease-in-out opacity-0 scale-95">
-        <h2 class="text-xl md:text-2xl font-bold text-green-700 mb-2">${data.judul}</h2>
-        <p class="text-sm text-gray-500 mb-4">Diterbitkan: ${new Date(data.tanggal || Date.now()).toLocaleDateString('id-ID', {
-          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        })}</p>
-        
-        <!-- GAMBAR UTAMA DIPERBESAR -->
-        <img src="${data.gambar}" alt="${data.judul}" class="w-full h-72 md:h-96 object-cover rounded-xl shadow mb-6"/>
+      <section class="relative w-full mb-8 berita-hero">
+        <div class="relative w-300 h-[300px] md:h-[700px] overflow-hidden">
+          <img
+            src="${data.gambar ? `${backendBaseUrl}${data.gambar}` : '/placeholder-image.jpg'}"
+            alt="${data.judul}"
+            class="w-full h-full object-cover brightness-75"
+          />
+        </div>
+        <div class="px-4 md:px-20 mt-6">
+          <h1 class="text-3xl md:text-5xl font-bold text-gray-800">${data.judul}</h1>
+        </div>
+      </section>
 
-        <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-line mb-8">${data.deskripsi}</p>
+      <main class="w-full mt-0 px-4 md:px-20">
+        <section class="relative w-full mb-8 flex flex-col md:flex-row gap-8">
+          <div class="md:w-2/3">
+            <p class="text-lg text-gray-500 mb-3">
+              Diterbitkan: ${new Date(data.tanggal || Date.now()).toLocaleDateString('id-ID', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+              })}
+            </p>
+            <div class="text-lg text-gray-800 leading-relaxed whitespace-pre-line">
+              ${data.deskripsi}
+            </div>
+          </div>
+          <aside class="md:w-1/3">
+            <h3 class="text-xl font-semibold mb-4 text-green-700 border-b pb-3">Prestasi Lainnya</h3>
+            <div class="space-y-4">
+              ${relatedPrestasi.map(prestasi => `
+                <a href="#/detail-prestasi/${prestasi._id || prestasi.id}" class="block hover:bg-gray-50 rounded transition">
+                  <div class="flex gap-4">
+                    <img src="${prestasi.gambar ? `${backendBaseUrl}${prestasi.gambar}` : '/placeholder-image.jpg'}" alt="${prestasi.judul}" class="w-20 h-16 object-cover rounded-md" />
+                    <div>
+                      <p class="text-sm text-gray-500 mb-1">
+                        ${new Date(prestasi.tanggal || Date.now()).toLocaleDateString('id-ID', {
+                          day: 'numeric', month: 'short', year: 'numeric'
+                        })}
+                      </p>
+                      <h4 class="text-base font-semibold text-blue-800 line-clamp-2">${prestasi.judul}</h4>
+                    </div>
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          </aside>
+        </section>
 
-        <div class="border-t pt-4">
-          <h3 class="text-base font-semibold mb-2 text-blue-700">Leave a comment</h3>
-          <form id="comment-form" class="text-sm">
-            <textarea id="comment-text" rows="3" class="w-full border rounded p-2 mb-2" placeholder="Komentar..." required></textarea>
-            <input type="text" id="comment-name" class="w-full border rounded p-2 mb-2" placeholder="Nama *" required />
-            <input type="email" id="comment-email" class="w-full border rounded p-2 mb-2" placeholder="Email *" required />
-            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-4 rounded">Post Comment</button>
+        <section class="mb-12 md:w-2/3">
+          <h3 class="text-xl font-bold text-blue-700 mb-4">Tinggalkan Komentar</h3>
+          <form id="comment-form" class="space-y-4">
+            <div>
+              <label for="comment-name" class="block text-sm font-medium text-gray-700 mb-1">Nama *</label>
+              <input type="text" id="comment-name" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label for="comment-email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              <input type="email" id="comment-email" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+              <label for="comment-text" class="block text-sm font-medium text-gray-700 mb-1">Komentar *</label>
+              <textarea id="comment-text" rows="4" class="w-full border rounded px-3 py-2" required></textarea>
+            </div>
+            <div>
+              <input type="checkbox" id="save-info">
+              <label for="save-info" class="text-sm text-gray-700">Simpan info saya untuk komentar berikutnya</label>
+            </div>
+            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-5 py-2 rounded">Kirim Komentar</button>
           </form>
-        </div>
+        </section>
 
-        <div id="comments-section" class="mt-6">
-          <h3 class="text-base font-semibold mb-2 text-blue-700">Komentar</h3>
-          <div id="comment-list">${renderComments(comments)}</div>
-        </div>
+        <section class="mb-16 md:w-2/3">
+          <h3 class="text-xl font-bold text-blue-700 mb-4">Komentar</h3>
+          <div id="comment-list">
+            ${renderComments(comments)}
+          </div>
+        </section>
 
-        <!-- TOMBOL KEMBALI -->
-        <div class="mt-6">
+        <div class="mb-12">
           <a href="#/prestasi" class="text-blue-600 hover:underline text-lg font-medium inline-flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="w-5 h-5 mr-2" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12m7.5-7.5L8.25 12" />
@@ -58,58 +149,168 @@ const DetailPrestasi = {
   },
 
   async afterRender() {
-    const container = document.getElementById('detail-container');
+    const commentForm = document.getElementById('comment-form');
+    const commentListDiv = document.getElementById('comment-list');
+    const hashSegments = window.location.hash.split('/');
+    const currentId = hashSegments[hashSegments.length - 1];
+    let comments = JSON.parse(localStorage.getItem(`comments_prestasi_${currentId}`)) || [];
 
-    if (container) {
-      setTimeout(() => {
-        container.classList.remove('opacity-0', 'scale-95');
-        container.classList.add('opacity-100', 'scale-100');
-      }, 10);
+    const renderComments = (comments) => {
+      let commentHTML = '';
+      comments.forEach(comment => {
+        commentHTML += `
+          <div class="mb-4 p-4 border rounded-md shadow-sm">
+            <p class="font-semibold">${comment.name}</p>
+            <p class="text-sm text-gray-500">${comment.date}</p>
+            <p class="mt-2">${comment.text}</p>
+            <button class="text-blue-500 hover:underline mt-2 reply-button" data-comment-id="${comment.id}">Reply</button>
+            <div id="reply-form-${comment.id}" class="hidden mt-4">
+              <textarea rows="2" class="w-full border rounded p-2 text-sm mb-2" placeholder="Balas komentar ini"></textarea>
+              <button class="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded post-reply-button" data-parent-id="${comment.id}">Post Reply</button>
+            </div>
+            ${comment.replies && comment.replies.length > 0 ? `
+              <div class="ml-6 mt-4 border-l pl-4">
+                ${renderComments(comment.replies)}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      return commentHTML;
+    };
+
+    if (commentForm) {
+      commentForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = document.getElementById('comment-name').value.trim();
+        const email = document.getElementById('comment-email').value.trim();
+        const text = document.getElementById('comment-text').value.trim();
+        const saveInfoCheckbox = document.getElementById('save-info');
+
+        if (!name || !email || !text) {
+          if (window.Swal) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Input tidak lengkap!',
+              text: 'Harap isi semua kolom yang diperlukan.',
+              confirmButtonText: 'OK'
+            });
+          }
+          return;
+        }
+
+        const newComment = {
+          id: Date.now(),
+          name,
+          email,
+          text,
+          date: new Date().toLocaleDateString('id-ID', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: 'numeric', minute: 'numeric'
+          }),
+          replies: []
+        };
+
+        comments.push(newComment);
+        localStorage.setItem(`comments_prestasi_${currentId}`, JSON.stringify(comments));
+        commentListDiv.innerHTML = renderComments(comments);
+        commentForm.reset();
+
+        if (saveInfoCheckbox.checked) {
+          localStorage.setItem('saved_comment_name', name);
+          localStorage.setItem('saved_comment_email', email);
+        } else {
+          localStorage.removeItem('saved_comment_name');
+          localStorage.removeItem('saved_comment_email');
+        }
+
+        if (window.Swal) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Komentar berhasil dikirim!',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        }
+      });
     }
 
-    const form = document.getElementById('comment-form');
-    const list = document.getElementById('comment-list');
-    let comments = JSON.parse(localStorage.getItem("comments_prestasi")) || [];
+    // Load saved info if available
+    const savedName = localStorage.getItem('saved_comment_name');
+    const savedEmail = localStorage.getItem('saved_comment_email');
+    if (savedName && savedEmail) {
+      document.getElementById('comment-name').value = savedName;
+      document.getElementById('comment-email').value = savedEmail;
+      document.getElementById('save-info').checked = true;
+    }
 
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('comment-name').value.trim();
-      const email = document.getElementById('comment-email').value.trim();
-      const text = document.getElementById('comment-text').value.trim();
+    if (commentListDiv) {
+      commentListDiv.addEventListener('click', (event) => {
+        if (event.target.classList.contains('reply-button')) {
+          const commentId = event.target.getAttribute('data-comment-id');
+          const replyForm = document.getElementById(`reply-form-${commentId}`);
+          replyForm.classList.toggle('hidden');
+        } else if (event.target.classList.contains('post-reply-button')) {
+          const parentId = parseInt(event.target.getAttribute('data-parent-id'));
+          const replyTextarea = event.target.previousElementSibling;
+          const replyText = replyTextarea.value.trim();
 
-      const newComment = {
-        name,
-        email,
-        text,
-        date: new Date().toLocaleDateString('id-ID', {
-          year: 'numeric', month: 'long', day: 'numeric',
-          hour: 'numeric', minute: 'numeric'
-        })
-      };
+          if (!replyText) {
+            if (window.Swal) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Balasan kosong!',
+                text: 'Harap masukkan teks balasan.',
+                confirmButtonText: 'OK'
+              });
+            }
+            return;
+          }
 
-      comments.push(newComment);
-      localStorage.setItem("comments_prestasi", JSON.stringify(comments));
+          const replyName = localStorage.getItem('saved_comment_name') || 'Pengunjung';
 
-      list.innerHTML += `
-        <div class="mb-3 p-3 border rounded-md shadow-sm text-sm">
-          <p class="font-semibold">${newComment.name}</p>
-          <p class="text-xs text-gray-500">${newComment.date}</p>
-          <p class="mt-1">${newComment.text}</p>
-        </div>
-      `;
-      form.reset();
-    });
+          const newReply = {
+            id: Date.now(),
+            parent: parentId,
+            name: replyName,
+            email: localStorage.getItem('saved_comment_email') || '',
+            text: replyText,
+            date: new Date().toLocaleDateString('id-ID', {
+              year: 'numeric', month: 'long', day: 'numeric',
+              hour: 'numeric', minute: 'numeric'
+            }),
+            replies: []
+          };
 
-    const closeBtn = document.getElementById('close-detail');
-    closeBtn?.addEventListener('click', () => {
-      container.classList.remove('opacity-100', 'scale-100');
-      container.classList.add('opacity-0', 'scale-95');
+          const addReply = (arr) => {
+            for (const comment of arr) {
+              if (comment.id === parentId) {
+                comment.replies = comment.replies || [];
+                comment.replies.push(newReply);
+                return true;
+              }
+              if (comment.replies && addReply(comment.replies)) return true;
+            }
+            return false;
+          };
 
-      setTimeout(() => {
-        window.location.hash = '#/prestasi';
-        window.dispatchEvent(new HashChangeEvent("hashchange"));
-      }, 300);
-    });
+          if (addReply(comments)) {
+            localStorage.setItem(`comments_prestasi_${currentId}`, JSON.stringify(comments));
+            commentListDiv.innerHTML = renderComments(comments);
+            replyTextarea.value = '';
+            document.getElementById(`reply-form-${parentId}`).classList.add('hidden');
+            if (window.Swal) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Balasan berhasil dikirim!',
+                showConfirmButton: false,
+                timer: 1500
+              });
+            }
+          }
+        }
+      });
+    }
   }
 };
 

@@ -36,12 +36,15 @@
     "whatwg-fetch": "^3.6.2"
   },
   "dependencies": {
+    "animate.css": "^4.1.1",
     "bootstrap": "^5.3.4",
     "browser-image-compression": "^2.0.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.477.0",
     "regenerator-runtime": "^0.14.0",
-    "sweetalert2": "^11.17.2"
+    "scrollreveal": "^4.0.9",
+    "sweetalert2": "^11.17.2",
+    "wowjs": "^1.1.3"
   }
 }

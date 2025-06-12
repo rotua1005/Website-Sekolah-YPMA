@@ -3,7 +3,7 @@ const Tentang = {
       return `
         <section class="relative text-center w-full">
           <div class="relative w-full">
-            <img alt="Gedung Sekolah" class="w-full h-[300px] md:h-[450px] lg:h-[550px] object-cover" src="./images/Lapangan.jpg"/>
+            <img alt="Gedung Sekolah" class="w-full h-[300px] md:h-[450px] lg:h-[550px] object-cover" src="./images/Lapangan1.jpg"/>
             <img src="./images/logo.png" alt="Logo Sekolah" class="absolute top-4 left-4 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-lg transition-all hover:scale-110">
             <h1 class="absolute inset-0 flex items-center justify-center left-6 text-4xl md:text-5xl lg:text-6xl font-bold text-green-500 animate-fade-in appear">Profile Sekolah</h1>
           </div>
