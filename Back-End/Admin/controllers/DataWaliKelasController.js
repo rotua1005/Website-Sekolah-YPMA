@@ -1,10 +1,27 @@
+// DataWaliKelasController.js
 const DataWaliKelas = require('../models/DataWaliKelasModel');
 const TahunAkademik = require("../models/TahunAkademikModel"); // Import TahunAkademik model
 
-// Get all Wali Kelas
+// Get all Wali Kelas (with optional filters for kelas, tahun akademik, and search by nama)
 exports.getAllDataWaliKelas = async (req, res) => {
     try {
-        const data = await DataWaliKelas.find();
+        const { kelas, tahunAkademik, search } = req.query; // Get query parameters
+        let query = {}; // Initialize empty query object
+
+        if (kelas) {
+            query.kelas = kelas; // Add class filter if provided
+        }
+
+        if (tahunAkademik) {
+            query.tahunAkademik = tahunAkademik; // Add academic year filter if provided
+        }
+
+        if (search) {
+            // Use regex for case-insensitive search on 'nama' field
+            query.nama = { $regex: search, $options: 'i' };
+        }
+
+        const data = await DataWaliKelas.find(query);
         res.json(data);
     } catch (error) {
         console.error('Error getting all Wali Kelas:', error);

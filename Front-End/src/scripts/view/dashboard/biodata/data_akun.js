@@ -42,8 +42,7 @@ const DataAkun = {
                                         <th class="py-4 px-6">No</th>
                                         <th class="py-4 px-6">Nama</th>
                                         <th class="py-4 px-6">Email</th>
-                                        <th class="py-4 px-6">Password</th>
-                                        <th class="py-4 px-6">Role</th>
+                                        <th class="py-4 px-6">Password</th> <th class="py-4 px-6">Role</th>
                                         <th class="py-4 px-6">Aksi</th>
                                     </tr>
                                 </thead>
@@ -68,7 +67,7 @@ const DataAkun = {
                 localStorage.removeItem("username");
                 localStorage.removeItem("email");
                 localStorage.removeItem("fotoProfil");
-                localStorage.removeItem("password");
+                localStorage.removeItem("password"); // Clear stored password if any
                 window.location.hash = '/';
             });
         }
@@ -111,8 +110,7 @@ const DataAkun = {
                     <td class="py-4 px-6">${index + 1}</td>
                     <td class="py-4 px-6">${akun.nama}</td>
                     <td class="py-4 px-6">${akun.email}</td>
-                    <td class="py-4 px-6">${akun.password}</td>
-                    <td class="py-4 px-6">${akun.role.replace(/_/g, ' ').toUpperCase()}</td>
+                    <td class="py-4 px-6">********</td> <td class="py-4 px-6">${akun.role.replace(/_/g, ' ').toUpperCase()}</td>
                     <td class="py-4 px-6 flex space-x-4">
                         <button class="bg-yellow-400 text-white px-4 py-2 rounded edit-btn" data-id="${akun._id}">Edit</button>
                         <button class="bg-red-500 text-white px-4 py-2 rounded delete-btn" data-id="${akun._id}">Hapus</button>
@@ -133,7 +131,8 @@ const DataAkun = {
                             throw new Error('Failed to fetch account data for editing');
                         }
                         const akunToEdit = await response.json();
-                        showModal('Edit Data Akun', akunToEdit);
+                        // IMPORTANT: Do NOT pass the hashed password to the modal for display
+                        showModal('Edit Data Akun', { _id: akunToEdit._id, nama: akunToEdit.nama, email: akunToEdit.email, role: akunToEdit.role });
                     } catch (error) {
                         console.error('Error fetching account for edit:', error);
                         alert('Failed to load account data for editing.');
@@ -146,6 +145,10 @@ const DataAkun = {
                     const id = event.target.dataset.id;
                     if (confirm('Are you sure you want to delete this account?')) {
                         try {
+                            // Fetch all accounts first to check if the deleted account is the current user
+                            const allAkunBeforeDelete = await fetchDataAkun();
+                            const deletedAkun = allAkunBeforeDelete.find(akun => akun._id === id);
+
                             const response = await fetch(`http://localhost:5000/api/akun/${id}`, {
                                 method: 'DELETE',
                             });
@@ -158,9 +161,7 @@ const DataAkun = {
                             const result = await response.json();
                             alert(result.message);
 
-                            // Check if the deleted account was the currently logged-in user
-                            const allAkun = await fetchDataAkun();
-                            const deletedAkun = allAkun.find(akun => akun._id === id); // Find the account *before* deletion
+                            // If the deleted account was the currently logged-in user, force logout
                             if (deletedAkun && localStorage.getItem("email") === deletedAkun.email) {
                                 localStorage.removeItem("isLoggedIn");
                                 localStorage.removeItem("userRole");
@@ -198,7 +199,8 @@ const DataAkun = {
                             </div>
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Password</label>
-                                <input type="password" id="passwordAkun" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Password" value="${data.password || ''}">
+                                <input type="password" id="passwordAkun" class="w-full border border-gray-300 p-3 rounded-lg text-lg" placeholder="Masukkan Password (isi jika ingin mengubah)" value="">
+                                <input type="hidden" id="originalPasswordHash" value="${data.password || ''}">
                             </div>
                             <div>
                                 <label class="block text-lg font-semibold mb-2">Role</label>
@@ -232,15 +234,18 @@ const DataAkun = {
             document.getElementById('simpanAkun').addEventListener('click', async () => {
                 const nama = document.getElementById('namaAkun').value;
                 const email = document.getElementById('emailAkun').value;
-                const password = document.getElementById('passwordAkun').value;
+                const password = document.getElementById('passwordAkun').value; // This will be empty if not changed
                 const role = document.getElementById('roleAkun').value;
 
-                if (!nama || !email || !password || !role) {
-                    alert('Please fill in all data!');
+                if (!nama || !email || !role) { // Password is now optional for edit
+                    alert('Please fill in Name, Email, and Role!');
                     return;
                 }
 
-                const akunData = { nama, email, password, role };
+                let akunData = { nama, email, role };
+                if (password) { // Only add password to data if it's not empty
+                    akunData.password = password;
+                }
 
                 const method = data._id ? 'PUT' : 'POST';
                 const url = data._id ? `http://localhost:5000/api/akun/${data._id}` : 'http://localhost:5000/api/akun';
@@ -268,14 +273,13 @@ const DataAkun = {
                     alert(`Account successfully ${data._id ? 'updated' : 'created'}!`);
 
                     // If the updated account is the current logged-in user, update localStorage
-                    if (data._id && localStorage.getItem("email") === data.email) {
+                    if (localStorage.getItem("email") === savedAkun.email) { // Use savedAkun.email for updated info
                         localStorage.setItem("username", savedAkun.nama);
                         localStorage.setItem("email", savedAkun.email);
-                        localStorage.setItem("password", savedAkun.password); // Assuming password is sent back and updated
+                        if (password) { // Only update password in localStorage if it was changed
+                            localStorage.setItem("password", password); // Store the *new* plain password (or if it's the hashed one from backend, adjust accordingly)
+                        }
                         localStorage.setItem("userRole", savedAkun.role);
-                    } else if (data._id === undefined && localStorage.getItem("isLoggedIn") === "false") {
-                        // Optionally handle direct login if creating the first admin account and not logged in
-                        // This logic might be better handled in a dedicated login flow
                     }
 
                     modal.remove();

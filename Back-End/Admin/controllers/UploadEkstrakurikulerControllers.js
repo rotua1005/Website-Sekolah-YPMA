@@ -1,3 +1,4 @@
+// File: Back-End/Admin/controllers/UploadEkstrakurikulerControllers.js
 const Ekstrakurikuler = require('../models/UploadEkstrakrikulerModels');
 const multer = require('multer');
 const path = require('path');
@@ -73,10 +74,17 @@ exports.createEkstrakurikuler = (req, res) => {
     });
 };
 
-// 2. Get all ekstrakurikuler
+// 2. Get all ekstrakurikuler (now with optional search filter)
 exports.getAllEkstrakurikuler = async (req, res) => {
     try {
-        const ekstrakurikuler = await Ekstrakurikuler.find().sort({ tanggal: -1 }); // Latest first
+        const { search } = req.query; // Get search query parameter
+
+        let query = {};
+        if (search) {
+            query.nama = { $regex: search, $options: 'i' }; // Case-insensitive search on 'nama' field
+        }
+
+        const ekstrakurikuler = await Ekstrakurikuler.find(query).sort({ tanggal: -1 }); // Latest first
         res.status(200).json(ekstrakurikuler);
     } catch (error) {
         console.error('Error getting all ekstrakurikuler:', error);

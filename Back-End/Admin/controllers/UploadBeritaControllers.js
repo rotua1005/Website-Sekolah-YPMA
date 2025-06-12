@@ -1,4 +1,4 @@
-// Back-End/Admin/controllers/UploadBeritaController.js
+// File: Back-End/Admin/controllers/UploadBeritaController.js
 const UploadBerita = require('../models/UploadBeritaModel');
 const multer = require('multer');
 const path = require('path');
@@ -38,14 +38,11 @@ const upload = multer({
 exports.createBerita = (req, res) => {
     upload(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
-            // A Multer error occurred when uploading.
             return res.status(400).json({ message: err.message });
         } else if (err) {
-            // An unknown error occurred when uploading.
             return res.status(400).json({ message: err.message });
         }
 
-        // Check if file is uploaded
         if (!req.file) {
             return res.status(400).json({ message: 'Gambar wajib diupload.' });
         }
@@ -53,7 +50,6 @@ exports.createBerita = (req, res) => {
         const { judul, deskripsi } = req.body;
 
         if (!judul || !deskripsi) {
-            // If validation fails, delete the uploaded file
             if (req.file) {
                 fs.unlinkSync(req.file.path);
             }
@@ -69,7 +65,6 @@ exports.createBerita = (req, res) => {
             await newBerita.save();
             res.status(201).json({ message: 'Berita berhasil diupload!', data: newBerita });
         } catch (error) {
-            // If save to DB fails, delete the uploaded file
             if (req.file) {
                 fs.unlinkSync(req.file.path);
             }
@@ -79,10 +74,17 @@ exports.createBerita = (req, res) => {
     });
 };
 
-// 2. Get all news articles
+// 2. Get all news articles (now with optional search filter)
 exports.getAllBerita = async (req, res) => {
     try {
-        const berita = await UploadBerita.find().sort({ tanggal: -1 }); // Latest first
+        const { search } = req.query; // Get search query parameter
+
+        let query = {};
+        if (search) {
+            query.judul = { $regex: search, $options: 'i' }; // Case-insensitive search on 'judul'
+        }
+
+        const berita = await UploadBerita.find(query).sort({ tanggal: -1 }); // Latest first
         res.status(200).json(berita);
     } catch (error) {
         console.error('Error getting all berita:', error);
@@ -116,10 +118,9 @@ exports.updateBerita = (req, res) => {
         }
 
         const { id } = req.params;
-        const { judul, deskripsi, gambarLama } = req.body; // gambarLama for existing image path
+        const { judul, deskripsi, gambarLama } = req.body;
 
         if (!judul || !deskripsi) {
-            // If validation fails, delete newly uploaded file if any
             if (req.file) {
                 fs.unlinkSync(req.file.path);
             }
@@ -129,7 +130,6 @@ exports.updateBerita = (req, res) => {
         try {
             const berita = await UploadBerita.findById(id);
             if (!berita) {
-                // If news not found, delete newly uploaded file if any
                 if (req.file) {
                     fs.unlinkSync(req.file.path);
                 }
@@ -141,25 +141,25 @@ exports.updateBerita = (req, res) => {
 
             // Handle image update
             if (req.file) { // A new image was uploaded
-                // Delete old image if it exists and is not the default
                 if (berita.gambar && fs.existsSync(path.join(__dirname, '../..', berita.gambar))) {
                     fs.unlinkSync(path.join(__dirname, '../..', berita.gambar));
                 }
                 berita.gambar = `/uploads/berita/${req.file.filename}`;
-            } else if (gambarLama) { // No new image, but old image path was sent
-                // This scenario means the user didn't select a new image,
-                // so we keep the old one. Nothing to do here for `berita.gambar`
-                // as it already holds the old path.
-            } else { // No new image, and no old image path sent (shouldn't happen if validation is good)
-                 // Or, if you want to allow clearing image, handle here.
-                 // For now, if gambar is required, this branch won't be hit with valid input.
+            } else if (gambarLama) {
+                // If a new file was not uploaded, ensure we retain the old image path
+                // unless it was intentionally cleared (which this route doesn't explicitly support yet)
+                // If `gambarLama` is sent, it implies keeping the current image if no new one is uploaded.
+                // No action needed here, as `berita.gambar` already holds the current path.
+            } else {
+                // If no new file and no `gambarLama` is sent, and `gambar` is required,
+                // this might indicate an issue. For now, assume `gambar` is always present
+                // or `gambarLama` will be sent if not changing.
             }
 
             await berita.save();
             res.status(200).json({ message: 'Berita berhasil diperbarui.', data: berita });
 
         } catch (error) {
-            // If save to DB fails, delete newly uploaded file if any
             if (req.file) {
                 fs.unlinkSync(req.file.path);
             }
@@ -180,6 +180,7 @@ exports.deleteBerita = async (req, res) => {
         }
 
         // Delete the associated image file from the server
+        // Ensure path is correct relative to server root
         if (berita.gambar && fs.existsSync(path.join(__dirname, '../..', berita.gambar))) {
             fs.unlinkSync(path.join(__dirname, '../..', berita.gambar));
         }

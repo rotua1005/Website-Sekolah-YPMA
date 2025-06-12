@@ -1,27 +1,20 @@
-// src/components/input_absensi.js
 import MenuWaliKelas from "../menu/menu_walikelas";
 
 const InputAbsensi = {
-    // Property to store the assigned class for the homeroom teacher
     assignedClass: '',
 
     async render() {
-        // Retrieve the user's role to determine the assigned class
         const userRole = localStorage.getItem("userRole");
         if (userRole && userRole.startsWith("wali_kelas_")) {
-            this.assignedClass = userRole.split("_")[2]; // e.g., "1", "2", etc.
+            this.assignedClass = userRole.split("_")[2];
         } else {
-            // Handle cases where the class isn't clearly defined for the user role
             this.assignedClass = 'Tidak Diketahui';
             console.warn("User role does not specify a clear class assignment.");
         }
 
-        // Fetch academic year data from localStorage
         const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        // Assuming the last entry is the active academic year
         const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-', semester: '-' };
 
-        // Fetch student data from the backend based on the assigned class
         let siswaSesuaiKelas = [];
         try {
             const response = await fetch(`http://localhost:5000/api/datasiswa?kelas=${encodeURIComponent(this.assignedClass)}`);
@@ -55,6 +48,7 @@ const InputAbsensi = {
             `;
         }).join('');
 
+        // Use a consistent date for display (local timezone for readability)
         const now = new Date();
         const tanggalHariIniFormatted = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -104,7 +98,11 @@ const InputAbsensi = {
                             </table>
                         </div>
 
-                        <div class="mt-6 flex justify-end">
+                        <div class="mt-6 flex flex-col items-end">
+                            <div class="flex items-center mb-4">
+                                <input type="checkbox" id="confirmEditCheckbox" class="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500">
+                                <label for="confirmEditCheckbox" class="text-gray-700">Saya yakin akan mengubah data tersebut</label>
+                            </div>
                             <button id="simpanAbsensiBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">Simpan Absensi</button>
                         </div>
                     </div>
@@ -134,35 +132,40 @@ const InputAbsensi = {
             });
         }
 
-        // Add a check to see if absensi for today and this class already exists
         await this.checkExistingAbsensi();
     },
 
     async checkExistingAbsensi() {
         const namaKelas = this.assignedClass;
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        // Construct the query date as YYYY-MM-DD (UTC midnight for consistency)
+        const now = new Date();
+        const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+        const todayISODateString = todayUTC.toISOString().split('T')[0]; // e.g., "2025-06-05"
 
-        if (!namaKelas) {
-            console.warn("Class name not found. Cannot check for existing attendance.");
+        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
+        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-', semester: '-' };
+
+        if (!namaKelas || tahunAkademikAktif.tahun === '-' || tahunAkademikAktif.semester === '-') {
+            console.warn("Class name, academic year, or semester not found. Cannot check for existing attendance.");
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:5000/api/absensi?kelas=${encodeURIComponent(namaKelas)}&tanggal=${encodeURIComponent(today)}`);
-            if (response.status === 200) {
-                const existingAbsensi = await response.json();
-                if (existingAbsensi && Array.isArray(existingAbsensi.absensiSiswa) && existingAbsensi.absensiSiswa.length > 0) {
-                    this.populateAbsensiSelections(existingAbsensi.absensiSiswa);
-                    alert('Absensi untuk kelas ini pada tanggal ini sudah ada. Data absensi yang ada telah dimuat.');
-                } else if (existingAbsensi && Array.isArray(existingAbsensi.absensiSiswa) && existingAbsensi.absensiSiswa.length === 0) {
-                    console.warn('Existing attendance record found for this class and date, but absensiSiswa array is empty.');
-                    alert('Absensi untuk kelas ini pada tanggal ini sudah ada, tetapi tidak ada data kehadiran siswa yang tercatat. Silakan isi absensi.');
+            // Send the YYYY-MM-DD string to the backend
+            const response = await fetch(`http://localhost:5000/api/absensi?kelas=${encodeURIComponent(namaKelas)}&tanggal=${encodeURIComponent(todayISODateString)}&tahunAkademik=${encodeURIComponent(tahunAkademikAktif.tahun)}&semester=${encodeURIComponent(tahunAkademikAktif.semester)}`);
+            
+            if (response.ok) {
+                const existingAbsensiRecords = await response.json();
+
+                if (existingAbsensiRecords && existingAbsensiRecords.length > 0) {
+                    this.populateAbsensiSelections(existingAbsensiRecords);
+                    // Removed the alert message as requested
+                    console.log('Absensi untuk kelas ini pada tanggal ini sudah ada. Data absensi yang ada telah dimuat. Anda dapat mengeditnya dan menyimpannya kembali.');
                 } else {
-                    console.warn('Existing attendance found but absensiSiswa data is missing or has an invalid structure.', existingAbsensi);
-                    alert('Absensi untuk kelas ini pada tanggal ini sudah ada, tetapi data kehadiran siswa tidak lengkap atau tidak valid.');
+                    console.log('No existing attendance records found for this class and date, or the array is empty.');
                 }
             } else if (response.status === 404) {
-                console.log('No existing attendance found for this class and date.');
+                console.log('No existing attendance found for this class and date (404 response).');
             } else {
                 const errorData = await response.json();
                 console.error('Error checking existing attendance:', errorData.message);
@@ -174,8 +177,8 @@ const InputAbsensi = {
         }
     },
 
-    populateAbsensiSelections(absensiSiswa) {
-        absensiSiswa.forEach(absensiRecord => {
+    populateAbsensiSelections(absensiRecords) {
+        absensiRecords.forEach(absensiRecord => {
             const selectElement = document.querySelector(`select[data-nis="${absensiRecord.nis}"]`);
             if (selectElement) {
                 selectElement.value = absensiRecord.keterangan;
@@ -184,29 +187,42 @@ const InputAbsensi = {
     },
 
     async simpanDataAbsensi() {
+        const confirmCheckbox = document.getElementById('confirmEditCheckbox');
+        if (!confirmCheckbox || !confirmCheckbox.checked) {
+            alert('Anda harus mencentang "Saya yakin akan mengubah data tersebut" untuk menyimpan absensi.');
+            return;
+        }
+
         const table = document.querySelector('table');
         const rows = table.querySelectorAll('tbody tr');
+        
+        // Construct the date to be sent as UTC midnight
         const now = new Date();
-        const tanggalISO = now.toISOString();
+        const tanggalUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+        const tanggalISO = tanggalUTC.toISOString(); // e.g., "2025-06-05T00:00:00.000Z"
 
-        // Get academic year from localStorage (already fetched in render)
         const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-' };
+        const tahunAkademikAktif = tahunAkademikData[tahunAkademikData.length - 1] || { tahun: '-', semester: '-' };
 
-        const absensiSiswa = [];
+        if (tahunAkademikAktif.tahun === '-' || tahunAkademikAktif.semester === '-') {
+            alert('Tahun akademik atau semester aktif tidak ditemukan. Tidak dapat menyimpan absensi.');
+            return;
+        }
+
+        const absensiData = [];
         rows.forEach(row => {
             const nis = row.querySelector('td:nth-child(2)').textContent;
-            const nama = row.querySelector('td:nth-child(3)').textContent;
             const selectElement = row.querySelector('select');
             const keterangan = selectElement.value;
-            absensiSiswa.push({ nis, nama, keterangan });
+            absensiData.push({ nis, keterangan });
         });
 
         const payload = {
-            tanggal: tanggalISO,
+            tanggal: tanggalISO, // Send the UTC ISO string
             kelas: this.assignedClass,
             tahunAkademik: tahunAkademikAktif.tahun,
-            absensiSiswa: absensiSiswa,
+            semester: tahunAkademikAktif.semester,
+            absensiData: absensiData,
         };
 
         try {
@@ -222,9 +238,14 @@ const InputAbsensi = {
 
             if (response.ok) {
                 alert(result.message);
-                window.location.hash = '#/kelola_absensi_walikelas'; // Redirect to Wali Kelas attendance management page
+                window.location.hash = '#/kehadiran_walikelas';
             } else {
-                alert(`Gagal menyimpan absensi: ${result.message}`);
+                if (response.status === 409) {
+                    alert(`Gagal menyimpan absensi: ${result.message || 'Duplikasi entri absensi terdeteksi. Data mungkin sudah ada dan telah diperbarui.'}`);
+                    window.location.hash = '#/kehadiran_walikelas';
+                } else {
+                    alert(`Gagal menyimpan absensi: ${result.message}`);
+                }
             }
         } catch (error) {
             console.error('Error saving absensi:', error);

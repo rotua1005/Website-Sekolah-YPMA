@@ -36,11 +36,18 @@ const AbsensiRoutes = require('./Admin/route/AbsensiRoute');
 // Nilai - PASTIKAN JALUR INI BENAR KE FILE YANG SUDAH DIUPDATE
 const NilaiRoutes = require('./Admin/route/NilaiRoute');
 
+
 // Auth (Login/Authentication)
 const AuthRoutes = require('./Admin/route/AuthRoute');
 
 // Data Akun (Admin CRUD untuk akun)
 const AkunRoutes = require('./Admin/route/AkunRoute');
+
+
+//----------------Kepala Sekolah - Import Routes--------------------
+//data guru kepsek
+const DataGuruKepsekRoutes = require('../Back-End/KepalaSekolah/DataKepsekRoute'); // Pastikan ini mengarah ke file yang benar
+
 
 // Koneksi Database - asumsi db.mongoose dikonfigurasi di ./Admin/models
 const db = require('./Admin/models'); // Pastikan ini mengarah ke file yang benar untuk koneksi DB Anda
@@ -76,12 +83,14 @@ app.use('/api', AbsensiRoutes);
 
 // Rute Nilai - PASTIKAN BARIS INI ADA DAN TIDAK ADA DUPLIKASI
 app.use('/api', NilaiRoutes);
-
 // Rute Data Akun (untuk operasi CRUD pada akun)
 app.use('/api', AkunRoutes);
 
 // Rute Login/Autentikasi
 app.use('/api/auth', AuthRoutes);
+
+
+app.use('/api', DataGuruKepsekRoutes); // Rute untuk Kepala Sekolah - Data Guru
 
 // Tentukan port server
 const PORT = process.env.PORT || 5000;

@@ -34,7 +34,7 @@ const KelolaNilai = {
                                     </tr>
                                 </thead>
                                 <tbody id="inputNilaiSiswa">
-                                    </tbody>
+                                </tbody>
                             </table>
                             <div class="text-right mt-4">
                                 <button id="editSemuaButton" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition">Edit Semua</button>
@@ -122,6 +122,7 @@ const KelolaNilai = {
         }
 
         try {
+            // Menggunakan endpoint getStudentGrades dari backend
             const response = await fetch(`http://localhost:5000/api/nilai/kelola?kelas=${kelas}&tahunAkademik=${tahunAkademik}&mataPelajaran=${mataPelajaran}`);
 
             if (!response.ok) {
@@ -141,11 +142,12 @@ const KelolaNilai = {
             this._studentsInClass.forEach(siswa => {
                 const rowElement = document.querySelector(`tr[data-siswa-id="${siswa._id}"]`);
                 if (rowElement) {
-                    const studentGrade = nilaiData.find(item => item.nisn === siswa.nisn); // Match by NISN
+                    // Match by NISN, assuming 'nis' in backend model corresponds to 'nisn' in frontend data
+                    const studentGrade = nilaiData.find(item => item.nisn === siswa.nisn);
 
                     rowElement.querySelector('.nilai-harian').value = studentGrade?.nilaiHarian ?? '';
-                    rowElement.querySelector('.nilai-uts').value = studentGrade?.nilaiTengahSemester ?? ''; // Corrected to match your existing backend data
-                    rowElement.querySelector('.nilai-uas').value = studentGrade?.nilaiSemester ?? ''; // Corrected to match your existing backend data
+                    rowElement.querySelector('.nilai-uts').value = studentGrade?.nilaiTengahSemester ?? '';
+                    rowElement.querySelector('.nilai-uas').value = studentGrade?.nilaiSemester ?? '';
                     this.calculateAverage(rowElement);
                 }
             });
@@ -178,10 +180,9 @@ const KelolaNilai = {
 
     calculateAverage(row) {
         const nilaiHarian = parseFloat(row.querySelector('.nilai-harian').value) || 0;
-        const nilaiUts = parseFloat(row.querySelector('.nilai-uts').value) || 0; // Assuming this is 'nilaiTengahSemester'
-        const nilaiUas = parseFloat(row.querySelector('.nilai-uas').value) || 0; // Assuming this is 'nilaiSemester'
+        const nilaiUts = parseFloat(row.querySelector('.nilai-uts').value) || 0;
+        const nilaiUas = parseFloat(row.querySelector('.nilai-uas').value) || 0;
 
-        // Original formula: (harian + tengah + 2*semester) / 4
         const rataRata = ((nilaiHarian + nilaiUts + (nilaiUas * 2)) / 4).toFixed(2);
         row.querySelector('.rata-rata-nilai').textContent = rataRata;
     },
@@ -196,7 +197,7 @@ const KelolaNilai = {
 
     setupEditSemuaButton() {
         const editButton = document.getElementById('editSemuaButton');
-        if (editButton) { // Add a check for the button's existence
+        if (editButton) {
             editButton.addEventListener('click', () => {
                 this.toggleInputState(true);
             });
@@ -205,12 +206,12 @@ const KelolaNilai = {
 
     setupSimpanSemuaButton() {
         const simpanButton = document.getElementById('simpanSemuaButton');
-        if (simpanButton) { // Add a check for the button's existence
+        if (simpanButton) {
             simpanButton.addEventListener('click', async () => {
                 const gradesToSave = [];
                 const nilaiUntukDikelola = JSON.parse(localStorage.getItem('nilaiUntukDikelola')) || {};
                 const kelas = nilaiUntukDikelola.kelas;
-                const mataPelajaran = nilaiUntukDikelola.mapel; // Use 'mapel' as stored
+                const mataPelajaran = nilaiUntukDikelola.mapel;
                 const tahunAkademik = nilaiUntukDikelola.tahunAkademik;
 
                 if (!kelas || !mataPelajaran || !tahunAkademik) {
@@ -220,32 +221,30 @@ const KelolaNilai = {
 
                 document.querySelectorAll('#inputNilaiSiswa tr').forEach(row => {
                     const siswaId = row.dataset.siswaId;
-                    const nisn = row.children[1].textContent; // Get NISN from the table
-                    const nama = row.children[2].textContent; // Get Nama from the table
+                    const nisn = row.children[1].textContent;
+                    const nama = row.children[2].textContent;
 
                     const nilaiHarianInput = row.querySelector('.nilai-harian').value;
                     const nilaiUtsInput = row.querySelector('.nilai-uts').value;
                     const nilaiUasInput = row.querySelector('.nilai-uas').value;
                     const rataRataText = row.querySelector('.rata-rata-nilai').textContent;
 
-                    // Convert to null if empty string, otherwise parse float
                     const nilaiHarian = nilaiHarianInput === '' ? null : parseFloat(nilaiHarianInput);
                     const nilaiTengahSemester = nilaiUtsInput === '' ? null : parseFloat(nilaiUtsInput);
                     const nilaiSemester = nilaiUasInput === '' ? null : parseFloat(nilaiUasInput);
                     const rataRata = rataRataText === '-' || rataRataText === '' ? null : parseFloat(rataRataText);
 
-
-                    if (siswaId && nisn && nama) { // Ensure essential student data exists
+                    if (siswaId && nisn && nama) {
                         gradesToSave.push({
-                            idSiswa: siswaId, // Include student ID for backend linking
+                            idSiswa: siswaId,
                             nisn: nisn,
                             nama: nama,
-                            kelas: kelas,
-                            mataPelajaran: mataPelajaran,
-                            tahunAkademik: tahunAkademik,
+                            kelas: kelas, // Tambahkan kelas
+                            mataPelajaran: mataPelajaran, // Tambahkan mataPelajaran
+                            tahunAkademik: tahunAkademik, // Tambahkan tahunAkademik
                             nilaiHarian: nilaiHarian,
-                            nilaiTengahSemester: nilaiTengahSemester, // Match backend schema
-                            nilaiSemester: nilaiSemester, // Match backend schema
+                            nilaiTengahSemester: nilaiTengahSemester,
+                            nilaiSemester: nilaiSemester,
                             rataRata: rataRata,
                         });
                     }
@@ -254,8 +253,9 @@ const KelolaNilai = {
                 console.log("Grades to save:", gradesToSave);
 
                 try {
-                    const response = await fetch('http://localhost:5000/api/nilai/kelola', { // Your existing endpoint
-                        method: 'POST', // Or 'PUT' if your backend handles upserts
+                    // Menggunakan endpoint POST /api/nilai/kelola yang sudah ada
+                    const response = await fetch('http://localhost:5000/api/nilai/kelola', {
+                        method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
@@ -263,7 +263,7 @@ const KelolaNilai = {
                             kelas: kelas,
                             tahunAkademik: tahunAkademik,
                             mataPelajaran: mataPelajaran,
-                            nilaiSiswa: gradesToSave // Send the array of student grades
+                            nilaiSiswa: gradesToSave
                         }),
                     });
 
@@ -273,7 +273,7 @@ const KelolaNilai = {
                     }
 
                     alert('Nilai berhasil disimpan!');
-                    this.toggleInputState(false); // Disable inputs after saving
+                    this.toggleInputState(false);
                     await this.loadNilaiFromBackend(); // Reload to reflect any backend processing/averages
                 } catch (error) {
                     console.error('Error saving grades:', error);
@@ -285,25 +285,21 @@ const KelolaNilai = {
 
     async loadDetailNilaiInfo() {
         const detailNilaiContainer = document.getElementById('detailNilai');
-        const guruData = JSON.parse(localStorage.getItem('guruUntukKelola')) || {}; // This is likely from a previous page selection
+        const guruData = JSON.parse(localStorage.getItem('guruUntukKelola')) || {};
 
-        // Assuming dataTahun from localStorage holds the current academic year and semester.
-        // It's crucial that `dataTahun` is set correctly elsewhere in your application.
         const dataTahun = JSON.parse(localStorage.getItem('dataTahun')) || [];
 
         if (guruData && dataTahun.length > 0) {
             const tahunAkademik = dataTahun[0].tahun || 'N/A';
             const semester = dataTahun[0].semester || 'N/A';
 
-            // IMPORTANT: Store the complete set of required data in 'nilaiUntukDikelola'
-            // This is the single source of truth for grade management parameters
             localStorage.setItem('nilaiUntukDikelola', JSON.stringify({
-                mapel: guruData.mapel, // Use 'mapel' from guruData
+                mapel: guruData.mapel,
                 kelas: guruData.kelas,
                 guru: guruData.nama,
                 tahunAkademik: tahunAkademik,
                 semester: semester,
-                kkm: 75, // Example KKM, adjust as needed
+                kkm: 75, // Example KKM
                 statusGuru: guruData.statusGuru || 'Guru Mapel',
             }));
 

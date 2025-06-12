@@ -158,7 +158,7 @@ const Absensi1 = {
                     tahunAkademik: tahunAkademik // Add tahun akademik to localStorage
                 };
                 localStorage.setItem('kelasUntukAbsensi', JSON.stringify(selectedKelas));
-                window.location.hash = '#/input_absensi';
+                window.location.hash = '#/kehadiran';
             }
         });
     }

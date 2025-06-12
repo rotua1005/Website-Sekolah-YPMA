@@ -21,10 +21,10 @@ const TahunAkademikKepsek = {
                                         <th class="py-4 px-6">No</th>
                                         <th class="py-4 px-6">Tahun Akademik</th>
                                         <th class="py-4 px-6">Semester</th>
-                                    </tr>
+                                        </tr>
                                 </thead>
-                                <tbody id="dataTahunTable" class="text-gray-700">
-                                    ${this.loadData()}
+                                <tbody id="dataTahunTableKepsek" class="text-gray-700">
+                                    <tr><td colspan="3" class="text-center py-4">Loading data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -36,33 +36,41 @@ const TahunAkademikKepsek = {
 
     async afterRender() {
         MenuKepsek.afterRender();
-        this.renderTable(); // Initial rendering of the table
+        await this.renderTable(); // Ensure table is rendered after data is fetched
     },
 
-    renderTable() {
-        const tahunData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        const tableBody = document.getElementById('dataTahunTable');
-        if (tableBody) {
+    async renderTable() {
+        const tableBody = document.getElementById('dataTahunTableKepsek');
+        if (!tableBody) return; // Exit if table body not found
+
+        try {
+            tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4">Loading data...</td></tr>`; // Show loading state, colspan changed to 3
+            const response = await fetch('http://localhost:5000/api/tahunakademik'); // Fetch from your backend API
+            if (!response.ok) {
+                throw new Error('Failed to fetch Tahun Akademik data');
+            }
+            const tahunData = await response.json();
+
+            if (tahunData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4">Tidak ada data Tahun Akademik yang ditemukan.</td></tr>`; // colspan changed to 3
+                return;
+            }
+
             tableBody.innerHTML = tahunData.map((tahun, index) => `
                 <tr class="border-t">
                     <td class="py-4 px-6">${index + 1}</td>
                     <td class="py-4 px-6">${tahun.tahun}</td>
                     <td class="py-4 px-6">Semester ${tahun.semester}</td>
-                </tr>
+                    </tr>
             `).join('');
+
+        } catch (error) {
+            console.error('Error rendering Tahun Akademik table for Kepsek:', error);
+            tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`; // colspan changed to 3
         }
     },
 
-    loadData() {
-        const tahunData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        return tahunData.map((tahun, index) => `
-            <tr class="border-t">
-                <td class="py-4 px-6">${index + 1}</td>
-                <td class="py-4 px-6">${tahun.tahun}</td>
-                <td class="py-4 px-6">Semester ${tahun.semester}</td>
-            </tr>
-        `).join('');
-    }
+    // loadData is no longer needed as data is fetched directly in renderTable
 };
 
 export default TahunAkademikKepsek;

@@ -1,14 +1,24 @@
+// dataSiswaController.js
 const DataSiswa = require("../models/DataSiswaModel");
 const TahunAkademik = require("../models/TahunAkademikModel");
 
-// 1. Mendapatkan semua data siswa (dengan filter kelas opsional)
+// 1. Mendapatkan semua data siswa (dengan filter kelas, tahun akademik, dan pencarian nama opsional)
 exports.getAllDataSiswa = async (req, res) => {
     try {
-        const { kelas } = req.query; // Ambil parameter query 'kelas'
+        const { kelas, tahunAkademik, search } = req.query; // Ambil parameter query 'kelas', 'tahunAkademik', 'search'
         let query = {}; // Inisialisasi objek query kosong
 
         if (kelas) {
             query.kelas = kelas; // Jika 'kelas' disediakan, tambahkan ke query
+        }
+
+        if (tahunAkademik) {
+            query.tahunAkademik = tahunAkademik; // Jika 'tahunAkademik' disediakan, tambahkan ke query
+        }
+
+        if (search) {
+            // Gunakan regex untuk pencarian nama yang tidak peka huruf besar/kecil
+            query.nama = { $regex: search, $options: 'i' };
         }
 
         const data = await DataSiswa.find(query); // Cari data berdasarkan query

@@ -1,3 +1,4 @@
+//dataGuruController.js
 const DataGuru = require('../models/DataGuruModel');
 const TahunAkademik = require("../models/TahunAkademikModel"); // Import TahunAkademik model
 

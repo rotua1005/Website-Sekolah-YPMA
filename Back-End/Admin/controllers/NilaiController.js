@@ -1,6 +1,7 @@
 const Nilai = require('../models/NilaiModel');
 const DataGuru = require('../models/DataGuruModel'); 
 // Controller to save grade data (already exists)
+
 exports.createNilai = async (req, res) => {
     try {
         const { kelas, tahunAkademik, nilaiSiswa } = req.body;
@@ -35,6 +36,54 @@ exports.createNilai = async (req, res) => {
         }
         console.error('Error creating grades:', error);
         res.status(500).json({ message: 'Failed to save grades: ' + error.message });
+    }
+};
+
+// Controller for /api/nilai/kelola/rekap
+exports.getRekapNilaiAkhir = async (req, res) => {
+    try {
+        const { kelas, tahunAkademik } = req.query;
+        if (!kelas || !tahunAkademik) {
+            return res.status(400).json({ message: 'kelas and tahunAkademik are required.' });
+        }
+        // Aggregate all grades for the class and academic year
+        const nilaiData = await Nilai.find({ kelas, tahunAkademik });
+        if (!nilaiData || nilaiData.length === 0) {
+            return res.status(404).json({ message: 'No grade data found for the specified class and academic year.' });
+        }
+        res.json(nilaiData);
+    } catch (error) {
+        console.error('Error fetching rekap nilai akhir:', error);
+        res.status(500).json({ message: 'Failed to retrieve rekap nilai akhir: ' + error.message });
+    }
+};
+
+// Controller for /api/nilai/kelola/permapel
+exports.getNilaiPerMapel = async (req, res) => {
+    try {
+        const { kelas, tahunAkademik } = req.query;
+        if (!kelas || !tahunAkademik) {
+            return res.status(400).json({ message: 'kelas and tahunAkademik are required.' });
+        }
+        // Find all grades for the class and academic year, grouped by subject
+        const nilaiData = await Nilai.find({ kelas, tahunAkademik });
+        if (!nilaiData || nilaiData.length === 0) {
+            return res.status(404).json({ message: 'No grade data found for the specified class and academic year.' });
+        }
+        // Group by mataPelajaran
+        const mapelGrades = {};
+        nilaiData.forEach(doc => {
+            doc.nilaiSiswa.forEach(siswa => {
+                if (!mapelGrades[siswa.mataPelajaran]) {
+                    mapelGrades[siswa.mataPelajaran] = [];
+                }
+                mapelGrades[siswa.mataPelajaran].push(siswa);
+            });
+        });
+        res.json(mapelGrades);
+    } catch (error) {
+        console.error('Error fetching nilai per mapel:', error);
+        res.status(500).json({ message: 'Failed to retrieve nilai per mapel: ' + error.message });
     }
 };
 

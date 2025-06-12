@@ -1,4 +1,4 @@
-//akunModel.js
+// akunModel.js
 const mongoose = require('mongoose');
 
 const akunSchema = new mongoose.Schema({
@@ -10,9 +10,9 @@ const akunSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true, // Ensures email is unique
+        unique: true,
         trim: true,
-        lowercase: true, // Stores emails in lowercase
+        lowercase: true,
     },
     password: {
         type: String,
@@ -31,6 +31,11 @@ const akunSchema = new mongoose.Schema({
             'wali_kelas_5',
             'wali_kelas_6',
         ],
+    },
+    // Add this field if you want to store profile photos in the DB
+    fotoProfil: {
+        type: String, // To store base64 string or URL
+        default: null,
     },
 });
 

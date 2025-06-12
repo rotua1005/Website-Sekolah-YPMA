@@ -53,6 +53,9 @@ const Login = {
             const password = passwordInput.value;
 
             try {
+                // Log request details for debugging
+                console.log('Attempting login with:', { email, password });
+
                 const response = await fetch('http://localhost:5000/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -61,15 +64,38 @@ const Login = {
                     body: JSON.stringify({ email, password }),
                 });
 
-                const data = await response.json();
+                // Log the raw response status and text
+                console.log('Server response status:', response.status);
+                console.log('Server response status text:', response.statusText);
+
+                // Try to parse JSON only if the response is valid JSON
+                let data;
+                try {
+                    // Clone the response so it can be read twice (once as text, once as json) if needed
+                    // Or, more simply, just read as text first to avoid JSON parsing errors
+                    const responseText = await response.text();
+                    console.log('Server response body (raw text):', responseText);
+                    data = JSON.parse(responseText); // Manually parse the text
+                } catch (jsonError) {
+                    console.error('Error parsing JSON response:', jsonError);
+                    alert("Terjadi kesalahan pada respons server. Silakan coba lagi.");
+                    return; // Exit if response isn't valid JSON
+                }
 
                 if (response.ok) {
-                    // Login successful
+                    // Login successful (HTTP status 200-299)
+                    console.log('Login successful. User data:', data.user);
                     localStorage.setItem("isLoggedIn", "true");
                     localStorage.setItem("userRole", data.user.role);
                     localStorage.setItem("username", data.user.nama);
                     localStorage.setItem("email", data.user.email);
-                    localStorage.setItem("justLoggedIn", "true"); // Flag for dashboard alert
+                    
+                    if (data.user.fotoProfil) {
+                        localStorage.setItem("fotoProfil", data.user.fotoProfil);
+                    } else {
+                        localStorage.removeItem("fotoProfil");
+                    }
+                    localStorage.setItem("justLoggedIn", "true");
 
                     // Redirect based on role
                     switch (data.user.role) {
@@ -88,16 +114,17 @@ const Login = {
                             window.location.href = "/#/dashboard_walikelas";
                             break;
                         default:
-                            window.location.href = "/#/dashboard";
+                            window.location.href = "/#/dashboard"; // Fallback
                             break;
                     }
                 } else {
-                    // Login failed
-                    alert(data.message || "Login failed. Please check your credentials.");
+                    // Login failed (HTTP status 4xx, 5xx)
+                    console.error('Login failed. Server message:', data.message || 'No message provided.');
+                    alert(data.message || "Login gagal. Silakan periksa kredensial Anda.");
                 }
             } catch (error) {
-                console.error('Error during login:', error);
-                alert("An error occurred during login. Please try again.");
+                console.error('Error during login fetch:', error);
+                alert("Terjadi kesalahan saat berkomunikasi dengan server. Silakan coba lagi.");
             }
         });
     }

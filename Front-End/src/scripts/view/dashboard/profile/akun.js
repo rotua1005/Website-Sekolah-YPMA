@@ -1,13 +1,27 @@
 // pages/dashboard_akun.js
-import MenuDashboard from '../../menu/menu_dashboard';
+import MenuDashboard from '../../menu/menu_dashboard'; // Assuming this path is correct
 
 const Dashboard_Akun = {
     render() {
         const username = localStorage.getItem("username") || "Tidak Diketahui";
         const email = localStorage.getItem("email") || "Tidak Diketahui";
         const role = localStorage.getItem("userRole") || "Tidak Diketahui";
-        const fotoProfil = localStorage.getItem("fotoProfil");
-        const roleDisplay = role === "admin" ? "Administrator" : "Kepala Sekolah";
+        const fotoProfil = localStorage.getItem("fotoProfil"); // Get fotoProfil from localStorage
+        
+        // Determine role display name
+        let roleDisplay = "Tidak Diketahui";
+        if (role === "admin") {
+            roleDisplay = "Administrator";
+        } else if (role === "kepala_sekolah") {
+            roleDisplay = "Kepala Sekolah";
+        } else if (role.startsWith("wali_kelas")) {
+            roleDisplay = `Wali Kelas ${role.split('_')[2]}`;
+        }
+
+        // Determine default image or saved image
+        const profileImageSrc = fotoProfil ? fotoProfil : '';
+        const defaultIconHiddenClass = fotoProfil ? 'hidden' : '';
+        const profileImageHiddenClass = fotoProfil ? '' : 'hidden';
 
         return `
             <div class="dashboard-container bg-gradient-to-br from-indigo-50 to-blue-100 min-h-screen flex font-sans animate-fade-in">
@@ -25,16 +39,16 @@ const Dashboard_Akun = {
 
                         <div class="flex flex-col md:flex-row items-center md:items-start gap-10">
                             <div class="relative w-48 h-48 rounded-full overflow-hidden bg-gray-100 shadow-md group transition-all duration-500 ring-4 ring-blue-200">
-                                <img id="profile-image-preview" src="${fotoProfil || ''}" alt="Foto Profil"
-                                     class="w-full h-full object-cover ${fotoProfil ? '' : 'hidden'} transition duration-500 rounded-full">
+                                <img id="profile-image-preview" src="${profileImageSrc}" alt="Foto Profil"
+                                    class="w-full h-full object-cover ${profileImageHiddenClass} transition duration-500 rounded-full">
                                 <svg id="default-profile-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                     class="w-20 h-20 text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${fotoProfil ? 'hidden' : ''} transition duration-500">
+                                    class="w-20 h-20 text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${defaultIconHiddenClass} transition duration-500">
                                     <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a.75.75 0 00.75.75h10.5a.75.75 0 00.75-.75V12a3 3 0 00-3-3v-3A5.25 5.25 0 0012 1.5z" clip-rule="evenodd" />
                                     <path d="M12 4.5a3 3 0 100 6 3 3 0 000-6z" />
                                 </svg>
                                 <input type="file" id="upload-foto-input" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
                                 <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-40 text-white text-center py-2 text-sm transition-all group-hover:bg-opacity-60 font-medium tracking-wide">
-                                    📷 Ganti Foto
+                                    📷 Ganti Foto (Lokal)
                                 </div>
                             </div>
 
@@ -51,7 +65,7 @@ const Dashboard_Akun = {
                                     <span class="block text-sm text-gray-500 font-medium uppercase tracking-wide mb-1">Role</span>
                                     <span class="text-xl font-semibold text-blue-900">${roleDisplay}</span>
                                 </div>
-                            </div>
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -79,18 +93,27 @@ const Dashboard_Akun = {
     },
 
     afterRender() {
-        MenuDashboard.afterRender();
+        if (MenuDashboard && typeof MenuDashboard.afterRender === 'function') {
+            MenuDashboard.afterRender();
+        }
 
         const uploadFotoInput = document.getElementById('upload-foto-input');
         const profileImagePreview = document.getElementById('profile-image-preview');
         const defaultProfileIcon = document.getElementById('default-profile-icon');
         const logoutBtn = document.getElementById('logoutBtn');
+        // usernameInput and saveProfileBtn are no longer needed as elements
+        // const usernameInput = document.getElementById('username-input');
+        // const saveProfileBtn = document.getElementById('saveProfileBtn');
 
+        // Initialize profile image based on localStorage
         const savedFoto = localStorage.getItem("fotoProfil");
         if (savedFoto) {
             profileImagePreview.src = savedFoto;
             profileImagePreview.classList.remove('hidden');
             defaultProfileIcon.classList.add('hidden');
+        } else {
+            profileImagePreview.classList.add('hidden');
+            defaultProfileIcon.classList.remove('hidden');
         }
 
         const previewImage = (event) => {
@@ -102,7 +125,7 @@ const Dashboard_Akun = {
                     profileImagePreview.src = dataUrl;
                     profileImagePreview.classList.remove('hidden');
                     defaultProfileIcon.classList.add('hidden');
-                    localStorage.setItem("fotoProfil", dataUrl); // simpan foto ke localStorage
+                    localStorage.setItem("fotoProfil", dataUrl); // Update localStorage
                 };
                 reader.readAsDataURL(file);
             }
@@ -112,13 +135,20 @@ const Dashboard_Akun = {
             uploadFotoInput.addEventListener('change', previewImage);
         }
 
+        // Removed the saveProfileBtn event listener and its associated fetch logic
+        // if (saveProfileBtn) { ... }
+
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
+                // Clear all relevant localStorage items on logout
                 localStorage.removeItem("isLoggedIn");
                 localStorage.removeItem("userRole");
                 localStorage.removeItem("username");
                 localStorage.removeItem("email");
-                window.location.href = "/#/";
+                localStorage.removeItem("fotoProfil");
+                localStorage.removeItem("justLoggedIn"); // Clear login flag
+
+                window.location.href = "/#/"; // Redirect to login page
             });
         }
     },

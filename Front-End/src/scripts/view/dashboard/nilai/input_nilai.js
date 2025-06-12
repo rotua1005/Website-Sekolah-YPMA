@@ -1,5 +1,5 @@
 // File: src/pages/nilai/InputNilai.js
-import MenuDashboard from '../../menu/menu_dashboard';
+import MenuDashboard from '../../menu/menu_dashboard.js';
 
 const InputNilai = {
     async render() {

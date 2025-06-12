@@ -1,5 +1,6 @@
 // Back-End/Admin/controllers/AuthController.js
-const Akun = require('../models/AkunModel'); // Import the Akun model
+const Akun = require('../models/AkunModel');
+const bcrypt = require('bcryptjs'); // Pastikan ini di-import!
 
 exports.login = async (req, res) => {
     try {
@@ -15,27 +16,33 @@ exports.login = async (req, res) => {
 
         // 3. Check if user exists
         if (!user) {
+            // Jangan berikan indikasi apakah email atau password yang salah untuk keamanan
             return res.status(401).json({ message: 'Email atau Password salah!' });
         }
 
-        // 4. Check if password matches (for simplicity, direct comparison. In a real app, use bcrypt for hashing!)
-        if (user.password !== password) {
+        // 4. Check if password matches (gunakan bcrypt.compare)
+        // Bandingkan password yang dikirim dengan hash password di DB
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
             return res.status(401).json({ message: 'Email atau Password salah!' });
         }
 
         // 5. If successful, return user data (excluding password for security)
-        // In a real application, you'd generate a JWT here and send it.
+        // Dalam aplikasi nyata, kamu akan menghasilkan JWT di sini dan mengirimkannya.
         const userData = {
             _id: user._id,
             nama: user.nama,
             email: user.email,
             role: user.role,
+            // Tambahkan fotoProfil jika ada di model dan kamu ingin mengirimnya ke frontend
+            fotoProfil: user.fotoProfil || null, // Pastikan field ini ada di AkunModel
         };
 
         res.status(200).json({
             message: 'Login berhasil!',
             user: userData,
-            isLoggedIn: true // Matches your frontend's localStorage flag
+            isLoggedIn: true
         });
 
     } catch (error) {
