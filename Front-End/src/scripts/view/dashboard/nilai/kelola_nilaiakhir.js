@@ -18,6 +18,12 @@ const KelolaNilaiAkhir = {
       }
     }
 
+    // Example: Fetch nilai values for a specific mapel and kelas
+    // You can use this in afterRender or loadDataNilaiSiswa as needed
+    // const nilaiResponse = await fetch('http://localhost:5000/api/nilai/values?mataPelajaran=IPS&kelas=1');
+    // const nilaiData = await nilaiResponse.json();
+    // console.log(nilaiData);
+
     // Build dynamic mapel columns
     const mapelHeaders = mapelList.length
       ? mapelList.map((m) => `<th class="py-4 px-6">${m.mapel}</th>`).join('')
@@ -29,7 +35,7 @@ const KelolaNilaiAkhir = {
         <div class="dashboard-main flex-1 p-8">
           <header class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Dashboard Admin</h2>
-            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
+            <button id="logoutButton" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
           </header>
 
           <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
@@ -66,6 +72,12 @@ const KelolaNilaiAkhir = {
     await this.loadDetailNilaiInfo();
     await this.loadDataNilaiSiswa();
 
+    // Example: Fetch nilai values for IPS kelas 1
+    // You can use this as needed in your logic
+    // const nilaiRes = await fetch('http://localhost:5000/api/nilai/values?mataPelajaran=IPS&kelas=1');
+    // const nilaiJson = await nilaiRes.json();
+    // console.log(nilaiJson);
+
     // Logout button listener
     const logoutButton = document.querySelector('#logoutButton');
     if (logoutButton) {
@@ -97,11 +109,10 @@ const KelolaNilaiAkhir = {
 
   async loadDataNilaiSiswa() {
     const dataNilaiSiswaBody = document.getElementById('dataNilaiSiswa');
-    const tableHead = document.querySelector('thead tr'); // Get the header row to update dynamically
+    const tableHead = document.querySelector('thead tr');
     const kelasUntukNilaiAkhir = JSON.parse(localStorage.getItem('kelasUntukNilaiAkhir'));
 
     if (!kelasUntukNilaiAkhir || !kelasUntukNilaiAkhir.kelas || !kelasUntukNilaiAkhir.tahunAkademik) {
-      // Default colspan assuming base columns + 0 mapel columns
       dataNilaiSiswaBody.innerHTML = '<tr><td colspan="3" class="py-4 px-6 text-center">Data kelas atau tahun akademik belum dipilih.</td></tr>';
       return;
     }
@@ -120,7 +131,7 @@ const KelolaNilaiAkhir = {
       siswaSatuKelas = [];
     }
 
-    // Fetch all mapel for this class & academic year (Re-enabled)
+    // Fetch all mapel for this class & academic year
     let mapelList = [];
     try {
       const mapelRes = await fetch(
@@ -134,6 +145,25 @@ const KelolaNilaiAkhir = {
       mapelList = [];
     }
 
+    // Fetch nilai values for each mapel for this kelas
+    // This will be a map: { [mapel]: { nilaiValues: [...], ... } }
+    const nilaiMapelData = {};
+    for (const mapel of mapelList) {
+      try {
+        const nilaiRes = await fetch(
+          `http://localhost:5000/api/nilai/values?mataPelajaran=${encodeURIComponent(mapel.mapel)}&kelas=${encodeURIComponent(kelas)}`
+        );
+        if (nilaiRes.ok) {
+          const nilaiJson = await nilaiRes.json();
+          if (nilaiJson.success) {
+            nilaiMapelData[mapel.mapel] = nilaiJson.data;
+          }
+        }
+      } catch (e) {
+        console.error(`Error fetching nilai for mapel ${mapel.mapel}:`, e);
+      }
+    }
+
     // Build table header dynamically based on fetched mapelList
     let headerHTML = `
       <th class="py-4 px-6">#</th>
@@ -143,11 +173,9 @@ const KelolaNilaiAkhir = {
     `;
     tableHead.innerHTML = headerHTML;
 
-    // Calculate colspan for "Tidak ada data" message
-    const baseColumns = 3; // #, NIS, Nama
+    const baseColumns = 3;
     const totalColumns = baseColumns + mapelList.length;
 
-    // Build table rows
     let tableRowsHTML = '';
     if (siswaSatuKelas.length === 0) {
       tableRowsHTML = `<tr><td colspan="${totalColumns}" class="py-4 px-6 text-center">Tidak ada data siswa ditemukan untuk kelas ini.</td></tr>`;
@@ -159,10 +187,19 @@ const KelolaNilaiAkhir = {
             <td class="py-4 px-6">${siswa.nisn || '-'}</td>
             <td class="py-4 px-6">${siswa.nama || '-'}</td>
             ${mapelList
-              .map(
-                m =>
-                  `<td class="py-4 px-6">-</td>`
-              )
+              .map(m => {
+                // Find nilai for this siswa and mapel
+                const nilaiData = nilaiMapelData[m.mapel];
+                let nilai = '-';
+                if (nilaiData && Array.isArray(nilaiData.nilaiValues)) {
+                  // Try to find by NIS, fallback to index order
+                  const idx = siswaSatuKelas.findIndex(s => s.nisn === siswa.nisn);
+                  if (idx !== -1 && nilaiData.nilaiValues[idx] !== undefined) {
+                    nilai = nilaiData.nilaiValues[idx];
+                  }
+                }
+                return `<td class="py-4 px-6">${nilai !== undefined ? nilai : '-'}</td>`;
+              })
               .join('')}
           </tr>
         `;

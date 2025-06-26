@@ -301,44 +301,446 @@ exports.saveStudentGrades = async (req, res) => {
     }
 };
 
-// NEW: Controller to fetch student grades for a specific subject, class, and academic year
+// Controller to fetch all student grades without filtering
 exports.getStudentGrades = async (req, res) => {
     try {
-        const { kelas, tahunAkademik, mataPelajaran } = req.query; // Removed semester
+        // Get all grade records without any filters
+        const nilaiRecords = await Nilai.find({});
 
-        if (!kelas || !tahunAkademik || !mataPelajaran) { // Removed semester from validation
-            return res.status(400).json({ message: 'Missing required query parameters: kelas, tahunAkademik, and mataPelajaran.' });
+        if (!nilaiRecords || nilaiRecords.length === 0) {
+            return res.status(404).json({ message: 'No grade data found.' });
         }
 
-        const nilaiRecord = await Nilai.findOne({
-            kelas: kelas,
-            tahunAkademik: tahunAkademik,
-            'nilaiSiswa.mataPelajaran': mataPelajaran
-        });
-
-        if (!nilaiRecord) {
-            return res.status(404).json({ message: 'No grades found for the specified criteria.' });
-        }
-
-        // Filter nilaiSiswa array to only return students for the specific mataPelajaran
-        const filteredNilaiSiswa = nilaiRecord.nilaiSiswa.filter(
-            (siswa) => siswa.mataPelajaran === mataPelajaran
+        // Transform the data into a simpler format for the frontend
+        const allGrades = nilaiRecords.flatMap(record => 
+            record.nilaiSiswa.map(siswa => ({
+                nisn: siswa.nis,
+                nama: siswa.nama,
+                kelas: record.kelas,
+                tahunAkademik: record.tahunAkademik,
+                mataPelajaran: siswa.mataPelajaran,
+                nilaiHarian: siswa.nilaiHarian,
+                nilaiTengahSemester: siswa.nilaiTengahSemester,
+                nilaiSemester: siswa.nilaiSemester,
+                rataRata: siswa.nilai,
+            }))
         );
 
-        // Map to a format suitable for the frontend (using nisn, nama, etc.)
-        const formattedGrades = filteredNilaiSiswa.map(siswa => ({
-            nisn: siswa.nis, // Assuming nis in model maps to nisn in frontend
-            nama: siswa.nama,
-            nilaiHarian: siswa.nilaiHarian,
-            nilaiTengahSemester: siswa.nilaiTengahSemester,
-            nilaiSemester: siswa.nilaiSemester,
-            rataRata: siswa.nilai, // Assuming 'nilai' in model stores the rataRata
-        }));
-
-        res.json({ grades: formattedGrades }); // Wrap the grades in an object with a 'grades' key
+        res.json({ grades: allGrades });
 
     } catch (error) {
-        console.error('Error fetching student grades:', error);
+        console.error('Error fetching all student grades:', error);
         res.status(500).json({ message: 'Failed to retrieve student grades: ' + error.message });
     }
 };
+
+
+// Controller to get grades by specific subject
+exports.getNilaiByMapel = async (req, res) => {
+    try {
+        const { mataPelajaran, kelas, tahunAkademik } = req.query;
+
+        if (!mataPelajaran) {
+            return res.status(400).json({ message: 'Parameter mataPelajaran is required.' });
+        }
+
+        const query = {
+            'nilaiSiswa.mataPelajaran': mataPelajaran
+        };
+
+        // Optional filters
+        if (kelas) query.kelas = kelas;
+        if (tahunAkademik) query.tahunAkademik = tahunAkademik;
+
+        const nilaiData = await Nilai.find(query);
+
+        if (!nilaiData || nilaiData.length === 0) {
+            return res.status(404).json({ message: 'No grades found for the specified subject.' });
+        }
+
+        // Transform the data to focus on the specific subject
+        const result = nilaiData.map(doc => {
+            const filteredSiswa = doc.nilaiSiswa.filter(
+                siswa => siswa.mataPelajaran === mataPelajaran
+            );
+            return {
+                kelas: doc.kelas,
+                tahunAkademik: doc.tahunAkademik,
+                mataPelajaran: mataPelajaran,
+                nilaiSiswa: filteredSiswa,
+                tanggalInput: doc.tanggalInput
+            };
+        });
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error fetching grades by subject:', error);
+        res.status(500).json({ message: 'Failed to retrieve grades by subject: ' + error.message });
+    }
+};
+
+// Controller untuk mengambil nilai saja berdasarkan mapel dan kelas
+exports.getNilaiValuesByMapelKelas = async (req, res) => {
+    try {
+        const { mataPelajaran, kelas } = req.query;
+
+        // Validasi input
+        if (!mataPelajaran || !kelas) {
+            return res.status(400).json({
+                success: false,
+                message: 'Parameter mataPelajaran dan kelas wajib diisi'
+            });
+        }
+
+        // Query database
+        const results = await Nilai.aggregate([
+            {
+                $match: {
+                    kelas: kelas,
+                    'nilaiSiswa.mataPelajaran': mataPelajaran
+                }
+            },
+            { $unwind: '$nilaiSiswa' },
+            {
+                $match: {
+                    'nilaiSiswa.mataPelajaran': mataPelajaran
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    nilai: '$nilaiSiswa.nilai'
+                }
+            }
+        ]);
+
+        // Jika tidak ada data
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Tidak ditemukan nilai untuk mata pelajaran ${mataPelajaran} di kelas ${kelas}`
+            });
+        }
+
+        // Ekstrak hanya nilai-nilai
+        const nilaiValues = results.map(item => item.nilai);
+
+        res.json({
+            success: true,
+            data: {
+                mataPelajaran: mataPelajaran,
+                kelas: kelas,
+                jumlahSiswa: nilaiValues.length,
+                nilaiValues: nilaiValues
+            }
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Terjadi kesalahan server',
+            error: error.message
+        });
+    }
+};
+
+// Controller to get average grades by class and subject
+exports.getAverageGradesByClassAndSubject = async (req, res) => {
+    try {
+        const { kelas, mataPelajaran } = req.query;
+
+        // Validation
+        if (!kelas || !mataPelajaran) {
+            return res.status(400).json({
+                success: false,
+                message: 'Kelas dan mataPelajaran harus diisi sebagai query parameter'
+            });
+        }
+
+        // Convert kelas to string if it's a number (to match your example)
+        const kelasString = typeof kelas === 'number' ? kelas.toString() : kelas;
+
+        // Aggregate pipeline to calculate statistics
+        const pipeline = [
+            {
+                $match: {
+                    kelas: kelasString,
+                }
+            },
+            { $unwind: '$nilaiSiswa' },
+            {
+                $match: {
+                    'nilaiSiswa.mataPelajaran': mataPelajaran
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    averageGrade: { $avg: '$nilaiSiswa.nilai' },
+                    studentCount: { $sum: 1 },
+                    highestGrade: { $max: '$nilaiSiswa.nilai' },
+                    lowestGrade: { $min: '$nilaiSiswa.nilai' },
+                    allGrades: { $push: '$nilaiSiswa.nilai' }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    kelas: kelasString,
+                    mataPelajaran: mataPelajaran,
+                    averageGrade: { $round: ['$averageGrade', 2] },
+                    studentCount: 1,
+                    highestGrade: 1,
+                    lowestGrade: 1,
+                    // Additional statistics
+                    medianGrade: {
+                        $let: {
+                            vars: {
+                                sortedGrades: {
+                                    $sortArray: {
+                                        input: '$allGrades',
+                                        sortBy: 1
+                                    }
+                                },
+                                count: { $size: '$allGrades' },
+                                mid: { $floor: { $divide: [{ $size: '$allGrades' }, 2] } }
+                            },
+                            in: {
+                                $cond: [
+                                    { $eq: ['$$count', 0] },
+                                    null,
+                                    {
+                                        $cond: [
+                                            { $eq: [{ $mod: ['$$count', 2] }, 0] },
+                                            {
+                                                $divide: [
+                                                    { $add: [
+                                                        { $arrayElemAt: ['$$sortedGrades', '$$mid'] },
+                                                        { $arrayElemAt: ['$$sortedGrades', { $subtract: ['$$mid', 1] }] }
+                                                    ]},
+                                                    2
+                                                ]
+                                            },
+                                            { $arrayElemAt: ['$$sortedGrades', '$$mid'] }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        ];
+
+        const result = await Nilai.aggregate(pipeline);
+
+        if (result.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Data nilai tidak ditemukan untuk kelas ${kelasString} dan mata pelajaran ${mataPelajaran}`
+            });
+        }
+
+        res.json({
+            success: true,
+            data: result[0]
+        });
+
+    } catch (error) {
+        console.error('Error fetching average grades:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Terjadi kesalahan server',
+            error: error.message
+        });
+    }
+};
+
+// Controller untuk mengambil rata-rata nilai seluruh mata pelajaran
+// Controller untuk mengambil rata-rata nilai seluruh mata pelajaran
+exports.getAverageAllSubjects = async (req, res) => {
+    try {
+        const { kelas, tahunAkademik } = req.query;
+
+        // Validasi input
+        if (!kelas || !tahunAkademik) {
+            return res.status(400).json({
+                success: false,
+                message: 'Parameter kelas dan tahunAkademik wajib diisi'
+            });
+        }
+
+        // Clean the academic year parameter by removing "Genap/Ganjil"
+        const cleanTahunAkademik = tahunAkademik.replace(/\s+(Genap|Ganjil)$/i, '');
+
+        // Pipeline untuk menghitung rata-rata seluruh mapel
+        const pipeline = [
+            {
+                $match: {
+                    kelas: kelas,
+                    tahunAkademik: { $regex: new RegExp(`^${cleanTahunAkademik}`), $options: 'i' }
+                }
+            },
+            { $unwind: '$nilaiSiswa' },
+            {
+                $group: {
+                    _id: '$nilaiSiswa.nis',
+                    nama: { $first: '$nilaiSiswa.nama' },
+                    jumlahMapel: { $sum: 1 },
+                    totalNilai: { $sum: '$nilaiSiswa.nilai' },
+                    nilaiPerMapel: {
+                        $push: {
+                            mataPelajaran: '$nilaiSiswa.mataPelajaran',
+                            nilai: '$nilaiSiswa.nilai'
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    nis: '$_id',
+                    nama: 1,
+                    kelas: kelas,
+                    tahunAkademik: tahunAkademik,
+                    rataRata: { $round: [{ $divide: ['$totalNilai', '$jumlahMapel'] }, 2] },
+                    jumlahMapel: 1,
+                    nilaiPerMapel: 1
+                }
+            },
+            { $sort: { rataRata: -1 } } // Urutkan dari nilai tertinggi
+        ];
+
+        const results = await Nilai.aggregate(pipeline);
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Tidak ditemukan nilai untuk kelas ${kelas} tahun akademik ${tahunAkademik}`
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                kelas: kelas,
+                tahunAkademik: tahunAkademik,
+                jumlahSiswa: results.length,
+                siswa: results
+            }
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Terjadi kesalahan server',
+            error: error.message
+        });
+    }
+};
+
+// Controller untuk mengambil ranking siswa
+exports.getRankingSiswa = async (req, res) => {
+    try {
+        const { kelas, tahunAkademik } = req.query;
+
+        // Validasi input
+        if (!kelas || !tahunAkademik) {
+            return res.status(400).json({
+                success: false,
+                message: 'Parameter kelas dan tahunAkademik wajib diisi'
+            });
+        }
+
+        // Pipeline untuk menghitung ranking
+        const pipeline = [
+            {
+                $match: {
+                    kelas: kelas,
+                    tahunAkademik: tahunAkademik
+                }
+            },
+            { $unwind: '$nilaiSiswa' },
+            {
+                $group: {
+                    _id: '$nilaiSiswa.nis',
+                    nama: { $first: '$nilaiSiswa.nama' },
+                    jumlahMapel: { $sum: 1 },
+                    totalNilai: { $sum: '$nilaiSiswa.nilai' },
+                    nilaiPerMapel: {
+                        $push: {
+                            mataPelajaran: '$nilaiSiswa.mataPelajaran',
+                            nilai: '$nilaiSiswa.nilai'
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    nis: '$_id',
+                    nama: 1,
+                    kelas: kelas,
+                    tahunAkademik: tahunAkademik,
+                    rataRata: { $round: [{ $divide: ['$totalNilai', '$jumlahMapel'] }, 2] },
+                    jumlahMapel: 1,
+                    nilaiPerMapel: 1
+                }
+            },
+            { $sort: { rataRata: -1 } }, // Urutkan dari nilai tertinggi
+            {
+                $group: {
+                    _id: null,
+                    kelas: { $first: kelas },
+                    tahunAkademik: { $first: tahunAkademik },
+                    siswa: { $push: '$$ROOT' }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    kelas: 1,
+                    tahunAkademik: 1,
+                    siswa: {
+                        $map: {
+                            input: '$siswa',
+                            as: 'siswa',
+                            in: {
+                                $mergeObjects: [
+                                    '$$siswa',
+                                    { ranking: { $add: [{ $indexOfArray: ['$siswa.nis', '$$siswa.nis'] }, 1] } }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        ];
+
+        const results = await Nilai.aggregate(pipeline);
+
+        if (results.length === 0 || results[0].siswa.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Tidak ditemukan data ranking untuk kelas ${kelas} tahun akademik ${tahunAkademik}`
+            });
+        }
+
+        res.json({
+            success: true,
+            data: results[0]
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Terjadi kesalahan server',
+            error: error.message
+        });
+    }
+};
+

@@ -1,4 +1,6 @@
 import MenuDashboard from '../../menu/menu_dashboard';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const RekapNilai2 = {
     async render() {
@@ -16,8 +18,7 @@ const RekapNilai2 = {
 
                         <div class="shadow-xl rounded-lg p-6 overflow-x-auto mb-6">
                             <h2 class="text-xl font-semibold mb-4">Detail Informasi</h2>
-                            <div id="detailNilai" class="mb-4">
-                            </div>
+                            <div id="detailNilai" class="mb-4"></div>
                         </div>
 
                         <div class="bg-white shadow-xl rounded-lg p-6 overflow-x-auto">
@@ -32,7 +33,8 @@ const RekapNilai2 = {
                                             <th class="py-4 px-6">#</th>
                                             <th class="py-4 px-6">NIS</th>
                                             <th class="py-4 px-6">Nama</th>
-                                            <th class="py-4 px-6">L/P</th>
+                                            <th class="py-4 px-6">Rata-Rata</th>
+                                            <th class="py-4 px-6">Ranking</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dataNilaiSiswa" class="text-gray-700">
@@ -54,130 +56,123 @@ const RekapNilai2 = {
 
     async loadDetailNilaiInfo() {
         const detailNilaiContainer = document.getElementById('detailNilai');
-        const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
-        const tahunAkademikData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-
-        const waliKelas = kelasData.wali || '-';
-        const kelas = kelasData.nama || '-';
-        const tahunAkademik = tahunAkademikData.length > 0 ? tahunAkademikData[0].tahun : 'N/A';
-        const semester = tahunAkademikData.length > 0 ? `Semester ${tahunAkademikData[0].semester}` : 'N/A';
-
+        const kelasData = JSON.parse(localStorage.getItem('kelasUntukNilai')) || {};
         detailNilaiContainer.innerHTML = `
-            <p><strong>Wali Kelas:</strong> ${waliKelas}</p>
-            <p><strong>Kelas:</strong> ${kelas}</p>
-            <p><strong>Tahun Akademik:</strong> ${tahunAkademik}</p>
-            <p><strong>Semester:</strong> ${semester}</p>
+            <p><strong>Wali Kelas:</strong> ${kelasData.wali || '-'}</p>
+            <p><strong>Kelas:</strong> ${kelasData.kelas || '-'}</p>
+            <p><strong>Tahun Akademik:</strong> ${kelasData.tahunAkademik || '-'}</p>
         `;
     },
 
     async loadDataNilaiSiswa() {
         const dataNilaiSiswaBody = document.getElementById('dataNilaiSiswa');
-        const tableHead = document.querySelector('thead tr');
-        const kelasData = JSON.parse(localStorage.getItem('kelasUntukAbsensi')) || {};
-        const dataSiswa = JSON.parse(localStorage.getItem('dataSiswa')) || [];
-        const dataMapel = JSON.parse(localStorage.getItem('dataMapel')) || [];
-        const kelas = kelasData.nama || '-';
+        const kelasData = JSON.parse(localStorage.getItem('kelasUntukNilai')) || {};
+        const kelas = kelasData.kelas;
+        const tahunAkademik = kelasData.tahunAkademik;
 
-        if (!kelas) {
-            dataNilaiSiswaBody.innerHTML = '<tr><td colspan="100%" class="py-4 px-6 text-center">Data kelas tidak ditemukan.</td></tr>';
+        if (!kelas || !tahunAkademik) {
+            dataNilaiSiswaBody.innerHTML = '<tr><td colspan="5" class="py-4 px-6 text-center">Data kelas/tahun akademik tidak ditemukan.</td></tr>';
             return;
         }
 
-        const mapelKelasIni = dataMapel
-            .filter(m => m.kelas === kelas)
-            .map(m => ({
-                label: m.mapel,
-                key: m.mapelKey
-            }));
-
-        let headerHTML = `
-            <th class="py-4 px-6">#</th>
-            <th class="py-4 px-6">NIS</th>
-            <th class="py-4 px-6">Nama</th>
-            <th class="py-4 px-6">L/P</th>
-        `;
-        mapelKelasIni.forEach(m => {
-            headerHTML += `<th class="py-4 px-6">${m.label}</th>`;
-        });
-        headerHTML += `
-            <th class="py-4 px-6">Rata-Rata</th>
-            <th class="py-4 px-6">Ranking</th>
-        `;
-        tableHead.innerHTML = headerHTML;
-
-        const siswaSatuKelas = dataSiswa.filter(siswa => siswa.kelas === kelas);
-        const dataSiswaDenganNilai = [];
-
-        for (const siswa of siswaSatuKelas) {
-            const nilaiMapelSiswa = {};
-            let totalNilai = 0;
-            let jumlahMapel = 0;
-
-            for (const mapelInfo of mapelKelasIni) {
-                const nilaiKey = `nilaiSiswa_${kelas}_${mapelInfo.label}`;
-                const nilaiData = JSON.parse(localStorage.getItem(nilaiKey)) || [];
-                const nilaiSiswaMapel = nilaiData.find(n => n.nisn === siswa.nisn);
-                nilaiMapelSiswa[mapelInfo.label] = nilaiSiswaMapel?.rataRata || null;
-                if (nilaiSiswaMapel?.rataRata !== undefined && nilaiSiswaMapel.rataRata !== null) {
-                    totalNilai += parseFloat(nilaiSiswaMapel.rataRata);
-                    jumlahMapel++;
-                }
+        // Fetch rata-rata seluruh mata pelajaran
+        let siswaData = [];
+        try {
+            const res = await fetch(`http://localhost:5000/api/nilai/rata-rata?kelas=${encodeURIComponent(kelas)}&tahunAkademik=${encodeURIComponent(tahunAkademik)}`);
+            const json = await res.json();
+            if (json.success && json.data && Array.isArray(json.data.siswa)) {
+                siswaData = json.data.siswa;
+            } else {
+                dataNilaiSiswaBody.innerHTML = `<tr><td colspan="5" class="py-4 px-6 text-center">Tidak ada data nilai ditemukan.</td></tr>`;
+                return;
             }
-
-            const rataRataKeseluruhan = jumlahMapel > 0 ? totalNilai / jumlahMapel : null;
-
-            dataSiswaDenganNilai.push({
-                ...siswa,
-                ...nilaiMapelSiswa,
-                rataRata: rataRataKeseluruhan
-            });
+        } catch (err) {
+            dataNilaiSiswaBody.innerHTML = `<tr><td colspan="5" class="py-4 px-6 text-center text-red-500">Gagal memuat data nilai.</td></tr>`;
+            return;
         }
 
-        dataSiswaDenganNilai.sort((a, b) => (b.rataRata === null ? -1 : (a.rataRata === null ? 1 : b.rataRata - a.rataRata)));
-        const dataSiswaDenganRanking = dataSiswaDenganNilai.map((siswa, index) => ({
-            ...siswa,
-            ranking: siswa.rataRata !== null ? index + 1 : '-'
-        }));
+        // Urutkan siswa berdasarkan rata-rata (descending)
+        siswaData.sort((a, b) => {
+            const rataA = a.rataRata !== undefined && a.rataRata !== null ? a.rataRata : -Infinity;
+            const rataB = b.rataRata !== undefined && b.rataRata !== null ? b.rataRata : -Infinity;
+            return rataB - rataA;
+        });
 
+        // Beri ranking, handle jika rata-rata sama
         let tableRowsHTML = '';
-        dataSiswaDenganRanking.forEach((siswa, index) => {
+        let lastRata = null;
+        let lastRank = 0;
+        let sameRankCount = 0;
+        siswaData.forEach((siswa, idx) => {
+            let rank;
+            if (siswa.rataRata === lastRata) {
+                rank = lastRank;
+                sameRankCount++;
+            } else {
+                rank = idx + 1;
+                lastRank = rank;
+                lastRata = siswa.rataRata;
+                sameRankCount = 1;
+            }
             tableRowsHTML += `
                 <tr class="border-t">
-                    <td class="py-4 px-6">${index + 1}</td>
-                    <td class="py-4 px-6">${siswa.nisn}</td>
+                    <td class="py-4 px-6">${idx + 1}</td>
+                    <td class="py-4 px-6">${siswa.nis}</td>
                     <td class="py-4 px-6">${siswa.nama}</td>
-                    <td class="py-4 px-6">${siswa.jenisKelamin === 'L' ? 'L' : 'P'}</td>
-            `;
-            mapelKelasIni.forEach(m => {
-                tableRowsHTML += `<td class="py-4 px-6">${siswa[m.label] !== undefined && siswa[m.label] !== null ? parseFloat(siswa[m.label]).toFixed(2) : '-'}</td>`;
-            });
-            tableRowsHTML += `
-                    <td class="py-4 px-6">${siswa.rataRata !== null ? siswa.rataRata.toFixed(2) : '-'}</td>
-                    <td class="py-4 px-6">${siswa.ranking}</td>
+                    <td class="py-4 px-6">${siswa.rataRata !== undefined && siswa.rataRata !== null ? siswa.rataRata.toFixed(2) : '-'}</td>
+                    <td class="py-4 px-6">${siswa.rataRata !== undefined && siswa.rataRata !== null ? rank : '-'}</td>
                 </tr>
             `;
         });
 
         dataNilaiSiswaBody.innerHTML = tableRowsHTML;
+        // Simpan data siswa ke instance untuk digunakan saat cetak PDF
+        this._siswaData = siswaData.map((siswa, idx) => ({
+            no: idx + 1,
+            nis: siswa.nis,
+            nama: siswa.nama,
+            rataRata: siswa.rataRata !== undefined && siswa.rataRata !== null ? siswa.rataRata.toFixed(2) : '-',
+            ranking: siswa.rataRata !== undefined && siswa.rataRata !== null ? (siswa.rataRata === lastRata ? lastRank : idx + 1) : '-'
+        }));
     },
 
     setupCetakPDFButton() {
         const cetakPDFButton = document.getElementById('cetakPDF');
         if (cetakPDFButton) {
             cetakPDFButton.addEventListener('click', () => {
-                const printArea = document.getElementById('printArea').innerHTML;
-                const originalContent = document.body.innerHTML;
-
-                document.body.innerHTML = `
-                    <html><head><title>Rekap Nilai Akhir</title></head><body>
-                        ${printArea}
-                    </body></html>
-                `;
-                window.print();
-                document.body.innerHTML = originalContent;
-                window.location.reload();
+                this.cetakPDF();
             });
         }
+    },
+
+    cetakPDF() {
+        const kelasData = JSON.parse(localStorage.getItem('kelasUntukNilai')) || {};
+        const siswaData = this._siswaData || [];
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text("Rekap Nilai Akhir", 105, 15, { align: "center" });
+
+        doc.setFontSize(11);
+        doc.text(`Wali Kelas: ${kelasData.wali || '-'}`, 14, 28);
+        doc.text(`Kelas: ${kelasData.kelas || '-'}`, 14, 34);
+        doc.text(`Tahun Akademik: ${kelasData.tahunAkademik || '-'}`, 14, 40);
+
+        autoTable(doc, {
+            startY: 48,
+            head: [['#', 'NIS', 'Nama', 'Rata-Rata', 'Ranking']],
+            body: siswaData.map((s, idx) => [
+                idx + 1,
+                s.nis,
+                s.nama,
+                s.rataRata,
+                s.ranking
+            ]),
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: [31, 41, 55] }
+        });
+
+        doc.save("rekap_nilai_akhir.pdf");
     },
 };
 

@@ -1,4 +1,3 @@
-// models/NilaiModel.js
 const mongoose = require('mongoose');
 
 const nilaiSiswaSchema = new mongoose.Schema({

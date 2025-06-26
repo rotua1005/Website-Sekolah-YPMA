@@ -16,7 +16,6 @@ db.absensi = require("./AbsensiModel");
 db.akun = require("./AkunModel");
 db.absensi = require("./AbsensiModel");
 db.nilai = require("./NilaiModel");
-
-
+db.kontak = require ("./KontakModel");
 
 module.exports = db;

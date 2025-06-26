@@ -43,6 +43,8 @@ const AuthRoutes = require('./Admin/route/AuthRoute');
 // Data Akun (Admin CRUD untuk akun)
 const AkunRoutes = require('./Admin/route/AkunRoute');
 
+// Kotak Beranda
+const Kontak = require('./Admin/route/KontakRoute'); 
 
 //----------------Kepala Sekolah - Import Routes--------------------
 //data guru kepsek
@@ -88,6 +90,9 @@ app.use('/api', AkunRoutes);
 
 // Rute Login/Autentikasi
 app.use('/api/auth', AuthRoutes);
+
+// Rute Kotak Beranda
+app.use('/api', Kontak);
 
 
 app.use('/api', DataGuruKepsekRoutes); // Rute untuk Kepala Sekolah - Data Guru

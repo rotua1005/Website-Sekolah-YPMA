@@ -2,10 +2,31 @@ import MenuKepsek from "../menu/menu_kepsek";
 
 const FeedbackKepsek = {
     async render() {
-        const feedbackMessages = JSON.parse(localStorage.getItem('feedback')) || [];
+        let feedbackMessages = [];
+        let errorMessage = '';
+
+        try {
+            // Fetch feedback messages from the backend API
+            const response = await fetch('http://localhost:5000/api/kontak');
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Gagal mengambil pesan feedback dari server.');
+            }
+            
+            const data = await response.json();
+            feedbackMessages = data.data || [];
+            feedbackMessages = feedbackMessages.reverse();
+        } catch (error) {
+            console.error("Error fetching feedback:", error);
+            errorMessage = `<p class="text-red-500 text-center">Error: ${error.message}. Gagal memuat pesan feedback.</p>`;
+            feedbackMessages = [];
+        }
 
         let feedbackListHTML = '';
-        if (feedbackMessages.length > 0) {
+        if (errorMessage) {
+            feedbackListHTML = errorMessage;
+        } else if (feedbackMessages.length > 0) {
             feedbackListHTML = `
                 <table class="min-w-full leading-normal">
                     <thead>
@@ -25,25 +46,34 @@ const FeedbackKepsek = {
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Waktu
                             </th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Status
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         ${feedbackMessages.map(feedback => `
                             <tr>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 whitespace-no-wrap">${feedback.name}</p>
+                                    <p class="text-gray-900 whitespace-no-wrap">${feedback.nama}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <p class="text-gray-900 whitespace-no-wrap">${feedback.email}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 whitespace-no-wrap">${feedback.phone}</p>
+                                    <p class="text-gray-900 whitespace-no-wrap">${feedback.telepon}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 whitespace-pre-line">${feedback.message}</p>
+                                    <p class="text-gray-900 whitespace-pre-line">${feedback.pesan}</p>
                                 </td>
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 whitespace-no-wrap">${new Date(feedback.timestamp).toLocaleString()}</p>
+                                    <p class="text-gray-900 whitespace-no-wrap">${new Date(feedback.tanggal).toLocaleString('id-ID')}</p>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                    <span class="relative inline-block px-3 py-1 font-semibold leading-tight ${feedback.status === 'terkirim' ? 'text-blue-900' : feedback.status === 'dibaca' ? 'text-green-900' : 'text-purple-900'}">
+                                        <span aria-hidden="true" class="absolute inset-0 opacity-50 rounded-full ${feedback.status === 'terkirim' ? 'bg-blue-200' : feedback.status === 'dibaca' ? 'bg-green-200' : 'bg-purple-200'}"></span>
+                                        <span class="relative">${feedback.status}</span>
+                                    </span>
                                 </td>
                             </tr>
                         `).join('')}
@@ -51,7 +81,7 @@ const FeedbackKepsek = {
                 </table>
             `;
         } else {
-            feedbackListHTML = '<p class="text-gray-600">Belum ada pesan feedback.</p>';
+            feedbackListHTML = '<p class="text-gray-600 text-center">Belum ada pesan feedback.</p>';
         }
 
         return `

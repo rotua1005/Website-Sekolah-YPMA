@@ -2,10 +2,6 @@ import MenuKepsek from "../menu/menu_kepsek";
 
 const RekapAbsensiKepsek = {
     async render() {
-        const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
-        const tahunData = JSON.parse(localStorage.getItem('dataTahun')) || [];
-        const currentTahun = tahunData.length > 0 ? tahunData[tahunData.length - 1] : { tahun: 'N/A', semester: 'N/A' };
-
         return `
             <div class="dashboard-container bg-gray-100 min-h-screen flex">
                 ${MenuKepsek.render()}
@@ -18,6 +14,12 @@ const RekapAbsensiKepsek = {
                     <div class="bg-white shadow-2xl rounded-lg p-8 mt-5">
                         <h1 class="text-center text-4xl font-bold mb-6">Rekap Absensi</h1>
 
+                        <div class="flex justify-end items-center mb-4">
+                            <select id="filterTahunAkademikRekapKepsek" class="border p-3 rounded-lg text-lg">
+                                <option value="">Semua Tahun Akademik</option>
+                            </select>
+                        </div>
+
                         <div class="overflow-x-auto">
                             <table class="w-full table-auto shadow-md rounded-lg">
                                 <thead class="bg-gray-800 text-white">
@@ -26,36 +28,12 @@ const RekapAbsensiKepsek = {
                                         <th class="py-3 px-4 text-left">Wali Kelas</th>
                                         <th class="py-3 px-4 text-left">Kelas</th>
                                         <th class="py-3 px-4 text-left">Jumlah Siswa</th>
-                                        <th class="py-3 px-4 text-left">Tahun Akademik | Semester</th>
+                                        <th class="py-3 px-4 text-left">Tahun Akademik</th>
                                         <th class="py-3 px-4 text-left">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-gray-50">
-                                    ${kelasData.map((kelas, index) => `
-                                        <tr>
-                                            <td class="py-3 px-4">${index + 1}</td>
-                                            <td class="py-3 px-4">${kelas.wali}</td>
-                                            <td class="py-3 px-4">${kelas.nama}</td>
-                                            <td class="py-3 px-4">${kelas.jumlah}</td>
-                                            <td class="py-3 px-4">${currentTahun.tahun} | Semester ${currentTahun.semester}</td>
-                                            <td class="py-3 px-4 flex space-x-2">
-                                                <button
-                                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                                                    data-index="${index}"
-                                                    id="detailRekapBtn-${index}"
-                                                >
-                                                    Detail
-                                                </button>
-                                                <button
-                                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
-                                                    data-index="${index}"
-                                                    id="kelolaRekapBtn-${index}"
-                                                >
-                                                    Kelola
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
+                                <tbody id="rekapTableBodyKepsek" class="bg-gray-50">
+                                    <tr><td colspan="6" class="text-center py-4">Memuat data...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -68,25 +46,128 @@ const RekapAbsensiKepsek = {
     async afterRender() {
         MenuKepsek.afterRender();
 
-        document.querySelectorAll('[id^="detailRekapBtn-"]').forEach((btn) => {
-            btn.addEventListener('click', function () {
-                const index = btn.getAttribute('data-index');
-                const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
-                const data = kelasData[index];
+        const rekapTableBody = document.getElementById('rekapTableBodyKepsek');
+        const filterTahunAkademikRekap = document.getElementById('filterTahunAkademikRekapKepsek');
 
-                alert(`Detail Kelas:\nWali Kelas: ${data.wali}\nKelas: ${data.nama}\nJumlah Siswa: ${data.jumlah}`);
-            });
+        // Populate Tahun Akademik filter
+        async function populateTahunAkademikFilter() {
+            try {
+                const response = await fetch('http://localhost:5000/api/tahunakademik');
+                if (!response.ok) throw new Error('Failed to fetch Tahun Akademik data');
+                const tahunAkademikData = await response.json();
+
+                filterTahunAkademikRekap.innerHTML = '<option value="">Semua Tahun Akademik</option>';
+                tahunAkademikData.forEach(ta => {
+                    const option = document.createElement('option');
+                    option.value = `${ta.tahun} Semester ${ta.semester}`;
+                    option.textContent = `${ta.tahun} Semester ${ta.semester}`;
+                    filterTahunAkademikRekap.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error populating Tahun Akademik filter:", error);
+            }
+        }
+
+        await populateTahunAkademikFilter();
+
+        filterTahunAkademikRekap.addEventListener('change', () => {
+            this.renderTable(filterTahunAkademikRekap.value);
         });
 
-        document.querySelectorAll('[id^="kelolaRekapBtn-"]').forEach((btn) => {
-            btn.addEventListener('click', function () {
-                const index = btn.getAttribute('data-index');
-                const kelasData = JSON.parse(localStorage.getItem('dataKelas')) || [];
-                const selectedKelas = kelasData[index];
+        await this.renderTable(filterTahunAkademikRekap.value);
+        this.attachRowEventListeners();
+    },
 
+    async renderTable(tahunAkademikFilter = '') {
+        const rekapTableBody = document.getElementById('rekapTableBodyKepsek');
+        try {
+            let url = 'http://localhost:5000/api/datakelas';
+            if (tahunAkademikFilter) {
+                url += `?tahunAkademik=${encodeURIComponent(tahunAkademikFilter)}`;
+            }
+
+            const kelasResponse = await fetch(url);
+            if (!kelasResponse.ok) throw new Error('Gagal mengambil data kelas');
+            let kelasData = await kelasResponse.json();
+
+            if (tahunAkademikFilter) {
+                kelasData = kelasData.filter(kelas => kelas.tahunAkademik === tahunAkademikFilter);
+            }
+
+            if (kelasData.length === 0) {
+                rekapTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">Tidak ada data kelas.</td></tr>`;
+                return;
+            }
+
+            rekapTableBody.innerHTML = kelasData.map((kelas, index) => {
+                const waliKelasName = kelas.waliKelas ? kelas.waliKelas.nama : 'N/A';
+                const className = kelas.kelas || 'N/A';
+                const jumlahSiswa = kelas.jumlahSiswa !== undefined ? kelas.jumlahSiswa : 'N/A';
+                const tahunAkademikKelas = kelas.tahunAkademik || 'N/A';
+
+                return `
+                    <tr>
+                        <td class="py-3 px-4">${index + 1}</td>
+                        <td class="py-3 px-4">${waliKelasName}</td>
+                        <td class="py-3 px-4">${className}</td>
+                        <td class="py-3 px-4">${jumlahSiswa}</td>
+                        <td class="py-3 px-4">${tahunAkademikKelas}</td>
+                        <td class="py-3 px-4 flex space-x-2">
+                            <button
+                                class="bg-blue-500 text-white px-4 py-2 rounded detail-rekap-btn-kepsek"
+                                data-kelas-name="${className}"
+                                data-wali-name="${waliKelasName}"
+                                data-jumlah-siswa="${jumlahSiswa}"
+                                data-tahun-akademik="${tahunAkademikKelas}"
+                            >
+                                Detail
+                            </button>
+                            <button
+                                class="bg-yellow-500 text-white px-4 py-2 rounded kelola-rekap-btn-kepsek"
+                                data-kelas-name="${className}"
+                                data-wali-name="${waliKelasName}"
+                                data-tahun-akademik="${tahunAkademikKelas}"
+                            >
+                                Kelola
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading rekap data:', error);
+            rekapTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+        }
+    },
+
+    attachRowEventListeners() {
+        const rekapTableBody = document.getElementById('rekapTableBodyKepsek');
+        if (!rekapTableBody) return;
+
+        rekapTableBody.addEventListener('click', (event) => {
+            const target = event.target;
+
+            if (target.classList.contains('detail-rekap-btn-kepsek')) {
+                const waliName = target.dataset.waliName;
+                const className = target.dataset.kelasName;
+                const jumlahSiswa = target.dataset.jumlahSiswa;
+                const tahunAkademik = target.dataset.tahunAkademik;
+                alert(`Detail Kelas:\nWali Kelas: ${waliName}\nKelas: ${className}\nJumlah Siswa: ${jumlahSiswa}\nTahun Akademik: ${tahunAkademik}`);
+            }
+
+            if (target.classList.contains('kelola-rekap-btn-kepsek')) {
+                const waliName = target.dataset.waliName;
+                const className = target.dataset.kelasName;
+                const tahunAkademik = target.dataset.tahunAkademik;
+                const selectedKelas = {
+                    nama: className,
+                    kelas: className,
+                    wali: waliName,
+                    tahunAkademik: tahunAkademik
+                };
                 localStorage.setItem('kelasUntukAbsensi', JSON.stringify(selectedKelas));
                 window.location.hash = '#/rekap2_absensi_kepsek';
-            });
+            }
         });
     }
 };
